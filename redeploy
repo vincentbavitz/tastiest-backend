@@ -13,8 +13,6 @@ pm2 stop tastiest-backend;
 # Ensure that no changes are made on the server, but only pulled.
 # ref. https://www.freecodecamp.org/news/git-pull-force-how-to-overwrite-local-changes-with-git/
 git fetch;
-git reset --hard HEAD;
-git merge '@{u}';
 
 # Get new files
 rm -rf node_modules;
@@ -24,5 +22,3 @@ yarn install;
 yarn build && pm2 start tastiest-backend;
 
 echo "Done! $build_success";
-
-
