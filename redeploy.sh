@@ -5,9 +5,7 @@ NC='\033[0m';
 echo -e "${RED}NOTE: This will wipe all in-memory data. Be careful about when you redeploy.${NC}\n";
 
 # Stop current running process.
-whoami;
-
-pm2 stop tastiest-backend;
+$(which pm2) stop tastiest-backend;
 
 # Get changes.
 # Ensure that no changes are made on the server, but only pulled.
@@ -16,9 +14,10 @@ git fetch;
 
 # Get new files
 rm -rf node_modules;
-yarn install;
+$(which yarn) install;
 
 # Attempt to build.
-yarn build && pm2 start tastiest-backend;
+
+$(which yarn) build && $(which pm2) start tastiest-backend;
 
 echo "Done! $build_success";
