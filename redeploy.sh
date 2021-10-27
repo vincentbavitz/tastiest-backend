@@ -4,6 +4,8 @@ RED='\033[0;31m';
 NC='\033[0m';
 echo -e "${RED}NOTE: This will wipe all in-memory data. Be careful about when you redeploy.${NC}\n";
 
+cd $HOME/tastiest-backend;
+
 # Stop current running process.
 $(which pm2) stop tastiest-backend;
 
@@ -11,6 +13,8 @@ $(which pm2) stop tastiest-backend;
 # Ensure that no changes are made on the server, but only pulled.
 # ref. https://www.freecodecamp.org/news/git-pull-force-how-to-overwrite-local-changes-with-git/
 git fetch;
+git reset --hard HEAD;
+git merge '@{u}';
 
 # Get new files
 rm -rf node_modules;
