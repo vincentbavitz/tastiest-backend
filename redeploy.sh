@@ -21,3 +21,4 @@ $(which yarn) install;
 $(which yarn) build && $(which pm2) start tastiest-backend;
 
 echo "Done! $build_success";
+
