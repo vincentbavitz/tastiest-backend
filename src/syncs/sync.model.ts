@@ -5,7 +5,7 @@ export enum SegmentEventType {
   IDENTIFY = 'identify',
 }
 
-type SegmentEventInner<T extends SegmentEventType = SegmentEventType.TRACK> =
+type SegmentEventInner<T extends SegmentEventType = SegmentEventType> =
   // prettier-ignore
   T extends SegmentEventType.TRACK ? {
     properties: any;
@@ -22,14 +22,13 @@ type SegmentEventInner<T extends SegmentEventType = SegmentEventType.TRACK> =
   } :
   never;
 
-export type SegmentWebhookBody<
-  T extends SegmentEventType = SegmentEventType.TRACK,
-> = SegmentEventInner<T> & {
-  type: T;
-  event: string;
-  email?: string;
-  userId?: string;
-  anonymousId?: string;
-  timestamp: string;
-  messageId: string;
-};
+export type SegmentWebhookBody<T extends SegmentEventType = SegmentEventType> =
+  SegmentEventInner<T> & {
+    type: T;
+    event: string;
+    email?: string;
+    userId?: string;
+    anonymousId?: string;
+    timestamp: string;
+    messageId: string;
+  };
