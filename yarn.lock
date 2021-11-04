@@ -957,7 +957,24 @@
   resolved "https://registry.yarnpkg.com/@stripe/stripe-js/-/stripe-js-1.20.3.tgz#6f479d53ad933b8b17b6c708bbc2840b7512d80e"
   integrity sha512-pFhPvajrZJUzoOZDC3/2YsOeL5VD63CVlbOXs+AriIchmy6Kb2CQqrcHPCuK72FM726lwo4neF0wPRBtsLYXuw==
 
-"@tastiest-io/tastiest-utils@^1.4.0", "@tastiest-io/tastiest-utils@^1.9.0":
+"@tastiest-io/tastiest-utils@^1.13.0":
+  version "1.13.0"
+  resolved "https://npm.pkg.github.com/download/@tastiest-io/tastiest-utils/1.13.0/f440a085c71f8c57ec604183b955b78501486d9bf05500f35d76df12832a3380#ca7e095af2728860210b46be5228b732bc372f0d"
+  integrity sha512-1wqfjF+jjBEZ6cbrzu6Z3wsZgdlqdqbGNY0BGcNLKWGIMhCzux6/rNS9XRAAvwuqN6Q5AV4QJ42sOhOttpFUnw==
+  dependencies:
+    "@contentful/rich-text-types" "^14.1.2"
+    "@shopify/shopify-api" "^1.4.0"
+    "@stripe/stripe-js" "^1.13.2"
+    "@tastiest-io/tastiest-utils" "^1.4.0"
+    "@types/react" "^17.0.3"
+    contentful "^8.2.1"
+    crypto-hash "^1.3.0"
+    firebase-admin "^9.6.0"
+    luxon "^2.0.2"
+    moment "^2.29.1"
+    stripe "^8.143.0"
+
+"@tastiest-io/tastiest-utils@^1.4.0":
   version "1.9.0"
   resolved "https://npm.pkg.github.com/download/@tastiest-io/tastiest-utils/1.9.0/b945894fb01ba411cc30c146f2a0591883dc8553d41f57207bbc2e05a9b264a9#a92ca5eb6e58f1b4a33e5f7a8bad490a7a83438d"
   integrity sha512-M2pLx+hKk0566+BlS8PqrroDl19yUXVZjPjc5+Y06uzYBHzzdRAZ39S0E9XsY2WYWaFZ6ayNt+0DHNFyKE7/rA==
