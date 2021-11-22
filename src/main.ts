@@ -1,12 +1,35 @@
+import { ValidationError, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import * as admin from 'firebase-admin';
 import { ServiceAccount } from 'firebase-admin';
 import { AppModule } from './app.module';
+import { ValidationException } from './filters/validation.exception';
+import { ValidationFilter } from './filters/validation.filter';
+
+export const firebaseAdmin = admin;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService: ConfigService = app.get(ConfigService);
+
+  // Validation filter
+  app.useGlobalFilters(new ValidationFilter());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      skipMissingProperties: true,
+      exceptionFactory: (errors: ValidationError[]) => {
+        const messages = errors.map((error) => {
+          return {
+            error: `${error.property} has wrong value ${error.value}.`,
+            message: Object.values(error.constraints).join(''),
+          };
+        });
+
+        return new ValidationException(messages);
+      },
+    }),
+  );
 
   // Set the config options
   const adminConfig: ServiceAccount = {

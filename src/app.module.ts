@@ -4,6 +4,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ProductsModule } from './products/products.module';
+import { RestaurantsModule } from './restaurants/restaurants.module';
 import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
 
@@ -14,6 +15,7 @@ import { TasksService } from './tasks/tasks.service';
     }),
     SyncsModule,
     ProductsModule,
+    RestaurantsModule,
     ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
