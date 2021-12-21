@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ProductsModule } from './products/products.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
+import { SupportModule } from './support/support.module';
 import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
 
@@ -14,6 +15,7 @@ import { TasksService } from './tasks/tasks.service';
       isGlobal: true,
     }),
     SyncsModule,
+    SupportModule,
     ProductsModule,
     RestaurantsModule,
     ScheduleModule.forRoot(),

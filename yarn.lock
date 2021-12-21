@@ -1143,10 +1143,10 @@
     react-popper "^2.2.5"
     uuid "^8.3.2"
 
-"@tastiest-io/tastiest-utils@^1.22.0":
-  version "1.22.0"
-  resolved "https://npm.pkg.github.com/download/@tastiest-io/tastiest-utils/1.22.0/cea141e393bb2e6c955b2a2c9f25d258477493e307e474f79fc41ecf0e2c61fb#43209383b1c53ca808614e54f0795e91cb0e3243"
-  integrity sha512-fxoZCwKBIc9ouVrbLheQWX2r7YoW7epTE2OgAIHNHl+xjYMLMvKBwcyzANEZAgZgQAaxevWf0ffeeKAaNUeCVQ==
+"@tastiest-io/tastiest-utils@^1.39.0":
+  version "1.39.0"
+  resolved "https://npm.pkg.github.com/download/@tastiest-io/tastiest-utils/1.39.0/4ed6dc71948c0964a625c16b5faf42df34faff2a0df4259154b68937b211130a#429b48f0644fb1b33ae2010ca3b8876144a418a9"
+  integrity sha512-N/ExWdTL66OywW3dk8eJ3zOE0v1NgnZEC3PMTjSgeY0++iJ+4FGm20nNQ41DreST6gpRtilEqol75f+qa/eqSQ==
   dependencies:
     "@contentful/rich-text-types" "^14.1.2"
     "@shopify/shopify-api" "^1.4.0"
@@ -1381,6 +1381,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/lodash@^4.14.178":
+  version "4.14.178"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.178.tgz#341f6d2247db528d4a13ddbb374bcdc80406f4f8"
+  integrity sha512-0d5Wd09ItQWH1qFbEyQ7oTQ3GZrMfth5JkbN3EvTKLXcHLRDSXeLnlvlOn0wvxVIwK5o2M8JzP/OWz7T3NRsbw==
+
 "@types/long@^4.0.0", "@types/long@^4.0.1":
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/@types/long/-/long-4.0.1.tgz#459c65fa1867dafe6a8f322c4c51695663cc55e9"
@@ -1408,6 +1413,13 @@
   version "16.11.6"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-16.11.6.tgz#6bef7a2a0ad684cf6e90fcfe31cecabd9ce0a3ae"
   integrity sha512-ua7PgUoeQFjmWPcoo9khiPum3Pd60k4/2ZGXt18sm2Slk0W0xZTqt5Y0Ny1NyBiN1EVQ/+FaF9NcY4Qe6rwk5w==
+
+"@types/nodemailer@^6.4.4":
+  version "6.4.4"
+  resolved "https://registry.yarnpkg.com/@types/nodemailer/-/nodemailer-6.4.4.tgz#c265f7e7a51df587597b3a49a023acaf0c741f4b"
+  integrity sha512-Ksw4t7iliXeYGvIQcSIgWQ5BLuC/mljIEbjf615svhZL10PE9t+ei8O9gDaD3FPCasUJn9KTLwz2JFJyiiyuqw==
+  dependencies:
+    "@types/node" "*"
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"

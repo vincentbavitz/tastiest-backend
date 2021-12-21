@@ -7,8 +7,6 @@ import { AppModule } from './app.module';
 import { ValidationException } from './filters/validation.exception';
 import { ValidationFilter } from './filters/validation.filter';
 
-export const firebaseAdmin = admin;
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService: ConfigService = app.get(ConfigService);
@@ -17,7 +15,8 @@ async function bootstrap() {
   app.useGlobalFilters(new ValidationFilter());
   app.useGlobalPipes(
     new ValidationPipe({
-      skipMissingProperties: true,
+      whitelist: true,
+      skipMissingProperties: false,
       exceptionFactory: (errors: ValidationError[]) => {
         const messages = errors.map((error) => {
           return {
@@ -49,4 +48,5 @@ async function bootstrap() {
   await app.listen(3000);
 }
 
+export const firebaseAdmin = admin;
 bootstrap();

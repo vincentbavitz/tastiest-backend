@@ -17,6 +17,12 @@ export default class EmailSchedulingService {
     const job = new CronJob(date, () => {
       console.log('Sending mail!');
 
+      dlog('emailSchedule.service ➡️ ', {
+        to: emailSchedule.recipients,
+        subject: emailSchedule.subject,
+        text: emailSchedule.content,
+      });
+
       // this.emailService.sendMail({
       //   to: emailSchedule.recipients,
       //   subject: emailSchedule.subject,
