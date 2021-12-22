@@ -30,4 +30,3 @@ lerna-debug.log*
 
 # Secrets
 .env*
-.npmrc
