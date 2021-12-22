@@ -4,14 +4,18 @@ import {
   UserSupportRequest,
 } from '@tastiest-io/tastiest-utils';
 import { isEqual } from 'lodash';
-import { db } from 'src/firestore/firestore.module';
+import { FirebaseService } from 'src/firebase/firebase.service';
 import UpdateRestaurantTicketDto from './dto/update-restaurant-ticket.dto';
 import UpdateUserTicketDto from './dto/update-user-ticket.dto';
 
 @Injectable()
 export class SupportService {
+  constructor(private readonly firebaseApp: FirebaseService) {}
+
   async updateUserTicket(data: UpdateUserTicketDto) {
-    const ref = db(FirestoreCollection.SUPPORT_USERS).doc(data.ticketId);
+    const ref = this.firebaseApp
+      .db(FirestoreCollection.SUPPORT_USERS)
+      .doc(data.ticketId);
 
     const originalSnapshot = await ref.get();
     const original = originalSnapshot.data() as UserSupportRequest;
@@ -41,10 +45,6 @@ export class SupportService {
   }
 
   updateRestaurantTicket(data: UpdateRestaurantTicketDto) {
-    return null;
-  }
-
-  markTicketResolved() {
     return null;
   }
 

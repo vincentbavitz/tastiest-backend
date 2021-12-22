@@ -3,17 +3,18 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { dlog, RestaurantDataApi } from '@tastiest-io/tastiest-utils';
-import EmailSchedulingService from 'src/email/schedule/emailSchedule.service';
-import { firebaseAdmin } from 'src/main';
+import { dlog } from '@tastiest-io/tastiest-utils';
+import EmailSchedulingService from 'src/email/schedule/email-schedule.service';
+import { FirebaseService } from 'src/firebase/firebase.service';
 import NotifyDto from './dto/notify.dto';
 
-const MS_IN_ONE_MINUTE = 60 * 1000;
+// const MS_IN_ONE_MINUTE = 60 * 1000;
 
 @Injectable()
 export class RestaurantsService {
   constructor(
     private readonly emailSchedulingService: EmailSchedulingService,
+    private readonly firebaseApp: FirebaseService,
   ) {}
 
   async scheduleFollowersEmail(data: NotifyDto) {
@@ -27,10 +28,8 @@ export class RestaurantsService {
     // }
 
     // Receipients are all the restaurant's followers with notifications turned on.
-    const restaurantDataApi = new RestaurantDataApi(
-      firebaseAdmin,
-      restaurantId,
-    );
+    const restaurantDataApi =
+      this.firebaseApp.getRestaurantDataApi(restaurantId);
 
     const restaurantData = await restaurantDataApi.getRestaurantData();
     const recipients = restaurantData.metrics.followers

@@ -3,7 +3,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { dlog } from '@tastiest-io/tastiest-utils';
 import { CronJob } from 'cron';
 import EmailService from '../email.service';
-import EmailScheduleDto from './emailSchedule.dto';
+import EmailScheduleDto from './email-schedule.dto';
 
 @Injectable()
 export default class EmailSchedulingService {

@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { FirestoreCollection } from '@tastiest-io/tastiest-utils';
-import { db } from 'src/firestore/firestore.module';
+import { FirebaseService } from 'src/firebase/firebase.service';
 import { SegmentWebhookBody } from './sync.model';
 
 @Injectable()
 export class SyncsService {
+  constructor(private readonly firebaseApp: FirebaseService) {}
+
   syncSegmentEvent(body: SegmentWebhookBody) {
     const documentId = body.userId ?? body.anonymousId;
     const timestamp = new Date(body.timestamp).getTime();
@@ -18,7 +20,8 @@ export class SyncsService {
 
     // Send the event to Firestore.
     // Keyed by timestamp for quick lookups.
-    db(FirestoreCollection.EVENTS)
+    this.firebaseApp
+      .db(FirestoreCollection.EVENTS)
       .doc(documentId)
       .set(
         {

@@ -1,8 +1,15 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { FirebaseModule } from './firebase/firebase.module';
+import { PreAuthMiddleware } from './firebase/pre-auth-middleware';
 import { ProductsModule } from './products/products.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { SupportModule } from './support/support.module';
@@ -14,6 +21,7 @@ import { TasksService } from './tasks/tasks.service';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    FirebaseModule,
     SyncsModule,
     SupportModule,
     ProductsModule,
@@ -23,4 +31,11 @@ import { TasksService } from './tasks/tasks.service';
   controllers: [AppController],
   providers: [AppService, TasksService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(PreAuthMiddleware).forRoutes({
+      path: '/*',
+      method: RequestMethod.ALL,
+    });
+  }
+}

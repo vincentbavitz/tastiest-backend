@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import EmailSchedulingService from 'src/email/schedule/emailSchedule.service';
+import EmailSchedulingService from 'src/email/schedule/email-schedule.service';
 import NotifyDto from './dto/notify.dto';
 import { RestaurantsService } from './restaurants.service';
 
