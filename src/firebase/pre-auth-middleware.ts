@@ -23,6 +23,9 @@ export class PreAuthMiddleware implements NestMiddleware {
             roles: decodedToken.roles || [],
             type: decodedToken.type,
           };
+
+          console.log('pre-auth-middleware ➡️ decodedToken:', decodedToken);
+
           next();
         })
         .catch(() => {

@@ -7,6 +7,9 @@ export class TasksService {
   private schedulerRegistry: SchedulerRegistry;
   private readonly logger = new Logger(TasksService.name);
 
+  /**
+   * @ignore
+   */
   constructor(private firebaseApp: FirebaseService) {}
 
   @Cron(CronExpression.EVERY_30_SECONDS)

@@ -11,6 +11,9 @@ import * as firebase from 'firebase-admin';
 export class FirebaseService {
   private firebaseApp: firebase.app.App;
 
+  /**
+   * @ignore
+   */
   constructor(private configService: ConfigService) {
     this.firebaseApp = firebase.initializeApp({
       credential: firebase.credential.cert({
@@ -22,6 +25,8 @@ export class FirebaseService {
       }),
       databaseURL: configService.get<string>('FIREBASE_DATABASE_URL'),
     });
+
+    this.firebaseApp.auth().setCustomUserClaims;
   }
 
   getAuth = (): firebase.auth.Auth => {

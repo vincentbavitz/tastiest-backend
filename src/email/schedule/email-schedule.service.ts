@@ -7,6 +7,9 @@ import EmailScheduleDto from './email-schedule.dto';
 
 @Injectable()
 export default class EmailSchedulingService {
+  /**
+   * @ignore
+   */
   constructor(
     private readonly emailService: EmailService,
     private readonly schedulerRegistry: SchedulerRegistry,

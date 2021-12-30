@@ -10,6 +10,9 @@ import UpdateUserTicketDto from './dto/update-user-ticket.dto';
 
 @Injectable()
 export class SupportService {
+  /**
+   * @ignore
+   */
   constructor(private readonly firebaseApp: FirebaseService) {}
 
   async updateUserTicket(data: UpdateUserTicketDto) {

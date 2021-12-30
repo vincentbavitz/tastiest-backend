@@ -12,6 +12,9 @@ import NotifyDto from './dto/notify.dto';
 
 @Injectable()
 export class RestaurantsService {
+  /**
+   * @ignore
+   */
   constructor(
     private readonly emailSchedulingService: EmailSchedulingService,
     private readonly firebaseApp: FirebaseService,

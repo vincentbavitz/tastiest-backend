@@ -5,6 +5,9 @@ import { SegmentWebhookBody } from './sync.model';
 
 @Injectable()
 export class SyncsService {
+  /**
+   * @ignore
+   */
   constructor(private readonly firebaseApp: FirebaseService) {}
 
   syncSegmentEvent(body: SegmentWebhookBody) {

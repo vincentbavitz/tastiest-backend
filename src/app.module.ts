@@ -10,7 +10,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { FirebaseModule } from './firebase/firebase.module';
 import { PreAuthMiddleware } from './firebase/pre-auth-middleware';
-import { ProductsModule } from './products/products.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { SupportModule } from './support/support.module';
 import { SyncsModule } from './syncs/syncs.module';
@@ -24,7 +23,6 @@ import { TasksService } from './tasks/tasks.service';
     FirebaseModule,
     SyncsModule,
     SupportModule,
-    ProductsModule,
     RestaurantsModule,
     ScheduleModule.forRoot(),
   ],

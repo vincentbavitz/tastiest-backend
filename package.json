@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "nest build",
+    "build": "nest build && yarn documentation:build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -19,15 +19,18 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "redeploy": "ssh -t dev@api.tastiest.io '/bin/bash $HOME/tastiest-backend/redeploy.sh'"
+    "redeploy": "ssh -t dev@api.tastiest.io '/bin/bash $HOME/tastiest-backend/redeploy.sh'",
+    "documentation:build": "npx @compodoc/compodoc --theme Vagrant -p tsconfig.json",
+    "documentation:serve": "npx @compodoc/compodoc --theme Vagrant -p tsconfig.json --serve"
+
   },
   "dependencies": {
+    "@compodoc/compodoc": "^1.1.16",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.0.2",
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/schedule": "^1.0.1",
-    "@tastiest-io/tastiest-ui": "^0.28.0",
     "@tastiest-io/tastiest-utils": "^1.39.0",
     "class-transformer": "0.4.0",
     "class-validator": "^0.13.2",
