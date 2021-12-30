@@ -9,7 +9,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PreAuthMiddleware } from './auth/pre-auth-middleware';
+import { PreAuthMiddleware } from './auth/pre-auth.middleware';
 import { FirebaseModule } from './firebase/firebase.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { SupportModule } from './support/support.module';

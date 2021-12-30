@@ -1,5 +1,5 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { UserRole } from '@tastiest-io/tastiest-utils';
+import { dlog, UserRole } from '@tastiest-io/tastiest-utils';
 import { Request, Response } from 'express';
 import * as firebase from 'firebase-admin';
 import { FirebaseService } from '../firebase/firebase.service';
@@ -19,7 +19,7 @@ export class PreAuthMiddleware implements NestMiddleware {
    *
    * We automatically deny access to anyone without a valid Bearer token.
    *
-   * FYI this middleware does not made direct requests to Firebase, it
+   * FYI this middleware does not make direct requests to Firebase, it
    * validates the token on the server. So don't worry about this slowing requests.
    */
   use(req: Request, res: Response, next: () => void) {
@@ -32,10 +32,13 @@ export class PreAuthMiddleware implements NestMiddleware {
         .verifyIdToken(token.replace('Bearer ', ''))
         .then(async (decodedToken) => {
           const user: AuthenticatedUser = {
+            uid: decodedToken.uid,
             email: decodedToken.email,
             type: decodedToken.type,
             roles: [],
           };
+
+          dlog('pre-auth.middleware ➡️ decodedToken:', decodedToken);
 
           // Add roles to user.
           // prettier-ignore
