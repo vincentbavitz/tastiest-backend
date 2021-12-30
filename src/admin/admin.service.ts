@@ -1,4 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { UserRole } from '@tastiest-io/tastiest-utils';
+import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 import { FirebaseService } from 'src/firebase/firebase.service';
 
 // const MS_IN_ONE_MINUTE = 60 * 1000;
@@ -10,38 +16,62 @@ export class AdminService {
    */
   constructor(private readonly firebaseApp: FirebaseService) {}
 
-  async getUsers() {
-    return ['vince', 'dan'];
+  /**
+   *
+   * @param limit How many users to return. Maxiumum of 1000.
+   * @param pageToken Use for pagination. See https://firebase.google.com/docs/auth/admin/manage-users#bulk_retrieve_user_data
+   * @returns An array of user records from Firebase, as well as the `nextPageToken`.
+   *
+   * Each batch of results contains a list of users and the next page token used to list the next batch of users. When all the users have already been listed, no pageToken is returned.
+   *
+   * Note that if you specify a role with a given limit, the resulting users array will contain only the filtered results and therefore may not match the limit provided, even if there are more results in this role.
+   * In this case, you may request the next page.
+   */
+  async getUsers(role?: UserRole, limit?: number, pageToken?: string) {
+    try {
+      const usersResponse = await this.firebaseApp
+        .getAuth()
+        .listUsers(limit ?? 10, pageToken);
+
+      // No specific role given, list all users.
+      if (!role) {
+        return {
+          users: usersResponse.users,
+          nextPageToken: usersResponse.pageToken,
+        };
+      }
+
+      const users = usersResponse.users.filter(
+        (user) => user.customClaims?.[role.toLowerCase()] === true,
+      );
+
+      return { users, nextPageToken: usersResponse.pageToken };
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 
   async getUser(uid: string) {
-    return 'bob the cat';
+    let userRecord: UserRecord;
+
+    try {
+      userRecord = await this.firebaseApp.getAuth().getUser(uid);
+    } catch {
+      throw new NotFoundException(
+        'No user with this corresponding user ID exists.',
+      );
+    }
+
+    return userRecord;
+  }
+
+  async setUserRole(uid: string, role: UserRole) {
+    await this.firebaseApp.getAuth().setCustomUserClaims(uid, {
+      eater: role === UserRole.EATER,
+      admin: role === UserRole.ADMIN,
+      restaurant: role === UserRole.RESTAURANT,
+    });
+
+    return this.getUser(uid);
   }
 }
-//   const limit = Number(request?.query?.limit ?? 100);
-
-//   try {
-//     const query = await db(FirestoreCollection.USERS);
-
-//     const usersSnapshot = await query
-//       // .orderBy('paidAt', 'desc')
-//       // .startAt(startAt)
-//       .limit(limit)
-//       .get();
-
-//     const users: UserRecord[] = [];
-//     usersSnapshot.forEach(doc =>
-//       users.push({ id: doc.id, ...doc.data() } as UserRecord),
-//     );
-
-//     if (!users?.length) {
-//       response.json([]);
-//       return;
-//     }
-
-//     response.json(users);
-//   } catch (error) {
-//     response.status(400).statusMessage = `Error: ${error}`;
-//     response.end();
-//     return;
-//   }

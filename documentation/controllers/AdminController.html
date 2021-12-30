@@ -290,7 +290,7 @@ By default, only eaters will be returned.</p>
             <tr>
                 <td class="col-md-4">
                     <span class="modifier-icon icon ion-ios-reset"></span>
-                    <code>setUserRole()</code>
+                    <code>setUserRole(uid: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>, role: UserRole)</code>
                 </td>
             </tr>
 
@@ -304,8 +304,8 @@ By default, only eaters will be returned.</p>
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="30"
-                            class="link-to-prism">src/admin/admin.controller.ts:30</a></div>
+                    <div class="io-line">Defined in <a href="" data-line="31"
+                            class="link-to-prism">src/admin/admin.controller.ts:31</a></div>
                 </td>
             </tr>
 
@@ -316,8 +316,63 @@ By default, only eaters will be returned.</p>
 </div>
 
                     <div class="io-description">
+                        <b>Parameters :</b>
+                        
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Type</td>
+                                    <td>Optional</td>
+                                    <td>Description</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>uid</td>
+                                    <td>
+                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                    </td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>role</td>
+                                    <td>
+                                            <code>UserRole</code>
+                                    </td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <p>The role of the user to set.</p>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <b>Example :</b>
+                        <div>
+                            <pre class="line-numbers"><code class="language-html">&lt;code&gt;https://api.tastiest.io/admin/users/setUserRole/K6edDIi2qAX6OZGdQ1VemKF9QtI2&lt;/code&gt;</code></pre>
+                        </div>
+                    </div>
+                    <div class="io-description">
                         <b>Returns : </b>    <code>unknown</code>
 
+                    </div>
+                    <div class="io-description">
+                        
                     </div>
                 </td>
             </tr>
@@ -327,7 +382,7 @@ By default, only eaters will be returned.</p>
 
 
     <div class="tab-pane fade  tab-source-code" id="c-source">
-        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { Controller, Get, Param, Post } from &#x27;@nestjs/common&#x27;;
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { Body, Controller, Get, Param, Post } from &#x27;@nestjs/common&#x27;;
 import { UserRole } from &#x27;@tastiest-io/tastiest-utils&#x27;;
 import { AdminService } from &#x27;./admin.service&#x27;;
 
@@ -347,17 +402,18 @@ export class AdminController {
 
   /** Get a particular user in Firebase. */
   @Get(&#x27;users/:uid&#x27;)
-  async getUser(@Param() uid: string) {
+  async getUser(@Param(&#x27;uid&#x27;) uid: string) {
     return this.adminService.getUser(uid);
   }
 
   /**
    * Set a role (claim) on a user. Eg. &#x60;restaurant&#x60; or &#x60;admin&#x60;.
    * @param role The role of the user to set.
+   * @example &#x60;https://api.tastiest.io/admin/users/setUserRole/K6edDIi2qAX6OZGdQ1VemKF9QtI2&#x60;
    */
   @Post(&#x27;users/setUserRole/:uid&#x27;)
-  async setUserRole() {
-    return null;
+  async setUserRole(@Param(&#x27;uid&#x27;) uid: string, @Body(&#x27;role&#x27;) role: UserRole) {
+    return this.adminService.setUserRole(uid);
   }
 }
 </code></pre>

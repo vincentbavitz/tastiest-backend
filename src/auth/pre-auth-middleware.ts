@@ -1,7 +1,9 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
+import { UserRole } from '@tastiest-io/tastiest-utils';
 import { Request, Response } from 'express';
 import * as firebase from 'firebase-admin';
-import { FirebaseService } from './firebase.service';
+import { FirebaseService } from '../firebase/firebase.service';
+import { AuthenticatedUser } from './auth.model';
 
 @Injectable()
 export class PreAuthMiddleware implements NestMiddleware {
@@ -11,6 +13,12 @@ export class PreAuthMiddleware implements NestMiddleware {
     this.auth = firebaseApp.getAuth();
   }
 
+  /**
+   * Here we append user information to the request.
+   * Role guards are taken care of in /auth/role.guard.ts.
+   *
+   * We automatically deny access to anyone without a valid Bearer token.
+   */
   use(req: Request, res: Response, next: () => void) {
     const token = req.headers.authorization;
 
@@ -18,14 +26,20 @@ export class PreAuthMiddleware implements NestMiddleware {
       this.auth
         .verifyIdToken(token.replace('Bearer ', ''))
         .then(async (decodedToken) => {
-          req['user'] = {
+          const user: AuthenticatedUser = {
             email: decodedToken.email,
-            roles: decodedToken.roles || [],
             type: decodedToken.type,
+            roles: [],
           };
 
-          console.log('pre-auth-middleware ➡️ decodedToken:', decodedToken);
+          // Add roles to user.
+          // prettier-ignore
+          if (decodedToken[UserRole.RESTAURANT]) user.roles.push(UserRole.RESTAURANT);
+          if (decodedToken[UserRole.ADMIN]) user.roles.push(UserRole.ADMIN);
+          if (decodedToken[UserRole.EATER]) user.roles.push(UserRole.EATER);
 
+          // Assign user for the next middleware.
+          req['user'] = user;
           next();
         })
         .catch(() => {

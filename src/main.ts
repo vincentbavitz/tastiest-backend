@@ -17,7 +17,7 @@ async function bootstrap() {
         const messages = errors.map((error) => {
           return {
             error: `${error.property} has wrong value ${error.value}.`,
-            message: Object.values(error.constraints).join(''),
+            message: Object.values(error.constraints).join('. '),
           };
         });
 

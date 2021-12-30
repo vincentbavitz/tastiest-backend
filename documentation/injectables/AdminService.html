@@ -126,8 +126,8 @@
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="17"
-                            class="link-to-prism">src/admin/admin.service.ts:17</a></div>
+                    <div class="io-line">Defined in <a href="" data-line="37"
+                            class="link-to-prism">src/admin/admin.service.ts:37</a></div>
                 </td>
             </tr>
 
@@ -190,24 +190,81 @@
             <tr>
                 <td class="col-md-4">
                     <span class="modifier-icon icon ion-ios-reset"></span>
-                    <code>getUsers()</code>
+                    <code>getUsers(limit?: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank">number</a>, pageToken?: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>)</code>
                 </td>
             </tr>
 
 
             <tr>
                 <td class="col-md-4">
-                    <div class="io-line">Defined in <a href="" data-line="13"
-                            class="link-to-prism">src/admin/admin.service.ts:13</a></div>
+                    <div class="io-line">Defined in <a href="" data-line="25"
+                            class="link-to-prism">src/admin/admin.service.ts:25</a></div>
                 </td>
             </tr>
 
 
             <tr>
                 <td class="col-md-4">
+                    <div class="io-description"><p>Each batch of results contains a list of users and the next page token used to list the next batch of users. When all the users have already been listed, no pageToken is returned.</p>
+</div>
 
                     <div class="io-description">
+                        <b>Parameters :</b>
+                        
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Type</td>
+                                    <td>Optional</td>
+                                    <td>Description</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>limit</td>
+                                    <td>
+                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+                                    </td>
+
+                                    <td>
+                                        Yes
+                                    </td>
+
+
+                                    <td>
+                                        <p>How many users to return. Maxiumum of 1000.</p>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>pageToken</td>
+                                    <td>
+                                                <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+                                    </td>
+
+                                    <td>
+                                        Yes
+                                    </td>
+
+
+                                    <td>
+                                        <p>Use for pagination. See</p>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
                         <b>Returns : </b>    <code>unknown</code>
+
+                    </div>
+                    <div class="io-description">
+                        <p>An array of user records from Firebase.</p>
+<p>Each batch of results contains a list of users and the next page token used to list the next batch of users. When all the users have already been listed, no pageToken is returned.</p>
 
                     </div>
                 </td>
@@ -220,7 +277,11 @@
 
 
     <div class="tab-pane fade  tab-source-code" id="c-source">
-        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import { Injectable } from &#x27;@nestjs/common&#x27;;
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from &#x27;@nestjs/common&#x27;;
 import { FirebaseService } from &#x27;src/firebase/firebase.service&#x27;;
 
 // const MS_IN_ONE_MINUTE &#x3D; 60 * 1000;
@@ -232,41 +293,30 @@ export class AdminService {
    */
   constructor(private readonly firebaseApp: FirebaseService) {}
 
-  async getUsers() {
-    return [&#x27;vince&#x27;, &#x27;dan&#x27;];
+  /**
+   *
+   * @param limit How many users to return. Maxiumum of 1000.
+   * @param pageToken Use for pagination. See
+   * @returns An array of user records from Firebase.
+   *
+   * Each batch of results contains a list of users and the next page token used to list the next batch of users. When all the users have already been listed, no pageToken is returned.
+   */
+  async getUsers(limit?: number, pageToken?: string) {
+    if (limit &gt; 1000) {
+      throw new BadRequestException(&#x27;Limit must be less than 1000.&#x27;);
+    }
+
+    try {
+      return this.firebaseApp.getAuth().listUsers(limit ?? 10, pageToken);
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 
   async getUser(uid: string) {
-    return &#x27;bob the cat&#x27;;
+    return this.firebaseApp.getAuth().getUser(uid);
   }
 }
-//   const limit &#x3D; Number(request?.query?.limit ?? 100);
-
-//   try {
-//     const query &#x3D; await db(FirestoreCollection.USERS);
-
-//     const usersSnapshot &#x3D; await query
-//       // .orderBy(&#x27;paidAt&#x27;, &#x27;desc&#x27;)
-//       // .startAt(startAt)
-//       .limit(limit)
-//       .get();
-
-//     const users: UserRecord[] &#x3D; [];
-//     usersSnapshot.forEach(doc &#x3D;&gt;
-//       users.push({ id: doc.id, ...doc.data() } as UserRecord),
-//     );
-
-//     if (!users?.length) {
-//       response.json([]);
-//       return;
-//     }
-
-//     response.json(users);
-//   } catch (error) {
-//     response.status(400).statusMessage &#x3D; &#x60;Error: ${error}&#x60;;
-//     response.end();
-//     return;
-//   }
 </code></pre>
     </div>
 

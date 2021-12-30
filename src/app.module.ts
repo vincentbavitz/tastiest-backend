@@ -6,10 +6,11 @@ import {
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { PreAuthMiddleware } from './auth/pre-auth-middleware';
 import { FirebaseModule } from './firebase/firebase.module';
-import { PreAuthMiddleware } from './firebase/pre-auth-middleware';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { SupportModule } from './support/support.module';
 import { SyncsModule } from './syncs/syncs.module';
@@ -21,6 +22,7 @@ import { TasksService } from './tasks/tasks.service';
       isGlobal: true,
     }),
     FirebaseModule,
+    AdminModule,
     SyncsModule,
     SupportModule,
     RestaurantsModule,
