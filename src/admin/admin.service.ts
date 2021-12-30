@@ -3,11 +3,13 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { UserRole } from '@tastiest-io/tastiest-utils';
+import {
+  FirestoreCollection,
+  UserData,
+  UserRole,
+} from '@tastiest-io/tastiest-utils';
 import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 import { FirebaseService } from 'src/firebase/firebase.service';
-
-// const MS_IN_ONE_MINUTE = 60 * 1000;
 
 @Injectable()
 export class AdminService {
@@ -26,12 +28,14 @@ export class AdminService {
    *
    * Note that if you specify a role with a given limit, the resulting users array will contain only the filtered results and therefore may not match the limit provided, even if there are more results in this role.
    * In this case, you may request the next page.
+   *
+   * Returns Firebase user records.
    */
-  async getUsers(role?: UserRole, limit?: number, pageToken?: string) {
+  async getAccounts(role?: UserRole, limit?: number, pageToken?: string) {
     try {
       const usersResponse = await this.firebaseApp
         .getAuth()
-        .listUsers(limit ?? 10, pageToken);
+        .listUsers(limit ?? 1000, pageToken);
 
       // No specific role given, list all users.
       if (!role) {
@@ -51,7 +55,7 @@ export class AdminService {
     }
   }
 
-  async getUser(uid: string) {
+  async getAccount(uid: string) {
     let userRecord: UserRecord;
 
     try {
@@ -65,13 +69,31 @@ export class AdminService {
     return userRecord;
   }
 
-  async setUserRole(uid: string, role: UserRole) {
-    await this.firebaseApp.getAuth().setCustomUserClaims(uid, {
+  async setAccountRole(uid: string, role: UserRole) {
+    return this.firebaseApp.getAuth().setCustomUserClaims(uid, {
       eater: role === UserRole.EATER,
       admin: role === UserRole.ADMIN,
       restaurant: role === UserRole.RESTAURANT,
     });
+  }
 
-    return this.getUser(uid);
+  async getUserProfiles(limit = 100, skip = 0) {
+    try {
+      const query = await this.firebaseApp.db(FirestoreCollection.USERS);
+      const usersSnapshot = await query.limit(limit).offset(skip).get();
+
+      const users: (UserData & { id: string })[] = [];
+      usersSnapshot.forEach((doc) =>
+        users.push({ id: doc.id, ...(doc.data() as UserData) }),
+      );
+
+      if (!users?.length) {
+        return [];
+      }
+
+      return users;
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 }

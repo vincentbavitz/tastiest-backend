@@ -11,9 +11,10 @@ import {
 import { UserRole } from '@tastiest-io/tastiest-utils';
 import RoleGuard from 'src/auth/role.guard';
 import { AdminService } from './admin.service';
-import GetUserDto from './dto/get-user.dto';
-import GetUsersDto from './dto/get-users.dto';
-import SetUserRoleDto from './dto/set-user-role.dto';
+import GetAccountDto from './dto/get-account.dto';
+import GetAccountsDto from './dto/get-accounts.dto';
+import GetUserProfilesDto from './dto/get-user-profiles.dto';
+import SetAccountRoleDto from './dto/set-account-role.dto';
 
 @Controller('admin')
 @UseGuards(RoleGuard(UserRole.ADMIN))
@@ -21,25 +22,25 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   /**
-   * Get users in Firebase.
+   * Get accounts in Firebase.
    * Selecting a role limits selection.
    * By default, only eaters will be returned.
    *
    * @link AdminService
    */
-  @Get('users')
-  async getUsers(@Query() getUsersDto: GetUsersDto) {
-    return this.adminService.getUsers(
-      getUsersDto.role,
-      getUsersDto.limit,
-      getUsersDto.pageToken,
+  @Get('accounts')
+  async getAccounts(@Query() getAccountsDto: GetAccountsDto) {
+    return this.adminService.getAccounts(
+      getAccountsDto.role,
+      getAccountsDto.limit,
+      getAccountsDto.pageToken,
     );
   }
 
   /** Get a particular user in Firebase. */
-  @Get('users/:uid')
-  async getUser(@Request() req, @Param() getUserDto: GetUserDto) {
-    return this.adminService.getUser(getUserDto.uid);
+  @Get('accounts/:uid')
+  async getAccount(@Request() req, @Param() getAccountDto: GetAccountDto) {
+    return this.adminService.getAccount(getAccountDto.uid);
   }
 
   /**
@@ -47,11 +48,23 @@ export class AdminController {
    * @param role The role of the user to set.
    * @example `https://api.tastiest.io/admin/users/setUserRole/K6edDIi2qAX6OZGdQ1VemKF9QtI2`
    */
-  @Post('users/setUserRole')
-  async setUserRole(@Body() setUserRoleDto: SetUserRoleDto) {
-    return this.adminService.setUserRole(
-      setUserRoleDto.uid,
-      setUserRoleDto.role,
+  @Post('accounts/setRole')
+  async setUserRole(@Body() setAccountRoleDto: SetAccountRoleDto) {
+    return this.adminService.setAccountRole(
+      setAccountRoleDto.uid,
+      setAccountRoleDto.role,
+    );
+  }
+
+  /**
+   * Strictly gets eaters profiles.
+   * Does not get profiles of restaurant users or admins.
+   */
+  @Get('users')
+  async getUserProfiles(@Query() getUserProfilesDto: GetUserProfilesDto) {
+    return this.adminService.getUserProfiles(
+      getUserProfilesDto.limit,
+      getUserProfilesDto.skip,
     );
   }
 }

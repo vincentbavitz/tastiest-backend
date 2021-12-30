@@ -18,9 +18,14 @@ export class PreAuthMiddleware implements NestMiddleware {
    * Role guards are taken care of in /auth/role.guard.ts.
    *
    * We automatically deny access to anyone without a valid Bearer token.
+   *
+   * FYI this middleware does not made direct requests to Firebase, it
+   * validates the token on the server. So don't worry about this slowing requests.
    */
   use(req: Request, res: Response, next: () => void) {
     const token = req.headers.authorization;
+
+    console.log('authorization start time:', Date.now());
 
     if (token != null && token != '') {
       this.auth

@@ -9,7 +9,7 @@ import {
   Min,
 } from 'class-validator';
 
-class GetUsersDto {
+class GetAccountsDto {
   @IsString()
   @IsIn(Object.values(UserRole))
   @IsOptional()
@@ -27,4 +27,4 @@ class GetUsersDto {
   pageToken: string;
 }
 
-export default GetUsersDto;
+export default GetAccountsDto;

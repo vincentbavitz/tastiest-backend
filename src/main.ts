@@ -5,7 +5,7 @@ import { ValidationException } from './filters/validation.exception';
 import { ValidationFilter } from './filters/validation.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: true });
 
   // Validation filter
   app.useGlobalFilters(new ValidationFilter());

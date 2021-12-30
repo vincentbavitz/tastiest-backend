@@ -1,10 +1,10 @@
 import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
-class GetUserDto {
+class GetAccountDto {
   @IsString()
   @MinLength(1)
   @IsNotEmpty()
   uid: string;
 }
 
-export default GetUserDto;
+export default GetAccountDto;

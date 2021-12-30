@@ -7,7 +7,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-class SetUserRoleDto {
+class SetAccountRoleDto {
   @IsString()
   @MinLength(1)
   @IsNotEmpty()
@@ -19,4 +19,4 @@ class SetUserRoleDto {
   role: UserRole;
 }
 
-export default SetUserRoleDto;
+export default SetAccountRoleDto;
