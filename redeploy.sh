@@ -25,8 +25,11 @@ git reset --hard origin/master;
 # Get new files
 $yarn install -s --force;
 
+# Actually destroy previous instance.
+kill $(lsof -t -i:4444);
+
 # Attempt to build.
 # Only restart current running process if build succeeds
+
 $yarn build && $pm2 restart tastiest-backend;
 echo "Done!";
-
