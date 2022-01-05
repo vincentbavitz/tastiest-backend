@@ -17,6 +17,9 @@ import { SupportModule } from './support/support.module';
 import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
 import { UsersModule } from './users/users.module';
+import { PaymentsController } from './payments/payments.controller';
+import { PaymentsService } from './payments/payments.service';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -36,9 +39,10 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     RestaurantsModule,
     ScheduleModule.forRoot(),
+    PaymentsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, TasksService],
+  controllers: [AppController, PaymentsController],
+  providers: [AppService, TasksService, PaymentsService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
