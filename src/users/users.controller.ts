@@ -12,7 +12,7 @@ export class UsersController {
    * Strictly gets eaters profiles.
    * Does not get profiles of restaurant users or admins.
    */
-  @Get('users')
+  @Get()
   @UseGuards(RoleGuard(UserRole.ADMIN))
   async getUserProfiles(@Query() getUserProfilesDto: GetUserProfilesDto) {
     return this.userService.getUserProfiles(
