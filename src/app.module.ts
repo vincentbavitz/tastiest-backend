@@ -1,3 +1,4 @@
+import Joi from '@hapi/joi';
 import {
   MiddlewareConsumer,
   Module,
@@ -11,20 +12,37 @@ import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PreAuthMiddleware } from './auth/pre-auth.middleware';
+import { DatabaseModule } from './database/database.module';
 import { FirebaseModule } from './firebase/firebase.module';
+import { PaymentsController } from './payments/payments.controller';
+import { PaymentsModule } from './payments/payments.module';
+import { PaymentsService } from './payments/payments.service';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { SupportModule } from './support/support.module';
 import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
 import { UsersModule } from './users/users.module';
-import { PaymentsController } from './payments/payments.controller';
-import { PaymentsService } from './payments/payments.service';
-import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validationSchema: Joi.object({
+        FIREBASE_PROJECT_ID: Joi.string().required(),
+        FIREBASE_CLIENT_EMAIL: Joi.string().required(),
+        FIREBASE_PRIVATE_KEY: Joi.string().required(),
+        FIREBASE_DATABASE_URL: Joi.string().required(),
+        FIREBASE_API_KEY: Joi.string().required(),
+        FIREBASE_AUTH_DOMAIN: Joi.string().required(),
+        FIREBASE_STORAGE_BUCKET: Joi.string().required(),
+        FIREBASE_MESSAGING_SENDER_ID: Joi.string().required(),
+        FIREBASE_APP_ID: Joi.string().required(),
+        POSTGRES_HOST: Joi.string().required(),
+        POSTGRES_PORT: Joi.number().required(),
+        POSTGRES_USER: Joi.string().required(),
+        POSTGRES_PASSWORD: Joi.string().required(),
+        POSTGRES_DB: Joi.string().required(),
+      }),
     }),
     RouterModule.register([
       {
@@ -32,14 +50,16 @@ import { PaymentsModule } from './payments/payments.module';
         module: AdminModule,
       },
     ]),
+    ScheduleModule.forRoot(),
+    DatabaseModule,
     FirebaseModule,
     AdminModule,
     SyncsModule,
     SupportModule,
     UsersModule,
     RestaurantsModule,
-    ScheduleModule.forRoot(),
     PaymentsModule,
+    DatabaseModule,
   ],
   controllers: [AppController, PaymentsController],
   providers: [AppService, TasksService, PaymentsService],
