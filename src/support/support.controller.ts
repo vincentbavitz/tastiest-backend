@@ -54,6 +54,7 @@ export class SupportController {
     return this.supportService.closeTicket();
   }
 
+  @UseGuards(RoleGuard(UserRole.EATER))
   @Post('users/reply')
   replyToUserTicket(
     @Body() replyToTicketDto: ReplyToTicketDto,
@@ -68,6 +69,7 @@ export class SupportController {
     );
   }
 
+  @UseGuards(RoleGuard(UserRole.RESTAURANT))
   @Post('restaurants/reply')
   replyToRestaurantTicket(
     @Body() replyToTicketDto: ReplyToTicketDto,

@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   FirestoreCollection,
   RestaurantSupportRequest,
@@ -16,14 +17,25 @@ import { AuthenticatedUser } from 'src/auth/auth.model';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import UpdateUserTicketDto from './dto/update-user-ticket.dto';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Analytics = require('analytics-node');
 type SupportRequestCategory = 'user' | 'restaurant';
 
 @Injectable()
 export class SupportService {
+  private analytics: any;
+
   /**
    * @ignore
    */
-  constructor(private readonly firebaseApp: FirebaseService) {}
+  constructor(
+    private readonly firebaseApp: FirebaseService,
+    private configService: ConfigService,
+  ) {
+    this.analytics = new Analytics(
+      this.configService.get<string>('ANALYTICS_WRITE_KEY'),
+    );
+  }
 
   async getTicket(
     id: string,
@@ -51,7 +63,11 @@ export class SupportService {
       throw new ForbiddenException();
     }
 
-    return ticket;
+    const sortedConversation = ticket.conversation.sort(
+      (a, b) => b.timestamp - a.timestamp,
+    );
+
+    return { ...ticket, conversation: sortedConversation };
   }
 
   async updateTicket(data: UpdateUserTicketDto) {
@@ -133,7 +149,18 @@ export class SupportService {
     updated.conversation = [...ticket.conversation, reply];
     updated.updatedAt = Date.now();
 
-    this.firebaseApp.db(collection).doc(id).set(updated, { merge: true });
+    // Send reply to Segment
+    await this.analytics.track({
+      event: 'Reply to Restaurant Support Ticket',
+      userId: user.uid,
+      properties: {
+        ...ticket,
+      },
+    });
+
+    await this.firebaseApp.db(collection).doc(id).set(updated, { merge: true });
+
+    return reply;
   }
 
   closeTicket() {
