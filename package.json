@@ -22,6 +22,8 @@
     "sync:env": "scp .env dev@api.tastiest.io:/home/dev/tastiest-backend",
     "sync:pgadmin": "scp -r data/pgadmin dev@api.tastiest.io:/home/dev/tastiest-backend/data",
     "redeploy": "yarn sync:env && ssh -t dev@api.tastiest.io '/bin/bash $HOME/tastiest-backend/redeploy.sh'",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
     "documentation:build": "npx @compodoc/compodoc --theme Vagrant -p tsconfig.json",
     "documentation:serve": "npx @compodoc/compodoc --theme Vagrant -p tsconfig.json --serve"
   },
