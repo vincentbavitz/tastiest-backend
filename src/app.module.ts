@@ -22,6 +22,7 @@ import { SupportModule } from './support/support.module';
 import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
 import { UsersModule } from './users/users.module';
+import { BookingsModule } from './bookings/bookings.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { UsersModule } from './users/users.module';
     RestaurantsModule,
     PaymentsModule,
     DatabaseModule,
+    BookingsModule,
   ],
   controllers: [AppController, PaymentsController],
   providers: [AppService, TasksService, PaymentsService],
