@@ -12,6 +12,7 @@ import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PreAuthMiddleware } from './auth/pre-auth.middleware';
+import { BookingsModule } from './bookings/bookings.module';
 import { DatabaseModule } from './database/database.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { PaymentsController } from './payments/payments.controller';
@@ -22,7 +23,6 @@ import { SupportModule } from './support/support.module';
 import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
 import { UsersModule } from './users/users.module';
-import { BookingsModule } from './bookings/bookings.module';
 
 @Module({
   imports: [
