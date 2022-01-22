@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
 import {
   Booking,
   FirestoreCollection,
@@ -14,7 +15,9 @@ import {
 } from '@tastiest-io/tastiest-utils';
 import { DateTime } from 'luxon';
 import { AuthenticatedUser } from 'src/auth/auth.model';
+import { UserEntity } from 'src/entities/user.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { Repository } from 'typeorm';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Analytics = require('analytics-node');
@@ -29,6 +32,8 @@ export class BookingsService {
   constructor(
     private readonly firebaseApp: FirebaseService,
     private configService: ConfigService,
+    @InjectRepository(UserEntity)
+    private usersRepository: Repository<UserEntity>,
   ) {
     this.analytics = new Analytics(
       this.configService.get<string>('ANALYTICS_WRITE_KEY'),

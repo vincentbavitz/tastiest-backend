@@ -12,8 +12,12 @@ import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PreAuthMiddleware } from './auth/pre-auth.middleware';
+import { BookingsModule } from './bookings/bookings.module';
+import databaseConfig from './database/database.config';
 import { DatabaseModule } from './database/database.module';
 import { FirebaseModule } from './firebase/firebase.module';
+import { OrdersModule } from './orders/orders.module';
+import { OrdersService } from './orders/orders.service';
 import { PaymentsController } from './payments/payments.controller';
 import { PaymentsModule } from './payments/payments.module';
 import { PaymentsService } from './payments/payments.service';
@@ -22,12 +26,12 @@ import { SupportModule } from './support/support.module';
 import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
 import { UsersModule } from './users/users.module';
-import { BookingsModule } from './bookings/bookings.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [databaseConfig],
       validationSchema: Joi.object({
         FIREBASE_PROJECT_ID: Joi.string().required(),
         FIREBASE_CLIENT_EMAIL: Joi.string().required(),
@@ -62,9 +66,10 @@ import { BookingsModule } from './bookings/bookings.module';
     PaymentsModule,
     DatabaseModule,
     BookingsModule,
+    OrdersModule,
   ],
   controllers: [AppController, PaymentsController],
-  providers: [AppService, TasksService, PaymentsService],
+  providers: [AppService, TasksService, PaymentsService, OrdersService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
