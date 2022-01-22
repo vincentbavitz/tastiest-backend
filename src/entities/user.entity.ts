@@ -5,6 +5,10 @@ export class UserEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  /** From Firebase Auth */
+  @Column('varchar')
+  uid: string;
+
   @Column('varchar')
   name: string;
 
