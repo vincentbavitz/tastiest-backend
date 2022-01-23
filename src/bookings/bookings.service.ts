@@ -176,7 +176,15 @@ export class BookingsService {
       bookedForTimestamp?: number;
     },
   ) {
-    if (!hasArrived && !hasCancelled && !bookedForTimestamp) {
+    console.log('bookings.service ➡️ hasArrived:', hasArrived);
+    console.log('bookings.service ➡️ hasCancelled:', hasCancelled);
+    console.log('bookings.service ➡️ bookedForTimestamp:', bookedForTimestamp);
+
+    if (
+      hasArrived === undefined &&
+      hasCancelled === undefined &&
+      bookedForTimestamp === undefined
+    ) {
       throw new BadRequestException(
         'Nothing to update. Please provide at least one update parameter.',
       );
