@@ -30,6 +30,16 @@ import { SupportService } from './support.service';
 export class SupportController {
   constructor(private readonly supportService: SupportService) {}
 
+  @Get('users')
+  getUserTickets(@Request() request: RequestWithUser) {
+    return this.supportService.getUserTickets(request.user);
+  }
+
+  @Get('restaurants')
+  getRestaurantTickets(@Request() request: RequestWithUser) {
+    return this.supportService.getRestaurantTickets(request.user);
+  }
+
   @Get('users/ticket/:id')
   getUserTicket(@Param('id') id: string, @Request() request: RequestWithUser) {
     return this.supportService.getTicket(id, 'user', request.user);

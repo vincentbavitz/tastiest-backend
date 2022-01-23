@@ -5,8 +5,8 @@ import { AccountService } from './account/account.service';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { ServerController } from './server/server.controller';
-import { ServerService } from './server/server.service';
 import { ServerModule } from './server/server.module';
+import { ServerService } from './server/server.service';
 
 @Module({
   controllers: [AdminController, AccountController, ServerController],

@@ -37,6 +37,52 @@ export class SupportService {
     );
   }
 
+  async getUserTickets(user: AuthenticatedUser, limit = 100, skip = 0) {
+    if (!user.roles.includes(UserRole.ADMIN)) {
+      throw new ForbiddenException();
+    }
+
+    const ticketsSnapshot = await this.firebaseApp
+      .db(FirestoreCollection.SUPPORT_USERS)
+      .limit(limit)
+      .offset(skip)
+      .get();
+
+    if (ticketsSnapshot.empty) {
+      return [];
+    }
+
+    const tickets: UserSupportRequest[] = [];
+    ticketsSnapshot.forEach((ticket) =>
+      tickets.push(ticket.data() as UserSupportRequest),
+    );
+
+    return tickets;
+  }
+
+  async getRestaurantTickets(user: AuthenticatedUser, limit = 100, skip = 0) {
+    if (!user.roles.includes(UserRole.ADMIN)) {
+      throw new ForbiddenException();
+    }
+
+    const ticketsSnapshot = await this.firebaseApp
+      .db(FirestoreCollection.SUPPORT_RESTAURANTS)
+      .limit(limit)
+      .offset(skip)
+      .get();
+
+    if (ticketsSnapshot.empty) {
+      return [];
+    }
+
+    const tickets: RestaurantSupportRequest[] = [];
+    ticketsSnapshot.forEach((ticket) =>
+      tickets.push(ticket.data() as RestaurantSupportRequest),
+    );
+
+    return tickets;
+  }
+
   async getTicket(
     id: string,
     type: SupportRequestCategory,

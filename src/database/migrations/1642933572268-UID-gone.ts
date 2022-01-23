@@ -1,10 +1,10 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class UIDOnUserEntity1642888632776 implements MigrationInterface {
-    name = 'UIDOnUserEntity1642888632776'
+export class UIDGone1642933572268 implements MigrationInterface {
+    name = 'UIDGone1642933572268'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "user" ADD "uid" character varying NOT NULL`);
+        await queryRunner.query(`ALTER TABLE "user" ADD "uid" character varying`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {

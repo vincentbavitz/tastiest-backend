@@ -6,8 +6,8 @@ export class UserEntity extends BaseEntity {
   id: number;
 
   /** From Firebase Auth */
-  @Column('varchar')
-  uid: string;
+  // @Column('varchar', { nullable: true })
+  // uid: string;
 
   @Column('varchar')
   name: string;

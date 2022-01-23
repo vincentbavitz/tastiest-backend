@@ -176,10 +176,6 @@ export class BookingsService {
       bookedForTimestamp?: number;
     },
   ) {
-    console.log('bookings.service ➡️ hasArrived:', hasArrived);
-    console.log('bookings.service ➡️ hasCancelled:', hasCancelled);
-    console.log('bookings.service ➡️ bookedForTimestamp:', bookedForTimestamp);
-
     if (
       hasArrived === undefined &&
       hasCancelled === undefined &&
@@ -295,12 +291,16 @@ export class BookingsService {
             hasArrived: booking.hasArrived,
             hasCancelled: booking.hasCancelled,
             bookedForTimestamp: booking.bookedForTimestamp,
+            bookedForHumanDate: booking.bookedForHumanDate,
           },
           after: {
             hasArrived: updatedBooking.hasArrived,
             hasCancelled: updatedBooking.hasCancelled,
             bookedForTimestamp: updatedBooking.bookedForTimestamp,
+            bookedForHumanDate: updatedBooking.bookedForHumanDate,
           },
+
+          ...updatedBooking,
         },
       });
 
