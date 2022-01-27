@@ -7,20 +7,19 @@ import {
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { RouterModule } from '@nestjs/core/router/router-module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 import { PreAuthMiddleware } from './auth/pre-auth.middleware';
 import { BookingsModule } from './bookings/bookings.module';
 import databaseConfig from './database/database.config';
 import { DatabaseModule } from './database/database.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { OrdersModule } from './orders/orders.module';
-import { OrdersService } from './orders/orders.service';
-import { PaymentsController } from './payments/payments.controller';
 import { PaymentsModule } from './payments/payments.module';
-import { PaymentsService } from './payments/payments.service';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { SupportModule } from './support/support.module';
 import { SyncsModule } from './syncs/syncs.module';
@@ -49,6 +48,7 @@ import { UsersModule } from './users/users.module';
         POSTGRES_DB: Joi.string().required(),
       }),
     }),
+    EventEmitterModule.forRoot(),
     RouterModule.register([
       {
         path: 'admin',
@@ -67,14 +67,15 @@ import { UsersModule } from './users/users.module';
     DatabaseModule,
     BookingsModule,
     OrdersModule,
+    AuthModule,
   ],
-  controllers: [AppController, PaymentsController],
-  providers: [AppService, TasksService, PaymentsService, OrdersService],
+  controllers: [AppController],
+  providers: [AppService, TasksService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(PreAuthMiddleware).forRoutes({
-      path: '/*',
+    consumer.apply(PreAuthMiddleware).exclude('public').forRoutes({
+      path: '*',
       method: RequestMethod.ALL,
     });
   }

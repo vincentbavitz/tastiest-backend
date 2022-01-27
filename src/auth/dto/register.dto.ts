@@ -7,7 +7,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-class CreateUserDto {
+class RegisterDto {
   @IsEmail()
   email: string;
 
@@ -34,4 +34,4 @@ class CreateUserDto {
   isTestAccount: boolean;
 }
 
-export default CreateUserDto;
+export default RegisterDto;

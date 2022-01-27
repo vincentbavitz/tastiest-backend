@@ -36,6 +36,7 @@
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.0.2",
     "@nestjs/core": "^8.0.0",
+    "@nestjs/event-emitter": "^1.0.0",
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/schedule": "^1.0.1",
     "@nestjs/typeorm": "^8.0.2",
@@ -56,6 +57,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
+    "stripe": "^8.200.0",
     "swr": "^1.2.0",
     "typeorm": "^0.2.41"
   },
@@ -72,6 +74,7 @@
     "@types/luxon": "^2.0.7",
     "@types/node": "^16.0.0",
     "@types/nodemailer": "^6.4.4",
+    "@types/stripe": "^8.0.417",
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",

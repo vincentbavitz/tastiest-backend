@@ -1,16 +1,6 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Query,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { UserRole } from '@tastiest-io/tastiest-utils';
-import { RequestWithUser } from 'src/auth/auth.model';
 import RoleGuard from 'src/auth/role.guard';
-import CreateUserDto from './dto/create-user.dto';
 import GetUserProfilesDto from './dto/get-user-profiles.dto';
 import { UsersService } from './users.service';
 
@@ -22,14 +12,6 @@ import { UsersService } from './users.service';
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
-
-  @Post('/create')
-  async createUser(
-    @Body() createUserDto: CreateUserDto,
-    @Request() request: RequestWithUser,
-  ) {
-    this.userService.createUser(createUserDto, request.user);
-  }
 
   /**
    * Strictly gets eaters profiles.

@@ -5,7 +5,9 @@ import { registerAs } from '@nestjs/config';
  * https://stackoverflow.com/questions/59913475/configure-typeorm-with-one-configuration-for-cli-and-nestjs-application
  */
 export default registerAs('database', () => {
-  return {
+  const synchronize = process.env.TYPEORM_SYNCHRONIZE === 'true';
+
+  const config = {
     type: 'postgres',
     host: process.env.POSTGRES_HOST,
     port: process.env.POSTGRES_PORT,
@@ -13,11 +15,16 @@ export default registerAs('database', () => {
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
     entities: ['dist/entities/**/*.entity{.ts,.js}'],
-    synchronize: process.env.TYPEORM_SYNCHRONIZE,
+    synchronize,
+    // dropSchema: synchronize,
     autoLoadEntities: true,
     migrations: ['dist/database/migrations/*.js'],
     cli: {
       migrationsDir: 'src/database/migrations',
     },
   };
+
+  console.log('config', config);
+
+  return config;
 });

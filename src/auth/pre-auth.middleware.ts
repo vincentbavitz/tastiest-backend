@@ -1,5 +1,5 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { dlog, UserRole } from '@tastiest-io/tastiest-utils';
+import { UserRole } from '@tastiest-io/tastiest-utils';
 import { Request, Response } from 'express';
 import * as firebase from 'firebase-admin';
 import { FirebaseService } from '../firebase/firebase.service';
@@ -25,9 +25,15 @@ export class PreAuthMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: () => void) {
     const token = req.headers.authorization;
 
-    console.log('authorization start time:', Date.now());
-
-    console.log('MIDDLEWARE CALLED');
+    // Allow all public routes through.
+    // This allows, for example...
+    // /auth/public/register
+    // /public/content/
+    // ...et
+    if (req.url.split('/').includes('public')) {
+      req['user'] = null;
+      return next();
+    }
 
     if (token != null && token != '') {
       this.auth
@@ -39,8 +45,6 @@ export class PreAuthMiddleware implements NestMiddleware {
             type: decodedToken.type,
             roles: [],
           };
-
-          dlog('pre-auth.middleware ➡️ decodedToken:', decodedToken);
 
           // Add roles to user.
           // prettier-ignore

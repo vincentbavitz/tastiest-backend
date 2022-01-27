@@ -25,8 +25,6 @@ export class FirebaseService {
       }),
       databaseURL: configService.get<string>('FIREBASE_DATABASE_URL'),
     });
-
-    this.firebaseApp.auth().setCustomUserClaims;
   }
 
   getAuth = (): firebase.auth.Auth => {

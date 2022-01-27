@@ -3,8 +3,9 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  PreconditionFailedException,
 } from '@nestjs/common';
-import { UserRole } from '@tastiest-io/tastiest-utils';
+import { FirebaseAuthError, UserRole } from '@tastiest-io/tastiest-utils';
 import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import { FirebaseService } from 'src/firebase/firebase.service';
@@ -29,17 +30,13 @@ export class AccountService {
       email,
       password,
       firstName,
-      isTestAccount,
       role,
+      isTestAccount = false,
     }: CreateAccountPrimaryParams,
-    user: AuthenticatedUser,
+    user?: AuthenticatedUser,
   ) {
     // Only allow admins to set arbitrary roles
-    if (
-      !user ||
-      !user.roles ||
-      (user.roles.includes(UserRole.EATER) && role !== UserRole.EATER)
-    ) {
+    if (!user?.roles?.includes(UserRole.ADMIN) && role !== UserRole.EATER) {
       throw new ForbiddenException(
         'You are not allowed to create an this type of account',
       );
@@ -54,12 +51,21 @@ export class AccountService {
         disabled: false,
       });
 
-      this.firebaseApp.getAuth().setCustomUserClaims(userRecord.uid, {
+      await this.firebaseApp.getAuth().setCustomUserClaims(userRecord.uid, {
         [role]: true,
         isTestAccount,
       });
-      userRecord;
-    } catch (error) {}
+
+      return userRecord;
+    } catch (error) {
+      const code = error.code as FirebaseAuthError;
+
+      if (Object.values(FirebaseAuthError).includes(code)) {
+        throw new PreconditionFailedException(code);
+      }
+
+      throw new PreconditionFailedException(FirebaseAuthError.OTHER);
+    }
   }
 
   /**
