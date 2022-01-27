@@ -27,6 +27,8 @@ export class PreAuthMiddleware implements NestMiddleware {
 
     console.log('authorization start time:', Date.now());
 
+    console.log('MIDDLEWARE CALLED');
+
     if (token != null && token != '') {
       this.auth
         .verifyIdToken(token.replace('Bearer ', ''))

@@ -1,11 +1,21 @@
 import {
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { UserRole } from '@tastiest-io/tastiest-utils';
 import { UserRecord } from 'firebase-admin/lib/auth/user-record';
+import { AuthenticatedUser } from 'src/auth/auth.model';
 import { FirebaseService } from 'src/firebase/firebase.service';
+
+type CreateAccountPrimaryParams = {
+  email: string;
+  password: string;
+  role: UserRole;
+  firstName: string;
+  isTestAccount: boolean;
+};
 
 @Injectable()
 export class AccountService {
@@ -13,6 +23,44 @@ export class AccountService {
    * @ignore
    */
   constructor(private readonly firebaseApp: FirebaseService) {}
+
+  async createAccount(
+    {
+      email,
+      password,
+      firstName,
+      isTestAccount,
+      role,
+    }: CreateAccountPrimaryParams,
+    user: AuthenticatedUser,
+  ) {
+    // Only allow admins to set arbitrary roles
+    if (
+      !user ||
+      !user.roles ||
+      (user.roles.includes(UserRole.EATER) && role !== UserRole.EATER)
+    ) {
+      throw new ForbiddenException(
+        'You are not allowed to create an this type of account',
+      );
+    }
+
+    try {
+      const userRecord = await this.firebaseApp.getAuth().createUser({
+        email,
+        password,
+        emailVerified: false,
+        displayName: firstName,
+        disabled: false,
+      });
+
+      this.firebaseApp.getAuth().setCustomUserClaims(userRecord.uid, {
+        [role]: true,
+        isTestAccount,
+      });
+      userRecord;
+    } catch (error) {}
+  }
 
   /**
    *

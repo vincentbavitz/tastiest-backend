@@ -3,15 +3,49 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { FirestoreCollection, UserData } from '@tastiest-io/tastiest-utils';
+import {
+  FirestoreCollection,
+  UserData,
+  UserRole,
+} from '@tastiest-io/tastiest-utils';
+import { AccountService } from 'src/admin/account/account.service';
+import { AuthenticatedUser } from 'src/auth/auth.model';
 import { FirebaseService } from 'src/firebase/firebase.service';
+
+type CreateUserPrimaryParams = {
+  email: string;
+  password: string;
+  firstName: string;
+  isTestAccount: boolean;
+};
 
 @Injectable()
 export class UsersService {
   /**
    * @ignore
    */
-  constructor(private readonly firebaseApp: FirebaseService) {}
+  constructor(
+    private readonly firebaseApp: FirebaseService,
+    private readonly accountService: AccountService,
+  ) {}
+
+  async createUser(
+    { email, password, firstName, isTestAccount }: CreateUserPrimaryParams,
+    user: AuthenticatedUser,
+  ) {
+    const account = await this.accountService.createAccount(
+      {
+        email,
+        password,
+        firstName,
+        isTestAccount,
+        role: UserRole.EATER,
+      },
+      user,
+    );
+
+    console.log('users.service ➡️ account:', account);
+  }
 
   async getUser(uid: string) {
     try {

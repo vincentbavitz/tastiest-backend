@@ -17,7 +17,6 @@ import { SupportService } from './support.service';
 /**
  * Support functionality for users, restaurants and admin.
  *
- *
  * Note that for all routes, the support type is implied
  * from the Bearer token.
  *
