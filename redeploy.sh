@@ -25,12 +25,12 @@ git reset --hard origin/master;
 # Get new files
 $yarn install -s --force;
 
-# Actually destroy previous instance.
-kill $(lsof -t -i:4444);
-docker-compose down
-
 # Attempt to build.
-# Only restart current running process if build succeeds
+$yarn build &&
+# Actually destroy previous instance.
+docker-compose down &&
+kill $(lsof -t -i:4444) &&
 
-$yarn build && $pm2 restart tastiest-backend;
+# Only restart current running process if build succeeds
+$pm2 restart tastiest-backend &&
 echo "Done!";
