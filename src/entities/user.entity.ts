@@ -1,7 +1,19 @@
-import { Address, UserMetrics } from '@tastiest-io/tastiest-utils';
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-
-type AddressWithPostcode = Address & { postcode: string | null };
+import {
+  PaymentDetails,
+  UserMetrics,
+  UserPreferences,
+} from '@tastiest-io/tastiest-utils';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { BookingEntity } from './booking.entity';
+import Location from './location';
+import { OrderEntity } from './order.entity';
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
@@ -18,24 +30,39 @@ export class UserEntity extends BaseEntity {
   @Column('varchar')
   firstName: string;
 
-  @Column('simple-json')
-  metrics: UserMetrics;
-
-  @Column('timestamp with time zone')
-  lastActive: string;
+  @Column('varchar', { nullable: true })
+  lastName?: string;
 
   @Column('boolean')
   isTestAccount: boolean;
 
-  @Column('varchar', { nullable: true })
-  lastName?: string;
+  @Column('timestamp with time zone', { nullable: true })
+  lastActive?: string;
 
   @Column('varchar', { nullable: true })
   mobile?: string;
 
-  @Column('simple-json', { nullable: true })
-  address?: AddressWithPostcode;
+  @Column(() => Location)
+  location: Location;
 
   @Column('date', { nullable: true })
   birthday?: Date;
+
+  // TURN ALL OF THESE INTO DTOS
+  @Column('simple-json')
+  metrics: Partial<UserMetrics>;
+
+  @Column('simple-json', { nullable: true })
+  preferences?: Partial<UserPreferences>;
+
+  @Column('simple-json', { nullable: true })
+  financial?: Partial<PaymentDetails>;
+
+  @OneToMany(() => OrderEntity, (order) => order.user)
+  @JoinColumn()
+  orders: OrderEntity[];
+
+  @OneToMany(() => BookingEntity, (booking) => booking.user)
+  @JoinColumn()
+  bookings: BookingEntity[];
 }

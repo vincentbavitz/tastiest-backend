@@ -1,7 +1,16 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { UserRole } from '@tastiest-io/tastiest-utils';
+import { RequestWithUser } from 'src/auth/auth.model';
 import RoleGuard from 'src/auth/role.guard';
-import GetUserProfilesDto from './dto/get-user-profiles.dto';
+import UpdateUserDto from './dto/update-user.dto';
 import { UsersService } from './users.service';
 
 /**
@@ -14,15 +23,32 @@ export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
   /**
+   * Get a single user.
+   */
+  @Get(':uid')
+  // @UseGuards(RoleGuard(UserRole.EATER))
+  async getUser(
+    @Param('uid') uid: string,
+    @Request() request: RequestWithUser,
+  ) {
+    return this.userService.getUser(uid, request.user);
+  }
+
+  /**
    * Strictly gets eaters profiles.
    * Does not get profiles of restaurant users or admins.
    */
   @Get()
   @UseGuards(RoleGuard(UserRole.ADMIN))
-  async getUserProfiles(@Query() getUserProfilesDto: GetUserProfilesDto) {
-    return this.userService.getUserProfiles(
-      getUserProfilesDto.limit,
-      getUserProfilesDto.skip,
-    );
+  async getUsers() {
+    return this.userService.getUsers();
+  }
+
+  @Post('update')
+  async updateUser(
+    @Body() updateUserDto: UpdateUserDto,
+    @Request() request: RequestWithUser,
+  ) {
+    return this.userService.updateUser(updateUserDto, request.user);
   }
 }

@@ -27,6 +27,7 @@ $yarn install -s --force;
 
 # Attempt to build.
 $yarn build &&
+
 # Actually destroy previous instance.
 docker-compose down &&
 kill $(lsof -t -i:4444) &&
