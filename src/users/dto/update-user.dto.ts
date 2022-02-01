@@ -1,8 +1,4 @@
-import {
-  PaymentDetails,
-  UserMetrics,
-  UserPreferences,
-} from '@tastiest-io/tastiest-utils';
+import { UserMetrics, UserPreferences } from '@tastiest-io/tastiest-utils';
 import { Type } from 'class-transformer';
 import {
   IsDateString,
@@ -11,6 +7,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { UserFinancialDto } from './user-financial.dto';
 import { UserLocationDto } from './user-location.dto';
 
 class UpdateUserDto {
@@ -47,8 +44,9 @@ class UpdateUserDto {
   preferences?: Partial<UserPreferences>;
 
   @IsOptional()
-  @IsJSON()
-  financial?: Partial<PaymentDetails>;
+  @ValidateNested()
+  @Type(() => UserFinancialDto)
+  financial?: UserFinancialDto;
 }
 
 export default UpdateUserDto;

@@ -27,13 +27,22 @@ export class UserCreatedListener {
     // //////////////////////////////////////////////////////// //
     //  When a user is created, create a Stripe customer object for them.
     // https://stripe.com/docs/payments/save-and-reuse#web-create-customer
-    // const customer = await stripe.customers.create({
-    //   email: event.userRecord.email,
-    // });
+    const customer = await stripe.customers.create({
+      email: event.userRecord.email,
+    });
 
-    // const intent = await stripe.setupIntents.create({
-    //   customer: customer.id,
-    // });
+    const intent = await stripe.setupIntents.create({
+      customer: customer.id,
+    });
+
+    // Save to the new users database entry.
+    await this.usersService.updateUser({
+      uid: event.userRecord.uid,
+      financial: {
+        stripeCustomerId: customer.id ?? null,
+        stripeSetupSecret: intent.client_secret ?? null,
+      },
+    });
 
     // Set setup secret etc
     // this.usersService.

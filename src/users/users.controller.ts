@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   Post,
@@ -31,7 +32,19 @@ export class UsersController {
     @Param('uid') uid: string,
     @Request() request: RequestWithUser,
   ) {
-    return this.userService.getUser(uid, request.user);
+    if (!this.isAdmin(request) && uid !== request.user.uid) {
+      throw new ForbiddenException();
+    }
+
+    const user = await this.userService.getUser(uid);
+
+    return {
+      ...user,
+
+      // The following properties are only visible to Admins.
+      id: this.isAdmin(request) ? user.id : undefined,
+      financial: this.isAdmin(request) ? user.financial : undefined,
+    };
   }
 
   /**
@@ -49,6 +62,27 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
     @Request() request: RequestWithUser,
   ) {
-    return this.userService.updateUser(updateUserDto, request.user);
+    if (!this.isAdmin(request) && updateUserDto.uid !== request.user.uid) {
+      throw new ForbiddenException();
+    }
+
+    // Only admins can modify financial data.
+    if (!this.isAdmin(request) && updateUserDto.financial) {
+      throw new ForbiddenException('Unauthorized');
+    }
+
+    const updated = await this.userService.updateUser(updateUserDto);
+
+    return {
+      ...updated,
+
+      // Only Admins may view these properties
+      id: this.isAdmin(request) ? updated.id : undefined,
+      financial: this.isAdmin(request) ? updated.financial : undefined,
+    };
+  }
+
+  private isAdmin(request: RequestWithUser): boolean {
+    return request.user.roles.includes(UserRole.ADMIN);
   }
 }

@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -164,35 +160,25 @@ export class UsersService {
     return { token };
   }
 
-  async getUser(uid: string, user: AuthenticatedUser) {
-    const isAdmin = user.roles.includes(UserRole.ADMIN);
-    if (!isAdmin && uid !== user.uid) {
-      throw new ForbiddenException();
-    }
-
+  async getUser(uid: string) {
     const userEntity = await this.usersRepository.findOne({ where: { uid } });
 
     // Hide ID and financial from non-admins.
     if (userEntity) {
       return {
         ...userEntity,
-        id: isAdmin ? userEntity.id : undefined,
-        financial: isAdmin ? userEntity.financial : undefined,
+        // id: isAdmin ? userEntity.id : undefined,
+        // financial: isAdmin ? userEntity.financial : undefined,
       };
     }
 
     throw new NotFoundException('User not found');
   }
 
-  async updateUser(update: UpdateUserDto, requestUser: AuthenticatedUser) {
-    const isAdmin = requestUser.roles.includes(UserRole.ADMIN);
-    if (!isAdmin && update.uid !== requestUser.uid) {
-      throw new ForbiddenException();
-    }
-
+  async updateUser(update: UpdateUserDto) {
     console.log('users.service ➡️ update:', update);
 
-    const user = await this.getUser(update.uid, requestUser);
+    const user = await this.getUser(update.uid);
 
     const updatedUser = {
       ...user,
@@ -204,9 +190,13 @@ export class UsersService {
         ...update.location,
       },
 
-      // Only Admins may modify these properties
-      financial: isAdmin ? update.financial : user.financial,
+      financial: {
+        ...user.financial,
+        ...update.financial,
+      },
     };
+
+    console.log('users.service ➡️ updatedUser:', updatedUser);
 
     return this.usersRepository.save(updatedUser);
   }

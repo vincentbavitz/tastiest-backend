@@ -30,7 +30,7 @@ $yarn build &&
 
 # Actually destroy previous instance.
 docker-compose down &&
-kill $(lsof -t -i:4444) &&
+kill $(lsof -t -i:4444) &
 
 # Only restart current running process if build succeeds
 $pm2 restart tastiest-backend &&
