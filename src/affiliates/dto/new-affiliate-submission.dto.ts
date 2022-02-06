@@ -1,4 +1,10 @@
-import { IsIn, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsIn,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 class NewAffiliateSubmissionDto {
   @IsString()
@@ -10,6 +16,14 @@ class NewAffiliateSubmissionDto {
   @MinLength(2)
   @MaxLength(64)
   reference: string;
+
+  @IsOptional()
+  @IsString()
+  userId?: string;
+
+  @IsOptional()
+  @IsString()
+  anonymousId?: string;
 }
 
 export default NewAffiliateSubmissionDto;
