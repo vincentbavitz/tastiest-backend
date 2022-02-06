@@ -10,6 +10,7 @@ import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 import { DateTime } from 'luxon';
 import { AccountService } from 'src/admin/account/account.service';
 import { AuthenticatedUser } from 'src/auth/auth.model';
+import RegisterDto from 'src/auth/dto/register.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { DeepPartial, Repository } from 'typeorm';
@@ -84,11 +85,6 @@ export class UsersService {
       },
     };
 
-    console.log(
-      'users.service ➡️ updatedUserEntity:',
-      updatedUserEntity.birthday,
-    );
-
     if (user) {
       return this.usersRepository.save({
         ...user,
@@ -97,11 +93,6 @@ export class UsersService {
     }
 
     const newUserFromFirestore = this.usersRepository.create(updatedUserEntity);
-
-    console.log(
-      '74 users.service ➡️ newUserFromFirestore:',
-      newUserFromFirestore.firstName,
-    );
 
     return this.usersRepository.save(newUserFromFirestore);
   }
@@ -112,7 +103,9 @@ export class UsersService {
       password,
       firstName,
       isTestAccount = false,
-    }: CreateUserPrimaryParams,
+      anonymousId,
+      userAgent,
+    }: RegisterDto,
     user?: AuthenticatedUser,
   ) {
     // First, we create an account with Firebase Auth.
@@ -153,7 +146,13 @@ export class UsersService {
     // Event handles Stripe user creation and etc.
     this.eventEmitter.emit(
       'user.created',
-      new UserCreatedEvent(userRecord, isTestAccount),
+      new UserCreatedEvent(
+        userRecord,
+        isTestAccount,
+        anonymousId,
+        userAgent,
+        firstName,
+      ),
     );
 
     // Now we return the token so the new user can sign in

@@ -10,6 +10,7 @@ import { RouterModule } from '@nestjs/core/router/router-module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AdminModule } from './admin/admin.module';
+import { AffiliatesModule } from './affiliates/affiliates.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -68,6 +69,7 @@ import { UsersModule } from './users/users.module';
     BookingsModule,
     OrdersModule,
     AuthModule,
+    AffiliatesModule,
   ],
   controllers: [AppController],
   providers: [AppService, TasksService],

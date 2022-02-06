@@ -1,16 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OnEvent } from '@nestjs/event-emitter';
+import { UserRole } from '@tastiest-io/tastiest-utils';
 import Stripe from 'stripe';
 import { UserCreatedEvent } from '../events/user-created.event';
 import { UsersService } from '../users.service';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Analytics = require('analytics-node');
+
 @Injectable()
 export class UserCreatedListener {
+  private analytics: any;
+
   constructor(
     private configService: ConfigService,
     private usersService: UsersService,
-  ) {}
+  ) {
+    this.analytics = new Analytics(
+      this.configService.get<string>('ANALYTICS_WRITE_KEY'),
+    );
+  }
 
   @OnEvent('user.created')
   async handleUserCreatedEvent(event: UserCreatedEvent) {
@@ -44,26 +54,31 @@ export class UserCreatedListener {
       },
     });
 
-    // Set setup secret etc
-    // this.usersService.
+    // Track User Created
+    if (event.anonymousId) {
+      await this.analytics.identify({
+        anonymousId: event.anonymousId,
+        traits: {
+          userId: event.userRecord.uid,
+          email: event.userRecord.email,
+          firstName: event.firstName,
+        },
+        context: { userAgent: event.userAgent ?? null },
+      });
+    }
 
-    // userDataApi.setUserData(UserDataKey.PAYMENT_DETAILS, {
-    //   stripeCustomerId: customer.id,
-    //   stripeSetupSecret: intent.client_secret ?? undefined,
-    // });
+    // No need to await tracking after we've identified them
+    await this.analytics.track({
+      userId: event.userRecord?.uid,
+      event: 'User Signed Up',
+      properties: {
+        role: UserRole.EATER,
+        name: event.firstName,
+        email: event.userRecord.email,
+      },
+      context: { userAgent: event.userAgent ?? null },
+    });
 
-    console.log('event', event);
-    console.log('event', event);
-    console.log('event', event);
-    console.log('event', event);
-    console.log('event', event);
-    console.log('event', event);
-    console.log('event', event);
-    console.log('event', event);
-    console.log('event', event);
-    console.log('event', event);
-    console.log('event', event);
-    console.log('event', event);
     console.log('event', event);
   }
 }
