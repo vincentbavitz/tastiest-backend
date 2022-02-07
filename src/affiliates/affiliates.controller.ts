@@ -16,6 +16,7 @@ export class AffiliatesController {
     this.affiliatesService.createNewSubmission(
       newAffiliateSubmissionDto.platform,
       newAffiliateSubmissionDto.reference,
+      newAffiliateSubmissionDto.affiliateType,
       newAffiliateSubmissionDto.userId,
       newAffiliateSubmissionDto.anonymousId,
     );

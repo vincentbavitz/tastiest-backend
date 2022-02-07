@@ -12,14 +12,13 @@ class CreateOrderDto {
   @IsNotEmpty()
   dealId: string;
 
+  @IsString()
+  userId: string;
+
   @IsNumber()
   @IsInt()
   @IsPositive()
   heads: number;
-
-  @IsString()
-  @IsNotEmpty()
-  fromSlug: string;
 
   @IsNumber()
   @IsInt()
@@ -32,15 +31,11 @@ class CreateOrderDto {
 
   @IsOptional()
   @IsString()
-  userId?: string;
-
-  @IsOptional()
-  @IsString()
-  anonymousId?: string;
-
-  @IsOptional()
-  @IsString()
   userAgent?: string;
+
+  @IsOptional()
+  @IsString()
+  isTest?: boolean;
 }
 
 export default CreateOrderDto;

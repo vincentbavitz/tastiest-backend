@@ -3,6 +3,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -22,7 +23,9 @@ export class BookingEntity extends BaseEntity {
   @JoinColumn()
   order: OrderEntity;
 
-  @OneToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, (user: UserEntity) => user.bookings, {
+    eager: true,
+  })
   @JoinColumn()
   user: UserEntity;
 

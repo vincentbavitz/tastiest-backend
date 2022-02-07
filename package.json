@@ -60,7 +60,8 @@
     "rxjs": "^7.2.0",
     "stripe": "^8.200.0",
     "swr": "^1.2.0",
-    "typeorm": "^0.2.41"
+    "typeorm": "^0.2.41",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",

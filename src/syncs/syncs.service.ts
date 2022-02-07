@@ -39,4 +39,14 @@ export class SyncsService {
 
     return { body };
   }
+
+  syncRestaurantFromContentful(body: any) {
+    null;
+  }
+
+  syncExperienceProductFromContentful(body: any) {
+    null;
+  }
+
+  syncPromoCodeFromContentful(body: any) {}
 }

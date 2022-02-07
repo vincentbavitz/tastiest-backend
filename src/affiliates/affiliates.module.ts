@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AffiliateSubmissionEntity } from 'src/entities/affiliate-submission.entity';
+import { UsersModule } from 'src/users/users.module';
 import { AffiliatesController } from './affiliates.controller';
 import { AffiliatesService } from './affiliates.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AffiliateSubmissionEntity])],
+  imports: [TypeOrmModule.forFeature([AffiliateSubmissionEntity]), UsersModule],
   controllers: [AffiliatesController],
   providers: [AffiliatesService],
 })

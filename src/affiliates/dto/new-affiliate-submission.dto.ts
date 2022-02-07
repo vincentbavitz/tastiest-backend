@@ -17,6 +17,13 @@ class NewAffiliateSubmissionDto {
   @MaxLength(64)
   reference: string;
 
+  /**
+   * Determines whether they came
+   * from /influencer-program or /affiliate-program */
+  @IsString()
+  @IsIn(['general', 'influencer'])
+  affiliateType: string;
+
   @IsOptional()
   @IsString()
   userId?: string;

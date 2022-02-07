@@ -54,7 +54,7 @@ export class UsersService {
     }
 
     // Exists?
-    const user = await this.usersRepository.findOne({ where: { uid } });
+    const user = await this.usersRepository.findOne({ where: { id: uid } });
 
     const userBirthdayDateTime = userData.details?.birthday
       ? DateTime.fromObject({
@@ -65,7 +65,7 @@ export class UsersService {
       : null;
 
     const updatedUserEntity: DeepPartial<UserEntity> = {
-      uid,
+      id: uid,
       email: userData.details.email,
       firstName: userData.details.firstName,
       lastName: userData.details?.lastName ?? null,
@@ -127,7 +127,7 @@ export class UsersService {
 
     // Now we create the user in Postgres
     const entity = this.usersRepository.create({
-      uid: userRecord.uid,
+      id: userRecord.uid,
       email,
       firstName,
       isTestAccount,
@@ -160,18 +160,17 @@ export class UsersService {
   }
 
   async getUser(uid: string) {
-    const userEntity = await this.usersRepository.findOne({ where: { uid } });
+    const userEntity = await this.usersRepository.findOne({
+      where: { id: uid },
+      relations: ['orders'],
+    });
 
     // Hide ID and financial from non-admins.
-    if (userEntity) {
-      return {
-        ...userEntity,
-        // id: isAdmin ? userEntity.id : undefined,
-        // financial: isAdmin ? userEntity.financial : undefined,
-      };
+    if (!userEntity) {
+      throw new NotFoundException('User not found');
     }
 
-    throw new NotFoundException('User not found');
+    return userEntity;
   }
 
   async updateUser(update: UpdateUserDto) {

@@ -3,26 +3,16 @@ import {
   UserMetrics,
   UserPreferences,
 } from '@tastiest-io/tastiest-utils';
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  JoinColumn,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { BookingEntity } from './booking.entity';
 import Location from './location';
 import { OrderEntity } from './order.entity';
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
   /** From Firebase Auth */
-  @Column({ type: 'varchar', unique: true })
-  uid: string;
+  @PrimaryColumn({ type: 'varchar', readonly: true })
+  id: string;
 
   @Column({ type: 'varchar', unique: true })
   email: string;
@@ -58,11 +48,13 @@ export class UserEntity extends BaseEntity {
   @Column('simple-json', { nullable: true })
   financial?: Partial<PaymentDetails>;
 
-  @OneToMany(() => OrderEntity, (order) => order.user)
-  @JoinColumn()
+  @OneToMany(() => OrderEntity, (order: OrderEntity) => order.user, {
+    cascade: true,
+  })
   orders: OrderEntity[];
 
-  @OneToMany(() => BookingEntity, (booking) => booking.user)
-  @JoinColumn()
+  @OneToMany(() => BookingEntity, (booking) => booking.user, {
+    cascade: true,
+  })
   bookings: BookingEntity[];
 }

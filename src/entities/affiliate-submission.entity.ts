@@ -3,7 +3,7 @@ import {
   Column,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
@@ -19,7 +19,10 @@ export class AffiliateSubmissionEntity extends BaseEntity {
   @Column('varchar')
   reference: string;
 
-  @OneToOne(() => UserEntity, { nullable: true })
+  @Column('varchar')
+  affiliateType: string;
+
+  @ManyToOne(() => UserEntity, { nullable: true, eager: true })
   @JoinColumn()
   user: UserEntity;
 }

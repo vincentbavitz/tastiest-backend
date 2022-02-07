@@ -10,4 +10,9 @@ export class SyncsController {
   syncSegmentEvent(@Body() body: SegmentWebhookBody): any {
     return this.syncsService.syncSegmentEvent(body as SegmentWebhookBody);
   }
+
+  @Post('contentful/experience-product')
+  async syncExperienceProductFromContentful(@Body() body: any) {
+    return this.syncsService.syncExperienceProductFromContentful(body);
+  }
 }

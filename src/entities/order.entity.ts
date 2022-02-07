@@ -8,7 +8,7 @@ import {
   Column,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { BookingEntity } from './booking.entity';
@@ -31,8 +31,8 @@ type RefundDetails = CurrencyValue & {
 
 @Entity('order')
 export class OrderEntity extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column('varchar')
   token: string;
@@ -40,15 +40,20 @@ export class OrderEntity extends BaseEntity {
   @Column('varchar')
   userFacingOrderId: string;
 
-  @OneToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, (user: UserEntity) => user.orders, {
+    eager: true,
+  })
   @JoinColumn()
   user: UserEntity;
 
-  @OneToOne(() => RestaurantEntity)
+  @Column('numeric')
+  heads: number;
+
+  @ManyToOne(() => RestaurantEntity)
   @JoinColumn()
   restaurant: RestaurantEntity;
 
-  @OneToOne(() => BookingEntity)
+  @ManyToOne(() => BookingEntity)
   @JoinColumn()
   booking: BookingEntity;
 
@@ -61,8 +66,8 @@ export class OrderEntity extends BaseEntity {
   @Column('simple-json', { nullable: true })
   refund: RefundDetails;
 
-  @Column('timestamp')
-  bookedFor: number;
+  @Column('timestamp with time zone')
+  bookedFor: Date;
 
   @Column('varchar', { nullable: true })
   paymentMethod: string;

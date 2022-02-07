@@ -27,7 +27,7 @@ export class UsersController {
    * Get a single user.
    */
   @Get(':uid')
-  // @UseGuards(RoleGuard(UserRole.EATER))
+  @UseGuards(RoleGuard(UserRole.EATER))
   async getUser(
     @Param('uid') uid: string,
     @Request() request: RequestWithUser,
@@ -42,7 +42,6 @@ export class UsersController {
       ...user,
 
       // The following properties are only visible to Admins.
-      id: this.isAdmin(request) ? user.id : undefined,
       financial: this.isAdmin(request) ? user.financial : undefined,
     };
   }
