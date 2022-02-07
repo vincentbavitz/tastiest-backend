@@ -27,7 +27,7 @@ export class UserEntity extends BaseEntity {
   isTestAccount: boolean;
 
   @Column('timestamp with time zone', { nullable: true })
-  lastActive?: string;
+  lastActive?: Date;
 
   @Column('varchar', { nullable: true })
   mobile?: string;

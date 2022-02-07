@@ -1,7 +1,9 @@
 import {
-  Currency,
+  CurrencyValue,
   ExperienceProduct,
   OrderPrice,
+  PaymentCardDetails,
+  RefundDetails,
 } from '@tastiest-io/tastiest-utils';
 import {
   BaseEntity,
@@ -14,20 +16,6 @@ import {
 import { BookingEntity } from './booking.entity';
 import { RestaurantEntity } from './restaurant.entity';
 import { UserEntity } from './user.entity';
-
-type PaymentCardDetails = {
-  brand: string;
-  last4: string;
-};
-
-type CurrencyValue = {
-  amount: number;
-  currency: Currency;
-};
-
-type RefundDetails = CurrencyValue & {
-  refundedAt: number;
-};
 
 @Entity('order')
 export class OrderEntity extends BaseEntity {
@@ -78,14 +66,17 @@ export class OrderEntity extends BaseEntity {
   @Column('varchar', { nullable: true })
   discountCode: string;
 
-  @Column('timestamp', { nullable: true })
-  paidAt: number;
+  @Column('varchar')
+  fromSlug: string;
 
-  @Column('timestamp', { nullable: true })
-  createdAt: number;
+  @Column('timestamp with time zone', { nullable: true })
+  paidAt: Date;
 
-  @Column('timestamp', { nullable: true })
-  abandonedAt: number;
+  @Column('timestamp with time zone', { nullable: true })
+  createdAt: Date;
+
+  @Column('timestamp with time zone', { nullable: true })
+  abandonedAt: Date;
 
   @Column('simple-json', { nullable: true })
   tastiestPortion: CurrencyValue;

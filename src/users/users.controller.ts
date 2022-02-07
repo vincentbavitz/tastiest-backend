@@ -24,31 +24,8 @@ export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
   /**
-   * Get a single user.
-   */
-  @Get(':uid')
-  @UseGuards(RoleGuard(UserRole.EATER))
-  async getUser(
-    @Param('uid') uid: string,
-    @Request() request: RequestWithUser,
-  ) {
-    if (!this.isAdmin(request) && uid !== request.user.uid) {
-      throw new ForbiddenException();
-    }
-
-    const user = await this.userService.getUser(uid);
-
-    return {
-      ...user,
-
-      // The following properties are only visible to Admins.
-      financial: this.isAdmin(request) ? user.financial : undefined,
-    };
-  }
-
-  /**
    * Strictly gets eaters profiles.
-   * Does not get profiles of restaurant users or admins.
+   * Does not get profiles of restaurant users or ad6mins.
    */
   @Get()
   @UseGuards(RoleGuard(UserRole.ADMIN))
@@ -56,6 +33,21 @@ export class UsersController {
     return this.userService.getUsers();
   }
 
+  /**
+   * Get the user of the token making the request.
+   * NOTE! This must come before @Get(':uid')
+   * otherwise the dyanmic route will catch it.
+   */
+  @Get('me')
+  async getUserFromToken(@Request() request: RequestWithUser) {
+    return this.userService.getUser(request.user.uid);
+  }
+
+  /**
+   * Update a user record.
+   * NOTE! This must come before @Get(':uid')
+   * otherwise the dyanmic route will catch it.
+   */
   @Post('update')
   async updateUser(
     @Body() updateUserDto: UpdateUserDto,
@@ -78,6 +70,29 @@ export class UsersController {
       // Only Admins may view these properties
       id: this.isAdmin(request) ? updated.id : undefined,
       financial: this.isAdmin(request) ? updated.financial : undefined,
+    };
+  }
+
+  /**
+   * Get a single user.
+   */
+  @Get(':uid')
+  @UseGuards(RoleGuard(UserRole.EATER))
+  async getUser(
+    @Param('uid') uid: string,
+    @Request() request: RequestWithUser,
+  ) {
+    if (!this.isAdmin(request) && uid !== request.user.uid) {
+      throw new ForbiddenException();
+    }
+
+    const user = await this.userService.getUser(uid);
+
+    return {
+      ...user,
+
+      // The following properties are only visible to Admins.
+      financial: this.isAdmin(request) ? user.financial : undefined,
     };
   }
 

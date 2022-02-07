@@ -159,10 +159,10 @@ export class UsersService {
     return { token };
   }
 
-  async getUser(uid: string) {
+  async getUser(uid: string, relations: Array<'orders' | 'bookings'> = []) {
     const userEntity = await this.usersRepository.findOne({
       where: { id: uid },
-      relations: ['orders'],
+      relations,
     });
 
     // Hide ID and financial from non-admins.

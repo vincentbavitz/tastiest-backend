@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -10,10 +11,7 @@ import {
 class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
-  dealId: string;
-
-  @IsString()
-  userId: string;
+  experienceId: string;
 
   @IsNumber()
   @IsInt()
@@ -34,7 +32,7 @@ class CreateOrderDto {
   userAgent?: string;
 
   @IsOptional()
-  @IsString()
+  @IsBoolean()
   isTest?: boolean;
 }
 

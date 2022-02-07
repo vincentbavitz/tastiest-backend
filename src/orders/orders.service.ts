@@ -55,7 +55,11 @@ export class OrdersService {
       this.configService.get('CONTENTFUL_ACCESS_TOKEN'),
     );
 
-    const deal = await cms.getDeal(experienceProductId);
+    const experiencePost = await cms.getPostByDealId(experienceProductId);
+
+    if (!experiencePost) {
+      throw new NotFoundException('Experience does not exist');
+    }
 
     // Is userId valid and is user online?
     // Is promoCode valid? If so, calculate Promo and final price
@@ -69,7 +73,7 @@ export class OrdersService {
     //
 
     // Gross price
-    const subtotal = deal.pricePerHeadGBP * heads;
+    const subtotal = experiencePost.deal.pricePerHeadGBP * heads;
 
     const token = uuid();
     const priceAfterPromo = this.calculatePromoPrice(
@@ -87,7 +91,8 @@ export class OrdersService {
     // Validate number of heads
     const order = this.ordersRepository.create({
       token,
-      experience: deal,
+      user,
+      experience: experiencePost.deal,
       userFacingOrderId: generateUserFacingId(),
       heads: Math.floor(heads),
       price: {
@@ -96,20 +101,10 @@ export class OrdersService {
         final,
         currency: 'GBP',
       },
-      // paymentMethod: null,
-      // paymentCard: null,
-      // promoCode: promo?.code ?? null,
-      // createdAt: Date.now(),
+      fromSlug: experiencePost.slug,
+      createdAt: new Date(),
       bookedFor: new Date(bookedForTimestamp),
-      // tastiestCut: null,
-      // restaurantCut: null,
       isUserFollowing: false,
-
-      // // Timestamps
-      // // Null denotes not paid yet; not done yet.
-      // paidAt: null,
-      // refund: null,
-      // abandonedAt: null,
       isTest,
     });
 
@@ -117,7 +112,7 @@ export class OrdersService {
     user.orders = [...(user.orders ?? []), order];
     await this.usersRepository.save(user);
 
-    return null;
+    return order;
   }
 
   async getOrder(token: string, requestUser: AuthenticatedUser) {

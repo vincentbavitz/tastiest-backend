@@ -19,10 +19,13 @@ export class OrdersController {
 
   @Post('new')
   @UseGuards(RoleGuard(UserRole.EATER))
-  createOrder(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.createOrder(
-      createOrderDto.dealId,
-      createOrderDto.userId,
+  async createOrder(
+    @Body() createOrderDto: CreateOrderDto,
+    @Request() request: RequestWithUser,
+  ) {
+    const order = await this.ordersService.createOrder(
+      createOrderDto.experienceId,
+      request.user.uid,
       createOrderDto.heads,
       createOrderDto.bookedForTimestamp,
       {
@@ -31,6 +34,12 @@ export class OrdersController {
         isTest: createOrderDto.isTest ?? false,
       },
     );
+
+    return {
+      ...order,
+      // These properties are admin-Only
+      id: this.isAdmin(request) ? order.id : null,
+    };
   }
 
   /** Get a single order from an order token */
@@ -43,9 +52,9 @@ export class OrdersController {
     const order = await this.ordersService.getOrder(token, request.user);
 
     return {
-      order,
+      ...order,
       // These properties are admin-Only
-      id: this.isAdmin(request) ? order.id : undefined,
+      id: this.isAdmin(request) ? order.id : null,
     };
   }
 
