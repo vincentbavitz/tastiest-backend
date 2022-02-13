@@ -3,9 +3,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { dlog } from '@tastiest-io/tastiest-utils';
 import EmailSchedulingService from 'src/email/schedule/email-schedule.service';
+import RestaurateurApplicationEntity from 'src/entities/restaurateur-application.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { Repository } from 'typeorm';
+import ApplyDto from './dto/apply.dto';
 import NotifyDto from './dto/notify.dto';
 
 // const MS_IN_ONE_MINUTE = 60 * 1000;
@@ -18,6 +22,8 @@ export class RestaurantsService {
   constructor(
     private readonly emailSchedulingService: EmailSchedulingService,
     private readonly firebaseApp: FirebaseService,
+    @InjectRepository(RestaurateurApplicationEntity)
+    private applicationsRepository: Repository<RestaurateurApplicationEntity>,
   ) {}
 
   async scheduleFollowersEmail(data: NotifyDto) {
@@ -61,5 +67,17 @@ export class RestaurantsService {
       content,
       date: new Date(scheduleFor).toUTCString(),
     });
+  }
+
+  async applyAsRestaurateur(applicationData: ApplyDto) {
+    const applicationEntity = this.applicationsRepository.create({
+      ...applicationData,
+    });
+
+    const application = await this.applicationsRepository.save(
+      applicationEntity,
+    );
+
+    return { ...application, id: undefined };
   }
 }

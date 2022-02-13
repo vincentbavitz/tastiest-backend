@@ -35,7 +35,7 @@ export class UserEntity extends BaseEntity {
   @Column(() => Location)
   location: Location;
 
-  @Column('date', { nullable: true })
+  @Column('timestamp with time zone', { nullable: true })
   birthday?: Date;
 
   // TURN ALL OF THESE INTO DTOS
