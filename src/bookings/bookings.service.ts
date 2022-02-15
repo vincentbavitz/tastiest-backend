@@ -5,7 +5,6 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Booking,
@@ -17,28 +16,20 @@ import { DateTime } from 'luxon';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import { UserEntity } from 'src/entities/user.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { TrackingService } from 'src/tracking/tracking.service';
 import { Repository } from 'typeorm';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Analytics = require('analytics-node');
 
 @Injectable()
 export class BookingsService {
-  private analytics: any;
-
   /**
    * @ignore
    */
   constructor(
     private readonly firebaseApp: FirebaseService,
-    private configService: ConfigService,
+    private readonly trackingService: TrackingService,
     @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
-  ) {
-    this.analytics = new Analytics(
-      this.configService.get<string>('ANALYTICS_WRITE_KEY'),
-    );
-  }
+  ) {}
 
   async getBookings(
     user: AuthenticatedUser,
@@ -224,18 +215,17 @@ export class BookingsService {
 
       // Track `Arrived` with Segment
       if (updatedBooking.hasArrived) {
-        await this.analytics.track({
-          event: 'Eater Arrived',
-          userId: booking.userId,
-          timestamp: new Date(),
-          properties: {
+        await this.trackingService.track(
+          'Eater Arrived',
+          { userId: booking.userId },
+          {
             email: booking.eaterEmail,
             bookingId: booking.orderId,
             restaurant: booking.restaurant,
             customerUserId: booking.userId,
             booking: updatedBooking,
           },
-        });
+        );
       }
     }
 
@@ -245,18 +235,19 @@ export class BookingsService {
 
       // Track update in Segment
       if (updatedBooking.hasCancelled) {
-        await this.analytics.track({
-          event: 'Booking Cancelled',
-          userId: user.uid,
-          timestamp: new Date(),
-          properties: {
+        await this.trackingService.track(
+          'Booking Cancelled',
+          {
+            userId: user.uid,
+          },
+          {
             email: booking.eaterEmail,
             bookingId: booking.orderId,
             restaurant: booking.restaurant,
             customerUserId: booking.userId,
             booking: updatedBooking,
           },
-        });
+        );
       }
     }
 
@@ -277,11 +268,10 @@ export class BookingsService {
       bookedForTimestamp !== booking.bookedForTimestamp
     ) {
       // Track update in Segment
-      await this.analytics.track({
-        event: 'Booking Date Updated',
-        userId: user.uid,
-        timestamp: new Date(),
-        properties: {
+      await this.trackingService.track(
+        'Booking Date Updated',
+        { userId: user.uid },
+        {
           email: booking.eaterEmail,
           bookingId: booking.orderId,
           restaurant: booking.restaurant,
@@ -302,7 +292,7 @@ export class BookingsService {
 
           ...updatedBooking,
         },
-      });
+      );
 
       await this.firebaseApp
         .db(FirestoreCollection.ORDERS)

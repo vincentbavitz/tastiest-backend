@@ -26,6 +26,7 @@ import { SupportModule } from './support/support.module';
 import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
 import { UsersModule } from './users/users.module';
+import { TrackingService } from './tracking/tracking.service';
 
 @Module({
   imports: [
@@ -72,7 +73,7 @@ import { UsersModule } from './users/users.module';
     AffiliatesModule,
   ],
   controllers: [AppController],
-  providers: [AppService, TasksService],
+  providers: [AppService, TasksService, TrackingService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

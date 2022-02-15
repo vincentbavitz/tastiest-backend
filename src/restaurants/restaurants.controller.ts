@@ -1,4 +1,5 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Request } from '@nestjs/common';
+import { RequestWithUser } from 'src/auth/auth.model';
 import EmailSchedulingService from 'src/email/schedule/email-schedule.service';
 import ApplyDto from './dto/apply.dto';
 import NotifyDto from './dto/notify.dto';
@@ -18,7 +19,10 @@ export class RestaurantsController {
 
   /** The application form coming from tastiest.io/restaurateurs */
   @Post('public/apply')
-  async apply(@Body() applyData: ApplyDto) {
-    return this.restaurantsService.applyAsRestaurateur(applyData);
+  async apply(
+    @Body() applyData: ApplyDto,
+    @Request() request: RequestWithUser,
+  ) {
+    return this.restaurantsService.applyAsRestaurateur(applyData, request.user);
   }
 }

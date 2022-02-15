@@ -5,9 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { dlog } from '@tastiest-io/tastiest-utils';
+import { AuthenticatedUser } from 'src/auth/auth.model';
 import EmailSchedulingService from 'src/email/schedule/email-schedule.service';
 import RestaurateurApplicationEntity from 'src/entities/restaurateur-application.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { TrackingService } from 'src/tracking/tracking.service';
 import { Repository } from 'typeorm';
 import ApplyDto from './dto/apply.dto';
 import NotifyDto from './dto/notify.dto';
@@ -22,6 +24,7 @@ export class RestaurantsService {
   constructor(
     private readonly emailSchedulingService: EmailSchedulingService,
     private readonly firebaseApp: FirebaseService,
+    private readonly trackingService: TrackingService,
     @InjectRepository(RestaurateurApplicationEntity)
     private applicationsRepository: Repository<RestaurateurApplicationEntity>,
   ) {}
@@ -69,10 +72,21 @@ export class RestaurantsService {
     });
   }
 
-  async applyAsRestaurateur(applicationData: ApplyDto) {
+  async applyAsRestaurateur(
+    applicationData: ApplyDto,
+    user: AuthenticatedUser,
+  ) {
     const applicationEntity = this.applicationsRepository.create({
       ...applicationData,
     });
+
+    await this.trackingService.track(
+      'New Restaurateur Application',
+      {
+        userId: user?.uid,
+      },
+      applicationEntity,
+    );
 
     const application = await this.applicationsRepository.save(
       applicationEntity,

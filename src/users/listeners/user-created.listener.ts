@@ -2,12 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OnEvent } from '@nestjs/event-emitter';
 import { UserRole } from '@tastiest-io/tastiest-utils';
+import { TrackingService } from 'src/tracking/tracking.service';
 import Stripe from 'stripe';
 import { UserCreatedEvent } from '../events/user-created.event';
 import { UsersService } from '../users.service';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Analytics = require('analytics-node');
 
 @Injectable()
 export class UserCreatedListener {
@@ -16,11 +14,8 @@ export class UserCreatedListener {
   constructor(
     private configService: ConfigService,
     private usersService: UsersService,
-  ) {
-    this.analytics = new Analytics(
-      this.configService.get<string>('ANALYTICS_WRITE_KEY'),
-    );
-  }
+    private trackingService: TrackingService,
+  ) {}
 
   @OnEvent('user.created')
   async handleUserCreatedEvent(event: UserCreatedEvent) {
@@ -56,28 +51,28 @@ export class UserCreatedListener {
 
     // Track User Created
     if (event.anonymousId) {
-      await this.analytics.identify({
-        anonymousId: event.anonymousId,
-        traits: {
+      this.trackingService.identify(
+        { anonymousId: event.anonymousId },
+        {
           userId: event.userRecord.uid,
           email: event.userRecord.email,
           firstName: event.firstName,
         },
-        context: { userAgent: event.userAgent ?? null },
-      });
+        { userAgent: event.userAgent ?? null },
+      );
     }
 
     // No need to await tracking after we've identified them
-    await this.analytics.track({
-      userId: event.userRecord?.uid,
-      event: 'User Signed Up',
-      properties: {
+    this.trackingService.track(
+      'User Signed Up',
+      { userId: event.userRecord.uid },
+      {
         role: UserRole.EATER,
         name: event.firstName,
         email: event.userRecord.email,
       },
-      context: { userAgent: event.userAgent ?? null },
-    });
+      { userAgent: event.userAgent ?? null },
+    );
 
     console.log('event', event);
   }

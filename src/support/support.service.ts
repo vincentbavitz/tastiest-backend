@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   FirestoreCollection,
   RestaurantSupportRequest,
@@ -15,27 +14,20 @@ import {
 import { isEqual } from 'lodash';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { TrackingService } from 'src/tracking/tracking.service';
 import UpdateUserTicketDto from './dto/update-user-ticket.dto';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Analytics = require('analytics-node');
 type SupportRequestCategory = 'user' | 'restaurant';
 
 @Injectable()
 export class SupportService {
-  private analytics: any;
-
   /**
    * @ignore
    */
   constructor(
     private readonly firebaseApp: FirebaseService,
-    private configService: ConfigService,
-  ) {
-    this.analytics = new Analytics(
-      this.configService.get<string>('ANALYTICS_WRITE_KEY'),
-    );
-  }
+    private trackingService: TrackingService,
+  ) {}
 
   async getUserTickets(user: AuthenticatedUser, limit = 100, skip = 0) {
     if (!user.roles.includes(UserRole.ADMIN)) {
@@ -196,13 +188,14 @@ export class SupportService {
     updated.updatedAt = Date.now();
 
     // Send reply to Segment
-    await this.analytics.track({
-      event: 'Reply to Restaurant Support Ticket',
-      userId: user.uid,
-      properties: {
-        ...ticket,
+    // Send reply to Segment
+    await this.trackingService.track(
+      'Reply to Restaurant Support Ticket',
+      {
+        userId: user.uid,
       },
-    });
+      ticket,
+    );
 
     await this.firebaseApp.db(collection).doc(id).set(updated, { merge: true });
 
