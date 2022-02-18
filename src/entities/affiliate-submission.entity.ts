@@ -19,7 +19,7 @@ export class AffiliateSubmissionEntity extends BaseEntity {
   @Column('varchar')
   reference: string;
 
-  @Column('varchar')
+  @Column({ type: 'varchar', default: '' })
   affiliateType: string;
 
   @ManyToOne(() => UserEntity, { nullable: true, eager: true })
