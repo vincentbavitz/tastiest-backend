@@ -25,16 +25,6 @@ export class TrackingService {
     );
   }
 
-  //   await this.analytics.identify({
-  //     anonymousId: event.anonymousId,
-  //     traits: {
-  //       userId: event.userRecord.uid,
-  //       email: event.userRecord.email,
-  //       firstName: event.firstName,
-  //     },
-  //     context: { userAgent: event.userAgent ?? null },
-  //   });
-
   public async identify(
     who: TrackingWho,
     traits: any,

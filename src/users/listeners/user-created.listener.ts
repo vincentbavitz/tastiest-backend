@@ -9,8 +9,6 @@ import { UsersService } from '../users.service';
 
 @Injectable()
 export class UserCreatedListener {
-  private analytics: any;
-
   constructor(
     private configService: ConfigService,
     private usersService: UsersService,

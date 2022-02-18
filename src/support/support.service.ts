@@ -26,7 +26,7 @@ export class SupportService {
    */
   constructor(
     private readonly firebaseApp: FirebaseService,
-    private trackingService: TrackingService,
+    private readonly trackingService: TrackingService,
   ) {}
 
   async getUserTickets(user: AuthenticatedUser, limit = 100, skip = 0) {

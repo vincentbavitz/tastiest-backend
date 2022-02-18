@@ -25,8 +25,8 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
 import { SupportModule } from './support/support.module';
 import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
-import { UsersModule } from './users/users.module';
 import { TrackingService } from './tracking/tracking.service';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -73,7 +73,7 @@ import { TrackingService } from './tracking/tracking.service';
     AffiliatesModule,
   ],
   controllers: [AppController],
-  providers: [AppService, TasksService, TrackingService],
+  providers: [AppService, TrackingService, TasksService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
