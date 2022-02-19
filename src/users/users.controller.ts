@@ -11,6 +11,8 @@ import {
 import { UserRole } from '@tastiest-io/tastiest-utils';
 import { RequestWithUser } from 'src/auth/auth.model';
 import RoleGuard from 'src/auth/role.guard';
+import FollowRestaurantDto from './dto/follow-restaurant.dto';
+import UnfollowRestaurantDto from './dto/unfollow-restaurant.dto';
 import UpdateUserDto from './dto/update-user.dto';
 import { UsersService } from './users.service';
 
@@ -71,6 +73,41 @@ export class UsersController {
       id: this.isAdmin(request) ? updated.id : undefined,
       financial: this.isAdmin(request) ? updated.financial : undefined,
     };
+  }
+
+  /**
+   * Follow a restaurant and optionally set notifications.
+   */
+  @Post('follow-restaurant')
+  @UseGuards(RoleGuard(UserRole.EATER))
+  async FollowRestaurant(
+    @Body() followRestaurantDto: FollowRestaurantDto,
+    @Request() request: RequestWithUser,
+  ) {
+    return this.userService.followRestaurant(
+      followRestaurantDto.restaurantId,
+      request.user,
+      {
+        notifyNewMenu: true,
+        notifyGeneralInfo: true,
+        notifyLastMinuteTables: true,
+        notifyLimitedTimeDishes: true,
+        notifySpecialExperiences: true,
+        ...followRestaurantDto,
+      },
+    );
+  }
+
+  /**
+   * Unfollow a restaurant completely
+   */
+  @Post('unfollow-restaurant')
+  @UseGuards(RoleGuard(UserRole.EATER))
+  async UnfollowRestaurant(
+    @Body() unfollowRestaurantDto: UnfollowRestaurantDto,
+    @Request() request: RequestWithUser,
+  ) {
+    return null;
   }
 
   /**

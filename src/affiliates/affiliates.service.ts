@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AffiliateSubmissionEntity } from 'src/entities/affiliate-submission.entity';
 import {
   ANONYMOUS_USER_ID,
   TrackingService,
 } from 'src/tracking/tracking.service';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
+import { AffiliateSubmissionEntity } from './affiliate-submission.entity';
 
 @Injectable()
 export class AffiliatesService {

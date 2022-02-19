@@ -14,9 +14,9 @@ import {
 } from '@tastiest-io/tastiest-utils';
 import { DateTime } from 'luxon';
 import { AuthenticatedUser } from 'src/auth/auth.model';
-import { UserEntity } from 'src/entities/user.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { TrackingService } from 'src/tracking/tracking.service';
+import { UserEntity } from 'src/users/user.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()

@@ -12,8 +12,8 @@ import {
   UserRole,
 } from '@tastiest-io/tastiest-utils';
 import { AuthenticatedUser } from 'src/auth/auth.model';
-import { OrderEntity } from 'src/entities/order.entity';
-import { UserEntity } from 'src/entities/user.entity';
+import { OrderEntity } from 'src/orders/order.entity';
+import { UserEntity } from 'src/users/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { DeepPartial, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';

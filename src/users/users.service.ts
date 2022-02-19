@@ -11,8 +11,10 @@ import { DateTime } from 'luxon';
 import { AccountService } from 'src/admin/account/account.service';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import RegisterDto from 'src/auth/dto/register.dto';
-import { UserEntity } from 'src/entities/user.entity';
+import { FollowerEntity } from 'src/entities/follower.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { RestaurantEntity } from 'src/restaurants/restaurant.entity';
+import { UserEntity } from 'src/users/user.entity';
 import { DeepPartial, Repository } from 'typeorm';
 import UpdateUserDto from './dto/update-user.dto';
 import { UserCreatedEvent } from './events/user-created.event';
@@ -22,6 +24,14 @@ type CreateUserPrimaryParams = {
   password: string;
   firstName: string;
   isTestAccount: boolean;
+};
+
+type SetRestaurantFollowingNotifications = {
+  notifyNewMenu: boolean;
+  notifyGeneralInfo: boolean;
+  notifyLastMinuteTables: boolean;
+  notifyLimitedTimeDishes: boolean;
+  notifySpecialExperiences: boolean;
 };
 
 @Injectable()
@@ -35,6 +45,8 @@ export class UsersService {
     private readonly eventEmitter: EventEmitter2,
     @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
+    @InjectRepository(FollowerEntity)
+    private followersRepository: Repository<FollowerEntity>,
   ) {}
 
   // FIX ME. TEMPORARY. SYNC FROM FIRESTORE
@@ -138,7 +150,8 @@ export class UsersService {
         restaurantsVisited: [],
         restaurantsFollowed: [],
       },
-      lastActive: new Date().toISOString(),
+      lastActive: new Date(),
+      createdAt: new Date(),
     });
 
     await this.usersRepository.save(entity);
@@ -173,6 +186,16 @@ export class UsersService {
     return userEntity;
   }
 
+  async getUsers() {
+    const users = await this.usersRepository.find();
+
+    if (users?.length) {
+      return users;
+    }
+
+    return [];
+  }
+
   async updateUser(update: UpdateUserDto) {
     console.log('users.service ➡️ update:', update);
 
@@ -199,13 +222,31 @@ export class UsersService {
     return this.usersRepository.save(updatedUser);
   }
 
-  async getUsers() {
-    const users = await this.usersRepository.find();
+  async followRestaurant(
+    restaurantId: string,
+    authenticatedUser: AuthenticatedUser,
+    {
+      notifyNewMenu,
+      notifyGeneralInfo,
+      notifyLastMinuteTables,
+      notifyLimitedTimeDishes,
+      notifySpecialExperiences,
+    }: SetRestaurantFollowingNotifications | undefined,
+  ) {
+    const user = await this.getUser(authenticatedUser.uid);
+    // const restaurant = await this.restaurantsService.
 
-    if (users?.length) {
-      return users;
-    }
+    this.followersRepository.create({
+      user,
+      restaurant: '' as never as RestaurantEntity,
+      followedAt: new Date(),
+      notifyNewMenu: false,
+      notifyGeneralInfo: false,
+      notifyLastMinuteTables: false,
+      notifyLimitedTimeDishes: false,
+      notifySpecialExperiences: false,
+    });
 
-    return [];
+    return null;
   }
 }

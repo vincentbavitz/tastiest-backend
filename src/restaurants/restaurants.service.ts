@@ -4,13 +4,18 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { dlog } from '@tastiest-io/tastiest-utils';
+import {
+  dlog,
+  FirestoreCollection,
+  RestaurantData,
+} from '@tastiest-io/tastiest-utils';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import EmailSchedulingService from 'src/email/schedule/email-schedule.service';
+import { RestaurantEntity } from 'src/entities/restaurant.entity';
 import RestaurateurApplicationEntity from 'src/entities/restaurateur-application.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { TrackingService } from 'src/tracking/tracking.service';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import ApplyDto from './dto/apply.dto';
 import NotifyDto from './dto/notify.dto';
 
@@ -25,9 +30,62 @@ export class RestaurantsService {
     private readonly emailSchedulingService: EmailSchedulingService,
     private readonly firebaseApp: FirebaseService,
     private readonly trackingService: TrackingService,
+    @InjectRepository(RestaurantEntity)
+    private restaurantsRepository: Repository<RestaurantEntity>,
     @InjectRepository(RestaurateurApplicationEntity)
     private applicationsRepository: Repository<RestaurateurApplicationEntity>,
   ) {}
+
+  // FIX ME. TEMPORARY. SYNC FROM FIRESTORE
+  async syncFromFirestore(restaurantId: string) {
+    const restaurantDataSnapshot = await this.firebaseApp
+      .db(FirestoreCollection.RESTAURANTS)
+      .doc(restaurantId)
+      .get();
+
+    const restaurantData = restaurantDataSnapshot.data() as RestaurantData;
+
+    // Exists?
+    const restaurantUser = await this.restaurantsRepository.findOne({
+      where: { id: restaurantId },
+    });
+
+    const updatedRestaurantEntity: DeepPartial<RestaurantEntity> = {
+      id: uid,
+      email: restaurantData.details.email,
+      firstName: restaurantData.details.firstName,
+      lastName: restaurantData.details?.lastName ?? null,
+      isTestAccount: Boolean(userRecord?.customClaims['isTestAccount']),
+      mobile: userData.details.mobile ?? null,
+      metrics: userData.metrics,
+      birthday: userBirthdayDateTime?.isValid
+        ? userBirthdayDateTime.toJSDate()
+        : null,
+      preferences: userData.preferences ?? null,
+      financial: { ...userData.paymentDetails },
+      location: {
+        ...userData.details.address,
+        postcode: userData.details?.postalCode
+          ?.replace(/[\s-]/gm, '')
+          .toUpperCase(),
+      },
+    };
+
+    if (restaurantUser) {
+      return this.restaurantsRepository.save({
+        ...restaurantUser,
+        ...updatedRestaurantEntity,
+      });
+    }
+
+    const newRestaurantUserFromFirestore = this.restaurantsRepository.create(
+      updatedRestaurantEntity,
+    );
+
+    return this.restaurantsRepository.save(newRestaurantUserFromFirestore);
+  }
+
+  async syncFromContentful(restaurantId: string);
 
   async scheduleFollowersEmail(data: NotifyDto) {
     const { token, restaurantId, templateId, subject, scheduleFor } = data;

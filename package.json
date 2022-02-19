@@ -41,7 +41,7 @@
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/schedule": "^1.0.1",
     "@nestjs/typeorm": "^8.0.2",
-    "@tastiest-io/tastiest-utils": "^1.64.0",
+    "@tastiest-io/tastiest-utils": "^1.66.0",
     "@types/hapi__joi": "^17.1.8",
     "analytics-node": "^6.0.0",
     "class-transformer": "0.4.0",

@@ -2,14 +2,15 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccountService } from 'src/admin/account/account.service';
-import { UserEntity } from 'src/entities/user.entity';
+import { FollowerEntity } from 'src/entities/follower.entity';
 import { TrackingService } from 'src/tracking/tracking.service';
+import { UserEntity } from 'src/users/user.entity';
 import { UserCreatedListener } from './listeners/user-created.listener';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity, FollowerEntity])],
   controllers: [UsersController],
   providers: [
     UsersService,
