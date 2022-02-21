@@ -13,9 +13,9 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { BookingEntity } from '../bookings/booking.entity';
-import { RestaurantEntity } from '../restaurants/restaurant.entity';
-import { UserEntity } from '../users/user.entity';
+import { BookingEntity } from '../../bookings/entities/booking.entity';
+import { RestaurantEntity } from '../../restaurants/entities/restaurant.entity';
+import { UserEntity } from '../../users/entities/user.entity';
 
 @Entity('order')
 export class OrderEntity extends BaseEntity {

@@ -7,9 +7,9 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { OrderEntity } from '../orders/order.entity';
-import { RestaurantEntity } from '../restaurants/restaurant.entity';
-import { UserEntity } from '../users/user.entity';
+import { OrderEntity } from '../../orders/entities/order.entity';
+import { RestaurantEntity } from '../../restaurants/entities/restaurant.entity';
+import { UserEntity } from '../../users/entities/user.entity';
 
 @Entity('booking')
 export class BookingEntity extends BaseEntity {

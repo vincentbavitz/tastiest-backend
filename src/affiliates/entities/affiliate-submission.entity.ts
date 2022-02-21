@@ -6,7 +6,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserEntity } from '../users/user.entity';
+import { UserEntity } from '../../users/entities/user.entity';
 
 @Entity('affiliate_submission')
 export class AffiliateSubmissionEntity extends BaseEntity {

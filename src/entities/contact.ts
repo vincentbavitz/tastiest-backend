@@ -5,20 +5,16 @@ import { Column } from 'typeorm';
  * used only as a nested property.
  * We don't want TypeORM to make its own table for this entity.
  */
-export default class Location {
-  @Column('numeric', { nullable: true })
-  lat?: number;
-
-  @Column('numeric', { nullable: true })
-  lon?: number;
+export default class Contact {
+  @Column('varchar')
+  firstName: string;
 
   @Column('varchar', { nullable: true })
-  address?: string;
+  lastName?: string;
 
   @Column('varchar', { nullable: true })
-  postcode?: string;
+  email?: string;
 
-  /** Display location. Eg. '33 Mayfair - London' */
   @Column('varchar', { nullable: true })
-  display?: string;
+  phoneNumber?: string;
 }

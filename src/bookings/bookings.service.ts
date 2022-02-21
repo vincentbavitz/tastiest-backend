@@ -16,7 +16,7 @@ import { DateTime } from 'luxon';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { TrackingService } from 'src/tracking/tracking.service';
-import { UserEntity } from 'src/users/user.entity';
+import { UserEntity } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()

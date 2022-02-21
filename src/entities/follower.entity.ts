@@ -6,8 +6,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { RestaurantEntity } from '../restaurants/restaurant.entity';
-import { UserEntity } from '../users/user.entity';
+import { RestaurantEntity } from '../restaurants/entities/restaurant.entity';
+import { UserEntity } from '../users/entities/user.entity';
 
 // enum
 

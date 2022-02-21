@@ -4,10 +4,10 @@ import {
   UserPreferences,
 } from '@tastiest-io/tastiest-utils';
 import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
-import { BookingEntity } from '../bookings/booking.entity';
-import { FollowerEntity } from '../entities/follower.entity';
-import Location from '../entities/location';
-import { OrderEntity } from '../orders/order.entity';
+import { BookingEntity } from '../../bookings/entities/booking.entity';
+import { FollowerEntity } from '../../entities/follower.entity';
+import Location from '../../entities/location';
+import { OrderEntity } from '../../orders/entities/order.entity';
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
