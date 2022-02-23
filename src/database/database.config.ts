@@ -14,7 +14,10 @@ export default registerAs('database', () => {
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
-    entities: ['dist/**/*.entity.{ts,js}'],
+    entities: [
+      'dist/**/entities/**/*.entity{.ts,.js}',
+      'dist/entities/**/*.entity{.ts,.js}',
+    ],
     synchronize,
     // dropSchema: synchronize,
     autoLoadEntities: true,

@@ -19,6 +19,6 @@ import { UsersService } from './users.service';
     AccountService,
     UserCreatedListener,
   ],
-  exports: [UsersService],
+  exports: [UsersService, AccountService, TrackingService, UserCreatedListener],
 })
 export class UsersModule {}

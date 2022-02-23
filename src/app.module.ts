@@ -10,8 +10,6 @@ import { RouterModule } from '@nestjs/core/router/router-module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AdminModule } from './admin/admin.module';
-import { AffiliatesModule } from './affiliates/affiliates.module';
-import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { PreAuthMiddleware } from './auth/pre-auth.middleware';
@@ -21,7 +19,6 @@ import { DatabaseModule } from './database/database.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
-import { RestaurantsModule } from './restaurants/restaurants.module';
 import { SupportModule } from './support/support.module';
 import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
@@ -64,15 +61,14 @@ import { UsersModule } from './users/users.module';
     SyncsModule,
     SupportModule,
     UsersModule,
-    RestaurantsModule,
+    // RestaurantsModule,
     PaymentsModule,
     DatabaseModule,
     BookingsModule,
     OrdersModule,
     AuthModule,
-    AffiliatesModule,
+    // AffiliatesModule,
   ],
-  controllers: [AppController],
   providers: [AppService, TrackingService, TasksService],
 })
 export class AppModule implements NestModule {
