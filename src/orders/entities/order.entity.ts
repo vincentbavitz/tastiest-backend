@@ -11,6 +11,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { BookingEntity } from '../../bookings/entities/booking.entity';
@@ -41,7 +42,7 @@ export class OrderEntity extends BaseEntity {
   @JoinColumn()
   restaurant: RestaurantEntity;
 
-  @ManyToOne(() => BookingEntity)
+  @OneToOne(() => BookingEntity)
   @JoinColumn()
   booking: BookingEntity;
 

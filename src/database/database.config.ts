@@ -1,5 +1,4 @@
 import { registerAs } from '@nestjs/config';
-import { join } from 'path';
 
 /**
  * Solution to access config in NestJS and TypeORM CLI.
@@ -15,7 +14,7 @@ export default registerAs('database', () => {
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
-    entities: [join(__dirname, '**', '*.entity.{ts,js}')],
+    entities: ['dist/**/*.entity.{ts,js}'],
     synchronize,
     // dropSchema: synchronize,
     autoLoadEntities: true,

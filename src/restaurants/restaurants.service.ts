@@ -44,6 +44,8 @@ export class RestaurantsService {
     private readonly emailSchedulingService: EmailSchedulingService,
     @InjectRepository(RestaurantEntity)
     private restaurantsRepository: Repository<RestaurantEntity>,
+    @InjectRepository(RestaurantProfileEntity)
+    private restaurantProfilesRepository: Repository<RestaurantProfileEntity>,
     @InjectRepository(RestaurateurApplicationEntity)
     private applicationsRepository: Repository<RestaurateurApplicationEntity>,
   ) {}
@@ -116,15 +118,16 @@ export class RestaurantsService {
       ),
     };
 
-    const profile = new RestaurantProfileEntity();
-    profile.description = restaurantData.profile.description;
-    profile.profilePicture = restaurantData.profile.profilePicture;
-    profile.publicPhoneNumber = restaurantData.profile.publicPhoneNumber;
-    profile.heroIllustration = restaurantData.profile.heroIllustration;
-    profile.backdropStillFrame = restaurantData.profile.backdropStillFrame;
-    profile.backdropVideo = restaurantData.profile.backdropVideo;
-    profile.website = restaurantData.profile.website;
-    profile.meta = restaurantData.profile.meta;
+    const profile = this.restaurantProfilesRepository.create({
+      description: restaurantData.profile.description,
+      profilePicture: restaurantData.profile.profilePicture,
+      publicPhoneNumber: restaurantData.profile.publicPhoneNumber,
+      heroIllustration: restaurantData.profile.heroIllustration,
+      backdropStillFrame: restaurantData.profile.backdropStillFrame,
+      backdropVideo: restaurantData.profile.backdropVideo,
+      website: restaurantData.profile.website,
+      meta: restaurantData.profile.meta,
+    });
 
     // Keep this empty because we're transitioning away from this anyway.
     const followers: FollowerEntity[] = [];
@@ -158,6 +161,10 @@ export class RestaurantsService {
   }
 
   async syncFromContentful(restaurantId: string) {
+    null;
+  }
+
+  async createRestaurant(restaurantId: string) {
     null;
   }
 

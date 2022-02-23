@@ -1,3 +1,4 @@
+import { BookingEntity } from 'src/bookings/entities/booking.entity';
 import {
   BaseEntity,
   Column,
@@ -41,10 +42,25 @@ export class RestaurantEntity extends BaseEntity {
   profile: RestaurantProfileEntity;
 
   @OneToMany(
+    () => BookingEntity,
+    (booking: BookingEntity) => booking.restaurant,
+  )
+  bookings: BookingEntity[];
+
+  @OneToMany(
     () => FollowerEntity,
     (follower: FollowerEntity) => follower.restaurant,
   )
   followers: FollowerEntity[];
+
+  /**
+   * Setting up a restaurant takes many steps;
+   * basic info, banking information, etc.
+   * This parameter tells you whether or not the reastaurant
+   * is fully setup and ready for production.
+   */
+  @Column('boolean', { default: false })
+  isSetupComplete: boolean;
 
   @Column('boolean', { default: false })
   isArchived: boolean;

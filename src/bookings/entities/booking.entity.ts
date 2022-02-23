@@ -20,7 +20,6 @@ export class BookingEntity extends BaseEntity {
   userFacingBookingId: string;
 
   @OneToOne(() => OrderEntity)
-  @JoinColumn()
   order: OrderEntity;
 
   @ManyToOne(() => UserEntity, (user: UserEntity) => user.bookings, {
@@ -29,7 +28,11 @@ export class BookingEntity extends BaseEntity {
   @JoinColumn()
   user: UserEntity;
 
-  @OneToOne(() => RestaurantEntity)
+  @ManyToOne(
+    () => RestaurantEntity,
+    (restaurant: RestaurantEntity) => restaurant.bookings,
+    { eager: true },
+  )
   @JoinColumn()
   restaurant: RestaurantEntity;
 

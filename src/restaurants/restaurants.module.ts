@@ -4,6 +4,7 @@ import EmailService from 'src/email/email.service';
 import EmailSchedulingService from 'src/email/schedule/email-schedule.service';
 import { TrackingService } from 'src/tracking/tracking.service';
 import { UsersModule } from 'src/users/users.module';
+import { RestaurantProfileEntity } from './entities/restaurant-profile.entity';
 import { RestaurantEntity } from './entities/restaurant.entity';
 import RestaurateurApplicationEntity from './entities/restaurateur-application.entity';
 import { RestaurantsController } from './restaurants.controller';
@@ -12,7 +13,11 @@ import { RestaurantsService } from './restaurants.service';
 @Module({
   imports: [
     UsersModule,
-    TypeOrmModule.forFeature([RestaurantEntity, RestaurateurApplicationEntity]),
+    TypeOrmModule.forFeature([
+      RestaurantEntity,
+      RestaurantProfileEntity,
+      RestaurateurApplicationEntity,
+    ]),
   ],
   controllers: [RestaurantsController],
   providers: [
