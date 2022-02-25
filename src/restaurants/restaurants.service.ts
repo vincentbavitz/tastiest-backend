@@ -59,9 +59,11 @@ export class RestaurantsService {
 
     const restaurantData = restaurantDataSnapshot.data() as RestaurantData;
 
+    console.log('restaurants.service ➡️ restaurantData:', restaurantData);
+
     // Exists?
     const existingRestaurant = await this.restaurantsRepository.findOne({
-      where: { id: restaurantId },
+      where: { uid: restaurantId },
     });
 
     const cms = new CmsApi(
@@ -76,19 +78,19 @@ export class RestaurantsService {
       city: restaurantData.details.city,
       cuisine: restaurantData.details.cuisine,
       uriName: restaurantData.details.uriName,
-      bookingSystem: restaurantData.details.bookingSystem,
+      bookingSystem: restaurantData.details?.bookingSystem,
       location: {
-        lat: restaurantData.details.location.lat,
-        lon: restaurantData.details.location.lon,
-        address: restaurantData.details.location.address,
-        display: restaurantData.details.location.displayLocation,
+        lat: restaurantData.details.location?.lat,
+        lon: restaurantData.details.location?.lon,
+        address: restaurantData.details.location?.address,
+        display: restaurantData.details.location?.displayLocation,
         postcode: null,
       },
       contact: {
-        firstName: restaurantData.details.contact.firstName,
-        lastName: restaurantData.details.contact.lastName,
-        email: restaurantData.details.contact.email,
-        phoneNumber: restaurantData.details.contact.mobile,
+        firstName: restaurantData.details.contact?.firstName ?? '',
+        lastName: restaurantData.details.contact?.lastName ?? '',
+        email: restaurantData.details.contact?.email ?? '',
+        phoneNumber: restaurantData.details.contact?.mobile ?? '',
       },
     };
 
@@ -106,15 +108,15 @@ export class RestaurantsService {
 
     // prettier-ignore
     const financial: RestaurantFinancial = {
-      stripeConnectAccount: restaurantData.financial.stripeConnectedAccount,
-      restaurantCutFollowers: restaurantData.financial.commission.followersRestaurantCut,
-      restaurantCutDefault: restaurantData.financial.commission.defaultRestaurantCut,
+      stripeConnectAccount: restaurantData.financial?.stripeConnectedAccount,
+      restaurantCutFollowers: restaurantData.financial?.commission.followersRestaurantCut,
+      restaurantCutDefault: restaurantData.financial?.commission.defaultRestaurantCut,
     };
 
     const realtime: RestaurantRealtime = {
-      availableBookingSlots: restaurantData.realtime.availableBookingSlots,
+      availableBookingSlots: restaurantData.realtime?.availableBookingSlots,
       lastBookingSlotsSync: new Date(
-        restaurantData.realtime.lastBookingSlotsSync,
+        restaurantData.realtime?.lastBookingSlotsSync,
       ),
     };
 
@@ -133,7 +135,7 @@ export class RestaurantsService {
     const followers: FollowerEntity[] = [];
 
     const updatedRestaurantEntity: DeepPartial<RestaurantEntity> = {
-      id: restaurantId,
+      uid: restaurantId,
       details,
       profile,
       metrics,
@@ -153,11 +155,15 @@ export class RestaurantsService {
       });
     }
 
-    const newRestaurantUserFromFirestore = this.restaurantsRepository.create(
-      updatedRestaurantEntity,
-    );
+    try {
+      const newRestaurantUserFromFirestore = this.restaurantsRepository.create(
+        updatedRestaurantEntity,
+      );
 
-    return this.restaurantsRepository.save(newRestaurantUserFromFirestore);
+      return this.restaurantsRepository.save(newRestaurantUserFromFirestore);
+    } catch (error) {
+      console.log('Could not create restaurant:', error);
+    }
   }
 
   async syncFromContentful(restaurantId: string) {

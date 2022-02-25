@@ -3,7 +3,13 @@ import {
   UserMetrics,
   UserPreferences,
 } from '@tastiest-io/tastiest-utils';
-import { BaseEntity, Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { BookingEntity } from '../../bookings/entities/booking.entity';
 import { FollowerEntity } from '../../entities/follower.entity';
 import Location from '../../entities/location';
@@ -11,9 +17,12 @@ import { OrderEntity } from '../../orders/entities/order.entity';
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
   /** From Firebase Auth */
-  @PrimaryColumn({ type: 'varchar', readonly: true })
-  id: string;
+  @Column({ type: 'varchar', readonly: true })
+  uid: string;
 
   @Column({ type: 'varchar', unique: true })
   email: string;

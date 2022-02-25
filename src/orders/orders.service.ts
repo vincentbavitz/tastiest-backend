@@ -125,7 +125,7 @@ export class OrdersService {
     // Only admins and verified users can access the order.
     if (
       !requestUser.roles.includes(UserRole.ADMIN) &&
-      order.user.id !== requestUser.uid
+      order.user.uid !== requestUser.uid
     ) {
       throw new UnauthorizedException(`This order doesn't belong to you.`);
     }

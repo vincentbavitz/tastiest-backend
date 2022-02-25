@@ -6,7 +6,7 @@ import {
   JoinColumn,
   OneToMany,
   OneToOne,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { FollowerEntity } from '../../entities/follower.entity';
 import RestaurantDetails from './restaurant-details';
@@ -18,9 +18,12 @@ import RestaurantSettings from './restaurant-settings';
 
 @Entity('restaurant')
 export class RestaurantEntity extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
   /** From Firebase Auth */
-  @PrimaryColumn({ type: 'varchar', readonly: true })
-  id: string;
+  @Column({ type: 'varchar', readonly: true })
+  uid: string;
 
   @Column(() => RestaurantDetails)
   details: RestaurantDetails;

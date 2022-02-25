@@ -32,7 +32,7 @@ export class TasksService {
     this.logger.log('sdf');
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_MINUTE)
   async syncUsers() {
     const firebaseUsersSnapshot = await this.firebaseApp
       .db(FirestoreCollection.USERS)
@@ -54,14 +54,14 @@ export class TasksService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async syncRestaurants() {
-    const firebaseUsersSnapshot = await this.firebaseApp
+    const firebaseRestaurantsSnapshot = await this.firebaseApp
       .db(FirestoreCollection.RESTAURANTS)
       .limit(1000)
       .get();
 
     const firebaseRestaurants: RestaurantData[] = [];
 
-    firebaseUsersSnapshot.forEach((doc) =>
+    firebaseRestaurantsSnapshot.forEach((doc) =>
       firebaseRestaurants.push(doc.data() as RestaurantData),
     );
 

@@ -2,8 +2,8 @@ import {
   BaseEntity,
   Column,
   Entity,
-  JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { RestaurantEntity } from '../restaurants/entities/restaurant.entity';
@@ -22,18 +22,15 @@ export class FollowerEntity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => UserEntity, (user: UserEntity) => user.following, {
+  @OneToOne(() => UserEntity, {
     eager: true,
   })
-  @JoinColumn()
   user: UserEntity;
 
   @ManyToOne(
     () => RestaurantEntity,
     (restaurant: RestaurantEntity) => restaurant.followers,
-    { eager: true },
   )
-  @JoinColumn()
   restaurant: RestaurantEntity;
 
   @Column('timestamp with time zone')

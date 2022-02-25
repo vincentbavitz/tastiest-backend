@@ -16,6 +16,7 @@ export default registerAs('database', () => {
     database: process.env.POSTGRES_DB,
     entities: ['dist/**/*.entity.{ts,js}'],
     synchronize,
+    // logging: true,
     // dropSchema: synchronize,
     autoLoadEntities: true,
     migrations: ['dist/database/migrations/*.js'],

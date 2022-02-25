@@ -13,7 +13,6 @@ import { AuthenticatedUser } from 'src/auth/auth.model';
 import RegisterDto from 'src/auth/dto/register.dto';
 import { FollowerEntity } from 'src/entities/follower.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
-import { RestaurantEntity } from 'src/restaurants/entities/restaurant.entity';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { DeepPartial, Repository } from 'typeorm';
 import UpdateUserDto from './dto/update-user.dto';
@@ -66,7 +65,7 @@ export class UsersService {
     }
 
     // Exists?
-    const user = await this.usersRepository.findOne({ where: { id: uid } });
+    const user = await this.usersRepository.findOne({ where: { uid: uid } });
 
     const userBirthdayDateTime = userData.details?.birthday
       ? DateTime.fromObject({
@@ -77,7 +76,7 @@ export class UsersService {
       : null;
 
     const updatedUserEntity: DeepPartial<UserEntity> = {
-      id: uid,
+      uid: uid,
       email: userData.details.email,
       firstName: userData.details.firstName,
       lastName: userData.details?.lastName ?? null,
@@ -139,7 +138,7 @@ export class UsersService {
 
     // Now we create the user in Postgres
     const entity = this.usersRepository.create({
-      id: userRecord.uid,
+      uid: userRecord.uid,
       email,
       firstName,
       isTestAccount,
@@ -174,7 +173,7 @@ export class UsersService {
 
   async getUser(uid: string, relations: Array<'orders' | 'bookings'> = []) {
     const userEntity = await this.usersRepository.findOne({
-      where: { id: uid },
+      where: { uid: uid },
       relations,
     });
 
@@ -238,7 +237,7 @@ export class UsersService {
 
     this.followersRepository.create({
       user,
-      restaurant: '' as never as RestaurantEntity,
+      // restaurant: '' as never as RestaurantEntity,
       followedAt: new Date(),
       notifyNewMenu: false,
       notifyGeneralInfo: false,
