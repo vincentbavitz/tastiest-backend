@@ -6,15 +6,15 @@ import { Column } from 'typeorm';
  * We don't want TypeORM to make its own table for this entity.
  */
 export default class Contact {
-  @Column('varchar')
+  @Column('varchar', { name: 'first_name' })
   firstName: string;
 
-  @Column('varchar', { nullable: true })
+  @Column('varchar', { name: 'last_name', nullable: true })
   lastName?: string;
 
-  @Column('varchar', { nullable: true })
+  @Column('varchar', { name: 'email', nullable: true })
   email?: string;
 
-  @Column('varchar', { nullable: true })
+  @Column('varchar', { name: 'phone_number', nullable: true })
   phoneNumber?: string;
 }

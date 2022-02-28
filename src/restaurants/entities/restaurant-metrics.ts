@@ -7,10 +7,10 @@ import { Column } from 'typeorm';
  * We don't want TypeORM to make its own table for this entity.
  */
 export default class RestaurantMetrics {
-  @Column('simple-json')
+  @Column('simple-json', { name: 'quiet_times', nullable: true })
   quietTimes: WeekQuietTimes;
 
-  @Column('simple-json')
+  @Column('simple-json', { name: 'open_times', nullable: true })
   openTimes: WeekOpenTimes;
 
   /**
@@ -18,6 +18,6 @@ export default class RestaurantMetrics {
    * We use this to be able to predict when a table
    * is open or over-booked
    */
-  @Column('numeric')
+  @Column('numeric', { name: 'seating_duration', nullable: true })
   seatingDuration: number;
 }

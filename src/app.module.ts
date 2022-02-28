@@ -27,6 +27,9 @@ import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
 import { TrackingService } from './tracking/tracking.service';
 import { UsersModule } from './users/users.module';
+import { PrismaService } from './prisma/prisma.service';
+import { TentService } from './tent/tent.service';
+import { TentController } from './tent/tent.controller';
 
 @Module({
   imports: [
@@ -72,8 +75,8 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     AffiliatesModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, TrackingService, TasksService],
+  controllers: [AppController, TentController],
+  providers: [AppService, TrackingService, TasksService, PrismaService, TentService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

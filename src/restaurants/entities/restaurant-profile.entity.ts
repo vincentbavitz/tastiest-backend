@@ -18,31 +18,31 @@ export class RestaurantProfileEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('varchar')
+  @Column('varchar', { nullable: true })
   website: string;
 
-  @Column('varchar')
+  @Column('varchar', { name: 'public_phone_number', nullable: true })
   publicPhoneNumber: string;
 
-  @Column('simple-json')
+  @Column('simple-json', { name: 'profile_picture', nullable: true })
   profilePicture: Media;
 
-  @Column('simple-json')
+  @Column('simple-json', { name: 'backdrop_video', nullable: true })
   backdropVideo: Media;
 
-  @Column('simple-json')
+  @Column('simple-json', { name: 'backdrop_still_frame', nullable: true })
   backdropStillFrame: Media;
 
-  @Column('simple-json')
+  @Column('simple-json', { name: 'display_photograph', nullable: true })
   displayPhotograph: Media;
 
-  @Column('simple-json')
+  @Column('simple-json', { name: 'hero_illustration', nullable: true })
   heroIllustration: Media;
 
-  @Column('simple-json')
+  @Column('simple-json', { nullable: true })
   description: Document;
 
   /** Page metadata */
-  @Column('simple-json')
+  @Column('simple-json', { nullable: true })
   meta: MetaDetails;
 }

@@ -17,7 +17,7 @@ export default registerAs('database', () => {
     entities: ['dist/**/*.entity.{ts,js}'],
     synchronize,
     // logging: true,
-    // dropSchema: synchronize,
+    dropSchema: synchronize,
     autoLoadEntities: true,
     migrations: ['dist/database/migrations/*.js'],
     cli: {

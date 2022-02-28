@@ -15,6 +15,7 @@ import { FollowerEntity } from 'src/entities/follower.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { DeepPartial, Repository } from 'typeorm';
+import { v4 as uuid } from 'uuid';
 import UpdateUserDto from './dto/update-user.dto';
 import { UserCreatedEvent } from './events/user-created.event';
 
@@ -64,9 +65,6 @@ export class UsersService {
       userRecord = null;
     }
 
-    // Exists?
-    const user = await this.usersRepository.findOne({ where: { uid: uid } });
-
     const userBirthdayDateTime = userData.details?.birthday
       ? DateTime.fromObject({
           year: Number(userData.details.birthday.year),
@@ -96,14 +94,30 @@ export class UsersService {
       },
     };
 
+    // Exists?
+    const user = await this.usersRepository.findOne({ where: { uid } });
+
     if (user) {
-      return this.usersRepository.save({
+      console.log('Saved user as', {
+        id: user.id,
         ...user,
         ...updatedUserEntity,
       });
+
+      return this.usersRepository.save({
+        id: user.id,
+        ...user,
+        ...updatedUserEntity,
+        uid: '44',
+      });
     }
 
-    const newUserFromFirestore = this.usersRepository.create(updatedUserEntity);
+    const newUserFromFirestore = this.usersRepository.create({
+      id: uuid(),
+      ...updatedUserEntity,
+    });
+
+    console.log('Created user as', newUserFromFirestore);
 
     return this.usersRepository.save(newUserFromFirestore);
   }
@@ -138,6 +152,7 @@ export class UsersService {
 
     // Now we create the user in Postgres
     const entity = this.usersRepository.create({
+      id: uuid(),
       uid: userRecord.uid,
       email,
       firstName,

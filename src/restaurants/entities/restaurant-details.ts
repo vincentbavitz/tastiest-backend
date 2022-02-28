@@ -24,10 +24,10 @@ export default class RestaurantDetails {
   @Column(() => Contact)
   contact: Contact;
 
-  // This is the name as it appears in the URL. Eg. tastiest.io/london/numa
-  @Column('varchar')
+  // This is the name as it appears in the URL. Eg. `numa` in tastiest.io/london/numa
+  @Column('varchar', { name: 'uri_name' })
   uriName: string;
 
-  @Column('varchar', { nullable: true })
+  @Column('varchar', { name: 'booking_system', nullable: true })
   bookingSystem: string;
 }

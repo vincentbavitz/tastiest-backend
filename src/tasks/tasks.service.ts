@@ -32,7 +32,7 @@ export class TasksService {
     this.logger.log('sdf');
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // @Cron(CronExpression.EVERY_MINUTE)
   async syncUsers() {
     const firebaseUsersSnapshot = await this.firebaseApp
       .db(FirestoreCollection.USERS)
@@ -47,12 +47,11 @@ export class TasksService {
 
     firebaseUsers.forEach(async (user) => {
       console.log('Syncing user:', user.details.firstName);
-      console.log('tasks.service ➡️ user.birthday:', user.details?.birthday);
       await this.usersService.syncFromFirestore(user.id);
     });
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async syncRestaurants() {
     const firebaseRestaurantsSnapshot = await this.firebaseApp
       .db(FirestoreCollection.RESTAURANTS)

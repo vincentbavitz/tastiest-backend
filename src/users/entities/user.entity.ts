@@ -17,11 +17,12 @@ import { OrderEntity } from '../../orders/entities/order.entity';
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   /** From Firebase Auth */
-  @Column({ type: 'varchar', readonly: true })
+  // @Column({ type: 'varchar', readonly: true, unique: true })
+  @Column({ type: 'varchar' })
   uid: string;
 
   @Column({ type: 'varchar', unique: true })
@@ -45,7 +46,7 @@ export class UserEntity extends BaseEntity {
   @Column('varchar', { nullable: true })
   mobile?: string;
 
-  @Column(() => Location)
+  @Column(() => Location, { prefix: 'location_' })
   location: Location;
 
   @Column('timestamp with time zone', { nullable: true })

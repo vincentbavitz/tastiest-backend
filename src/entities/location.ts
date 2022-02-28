@@ -6,19 +6,19 @@ import { Column } from 'typeorm';
  * We don't want TypeORM to make its own table for this entity.
  */
 export default class Location {
-  @Column('numeric', { nullable: true })
+  @Column('numeric', { name: 'lat', nullable: true })
   lat?: number;
 
-  @Column('numeric', { nullable: true })
+  @Column('numeric', { name: 'lon', nullable: true })
   lon?: number;
 
-  @Column('varchar', { nullable: true })
+  @Column('varchar', { name: 'address', nullable: true })
   address?: string;
 
-  @Column('varchar', { nullable: true })
+  @Column('varchar', { name: 'postcode', nullable: true })
   postcode?: string;
 
   /** Display location. Eg. '33 Mayfair - London' */
-  @Column('varchar', { nullable: true })
+  @Column('varchar', { name: 'display', nullable: true })
   display?: string;
 }

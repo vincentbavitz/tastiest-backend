@@ -10,6 +10,7 @@ import {
   dlog,
   FirestoreCollection,
   RestaurantData,
+  RestaurantRealtime,
 } from '@tastiest-io/tastiest-utils';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import EmailSchedulingService from 'src/email/schedule/email-schedule.service';
@@ -25,7 +26,6 @@ import RestaurantDetails from './entities/restaurant-details';
 import RestaurantFinancial from './entities/restaurant-financial';
 import RestaurantMetrics from './entities/restaurant-metrics';
 import { RestaurantProfileEntity } from './entities/restaurant-profile.entity';
-import RestaurantRealtime from './entities/restaurant-realtime';
 import RestaurantSettings from './entities/restaurant-settings';
 import RestaurateurApplicationEntity from './entities/restaurateur-application.entity';
 
@@ -59,13 +59,6 @@ export class RestaurantsService {
 
     const restaurantData = restaurantDataSnapshot.data() as RestaurantData;
 
-    console.log('restaurants.service ➡️ restaurantData:', restaurantData);
-
-    // Exists?
-    const existingRestaurant = await this.restaurantsRepository.findOne({
-      where: { uid: restaurantId },
-    });
-
     const cms = new CmsApi(
       this.configService.get('CONTENTFUL_SPACE_ID'),
       this.configService.get('CONTENTFUL_ACCESS_TOKEN'),
@@ -74,7 +67,7 @@ export class RestaurantsService {
     const restaurantContentful = await cms.getRestaurantById(restaurantId);
 
     const details: RestaurantDetails = {
-      name: restaurantData.details.name,
+      name: restaurantData.details.name ?? '',
       city: restaurantData.details.city,
       cuisine: restaurantData.details.cuisine,
       uriName: restaurantData.details.uriName,
@@ -94,30 +87,17 @@ export class RestaurantsService {
       },
     };
 
-    const metrics: RestaurantMetrics = {
-      openTimes: restaurantData.metrics.openTimes,
-      quietTimes: restaurantData.metrics.quietTimes,
-      seatingDuration: restaurantData.metrics.seatingDuration,
-    };
-
+    // prettier-ignore
     const settings: RestaurantSettings = {
-      shouldFallbackToOpenTimes: true,
-      shouldNotifyNewBookings: true,
-      ...restaurantData.settings,
+      fallbackOpenTimes: restaurantData.settings?.shouldFallbackToOpenTimes ?? true,
+      notifyBookings: restaurantData.settings?.shouldNotifyNewBookings ?? true,
     };
 
     // prettier-ignore
     const financial: RestaurantFinancial = {
-      stripeConnectAccount: restaurantData.financial?.stripeConnectedAccount,
-      restaurantCutFollowers: restaurantData.financial?.commission.followersRestaurantCut,
-      restaurantCutDefault: restaurantData.financial?.commission.defaultRestaurantCut,
-    };
-
-    const realtime: RestaurantRealtime = {
-      availableBookingSlots: restaurantData.realtime?.availableBookingSlots,
-      lastBookingSlotsSync: new Date(
-        restaurantData.realtime?.lastBookingSlotsSync,
-      ),
+      stripeConnectAccount: restaurantData.financial?.stripeConnectedAccount ?? null,
+      cutFollowers: restaurantData.financial?.commission?.followersRestaurantCut ?? null,
+      cutDefault: restaurantData.financial?.commission?.defaultRestaurantCut ?? null,
     };
 
     const profile = this.restaurantProfilesRepository.create({
@@ -131,22 +111,45 @@ export class RestaurantsService {
       meta: restaurantData.profile.meta,
     });
 
+    const metrics: RestaurantMetrics = {
+      openTimes: restaurantData.metrics.openTimes,
+      quietTimes: restaurantData.metrics.quietTimes,
+      seatingDuration: restaurantData.metrics.seatingDuration,
+    };
+
+    const realtime: RestaurantRealtime = {
+      availableBookingSlots: restaurantData.realtime?.availableBookingSlots,
+      lastBookingSlotsSync: new Date(
+        restaurantData.realtime?.lastBookingSlotsSync,
+      ),
+    };
+
     // Keep this empty because we're transitioning away from this anyway.
     const followers: FollowerEntity[] = [];
 
     const updatedRestaurantEntity: DeepPartial<RestaurantEntity> = {
       uid: restaurantId,
-      details,
+      ...details,
       profile,
-      metrics,
       settings,
       financial,
       realtime,
+      metrics,
       followers,
       isArchived: false,
-      isDemo: restaurantContentful.isDemo ?? false,
+      isDemo: restaurantContentful?.isDemo ?? false,
       hasAcceptedTerms: restaurantData.legal.hasAcceptedTerms,
     };
+
+    // Exists?
+    const existingRestaurant = await this.restaurantsRepository.findOne({
+      where: { uid: restaurantId },
+    });
+
+    console.log(
+      'restaurants.service ➡️ updatedRestaurantEntity:',
+      updatedRestaurantEntity,
+    );
 
     if (existingRestaurant) {
       return this.restaurantsRepository.save({
@@ -155,15 +158,11 @@ export class RestaurantsService {
       });
     }
 
-    try {
-      const newRestaurantUserFromFirestore = this.restaurantsRepository.create(
-        updatedRestaurantEntity,
-      );
+    const newRestaurnatEntity = this.restaurantsRepository.create(
+      updatedRestaurantEntity,
+    );
 
-      return this.restaurantsRepository.save(newRestaurantUserFromFirestore);
-    } catch (error) {
-      console.log('Could not create restaurant:', error);
-    }
+    return this.restaurantsRepository.save(newRestaurnatEntity);
   }
 
   async syncFromContentful(restaurantId: string) {
