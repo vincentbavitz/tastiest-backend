@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,7 +7,169 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Tent {
-  id    Int    @id @default(autoincrement())
-  email String @unique()
+model affiliate_submission {
+  id            Int     @id(map: "PK_2d899efacdcc8a5edec446af3e2") @default(autoincrement())
+  platform      String  @db.VarChar
+  reference     String  @db.VarChar
+  affiliateType String  @default("") @db.VarChar
+  userId        String? @db.Uuid
+  user          user?   @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_033951fce982e69cc3be1006043")
+}
+
+model booking {
+  id                         Int         @id(map: "PK_49171efc69702ed84c812f33540") @default(autoincrement())
+  userFacingBookingId        String      @db.VarChar
+  bookedFor                  DateTime    @db.Timestamp(6)
+  confirmationCode           String      @db.VarChar
+  isConfirmationCodeVerified Boolean
+  hasArrived                 Boolean
+  hasCancelled               Boolean
+  cancelledAt                DateTime    @db.Timestamp(6)
+  isSyncedWithBookingSystem  Boolean
+  isTest                     Boolean
+  userId                     String?     @db.Uuid
+  restaurantId               Int?
+  restaurant                 restaurant? @relation(fields: [restaurantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_2741373bc72499b00ab5dff3d98")
+  user                       user?       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_336b3f4a235460dc93645fbf222")
+  order                      order?
+}
+
+model follower {
+  id                       String      @id(map: "PK_69e733c097e58ee41a00ccb02d5") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  followedAt               DateTime    @db.Timestamptz(6)
+  notifyNewMenu            Boolean     @default(true)
+  notifyGeneralInfo        Boolean     @default(true)
+  notifyLastMinuteTables   Boolean     @default(true)
+  notifyLimitedTimeDishes  Boolean     @default(true)
+  notifySpecialExperiences Boolean     @default(true)
+  restaurantId             Int?
+  restaurant               restaurant? @relation(fields: [restaurantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_e5a07842b17152392a8d42040ad")
+}
+
+model order {
+  id                String      @id(map: "PK_1031171c13130102495201e3e20") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  token             String      @db.VarChar
+  userFacingOrderId String      @db.VarChar
+  heads             Decimal     @db.Decimal
+  experience        String
+  price             String
+  refund            String?
+  bookedFor         DateTime    @db.Timestamptz(6)
+  paymentMethod     String?     @db.VarChar
+  paymentCard       String?
+  discountCode      String?     @db.VarChar
+  fromSlug          String      @db.VarChar
+  paidAt            DateTime?   @db.Timestamptz(6)
+  createdAt         DateTime?   @db.Timestamptz(6)
+  abandonedAt       DateTime?   @db.Timestamptz(6)
+  tastiestPortion   String?
+  restaurantPortion String?
+  isUserFollowing   Boolean
+  isTest            Boolean
+  userId            String?     @db.Uuid
+  restaurantId      Int?
+  bookingId         Int?        @unique(map: "REL_3624e8aed236f33c6bafcd7ed6")
+  booking           booking?    @relation(fields: [bookingId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_3624e8aed236f33c6bafcd7ed64")
+  restaurant        restaurant? @relation(fields: [restaurantId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_c93f22720c77241d2476c07cabf")
+  user              user?       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_caabe91507b3379c7ba73637b84")
+}
+
+model restaurant {
+  id                           Int                 @id(map: "PK_649e250d8b8165cb406d99aa30f") @default(autoincrement())
+  uid                          String              @db.VarChar
+  name                         String              @db.VarChar
+  city                         String              @db.VarChar
+  cuisine                      String              @db.VarChar
+  uri_name                     String              @db.VarChar
+  booking_system               String?             @db.VarChar
+  realtime                     String?
+  is_setup_complete            Boolean             @default(false)
+  is_archived                  Boolean             @default(false)
+  is_demo                      Boolean             @default(false)
+  has_accepted_terms           Boolean             @default(false)
+  profileId                    Int?                @unique(map: "REL_8edf520e963cdb0fba4e825eaf")
+  location_Lat                 Decimal?            @db.Decimal
+  location_Lon                 Decimal?            @db.Decimal
+  location_Address             String?             @db.VarChar
+  location_Postcode            String?             @db.VarChar
+  location_Display             String?             @db.VarChar
+  contact_First_name           String              @db.VarChar
+  contact_Last_name            String?             @db.VarChar
+  contact_Email                String?             @db.VarChar
+  contact_Phone_number         String?             @db.VarChar
+  financial_Connect_account    String?
+  financial_Cut_followers      Decimal?            @default(0.95) @db.Decimal
+  financial_Cut_default        Decimal?            @default(0.9) @db.Decimal
+  metrics_Quiet_times          String?
+  metrics_Open_times           String?
+  metrics_Seating_duration     Decimal?            @db.Decimal
+  settings_Notify_bookings     Boolean             @default(true)
+  settings_Fallback_open_times Boolean             @default(true)
+  restaurant_profile           restaurant_profile? @relation(fields: [profileId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_8edf520e963cdb0fba4e825eafd")
+  booking                      booking[]
+  follower                     follower[]
+  order                        order[]
+}
+
+model restaurant_profile {
+  id                   Int         @id(map: "PK_5aa8b5178409bea67c44b407730") @default(autoincrement())
+  website              String?     @db.VarChar
+  public_phone_number  String?     @db.VarChar
+  profile_picture      String?
+  backdrop_video       String?
+  backdrop_still_frame String?
+  display_photograph   String?
+  hero_illustration    String?
+  description          String?
+  meta                 String?
+  restaurant           restaurant?
+
+  @@map("restaurant-profile")
+}
+
+model restaurateur_application {
+  id                Int    @id(map: "PK_34ab3608fef0d7a00507beb97a6") @default(autoincrement())
+  name              String @db.VarChar
+  email             String @db.VarChar
+  contactNumber     String @db.VarChar
+  restaurantName    String @db.VarChar
+  restaurantWebsite String @db.VarChar
+  restaurantAddress String @db.VarChar
+  description       String @db.VarChar
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model typeorm_metadata {
+  type     String  @db.VarChar
+  database String? @db.VarChar
+  schema   String? @db.VarChar
+  table    String? @db.VarChar
+  name     String? @db.VarChar
+  value    String?
+
+  @@ignore
+}
+
+model user {
+  id                   String                 @id(map: "PK_cace4a159ff9f2512dd42373760") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  uid                  String                 @db.VarChar
+  email                String                 @unique(map: "UQ_e12875dfb3b1d92d7d7c5377e22") @db.VarChar
+  firstName            String                 @db.VarChar
+  lastName             String?                @db.VarChar
+  isTestAccount        Boolean
+  createdAt            DateTime?              @db.Timetz(6)
+  lastActive           DateTime?              @db.Timestamptz(6)
+  mobile               String?                @db.VarChar
+  birthday             DateTime?              @db.Timestamptz(6)
+  metrics              String
+  preferences          String?
+  financial            String?
+  location_Lat         Decimal?               @db.Decimal
+  location_Lon         Decimal?               @db.Decimal
+  location_Address     String?                @db.VarChar
+  location_Postcode    String?                @db.VarChar
+  location_Display     String?                @db.VarChar
+  affiliate_submission affiliate_submission[]
+  booking              booking[]
+  order                order[]
 }

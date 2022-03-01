@@ -14,10 +14,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PreAuthMiddleware } from './auth/pre-auth.middleware';
 import databaseConfig from './database/database.config';
+import { DatabaseModule } from './database/database.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { PrismaService } from './prisma/prisma.service';
-import { TentController } from './tent/tent.controller';
-import { TentService } from './tent/tent.service';
 
 @Module({
   imports: [
@@ -56,19 +55,18 @@ import { TentService } from './tent/tent.service';
     // UsersModule,
     // RestaurantsModule,
     // PaymentsModule,
-    // DatabaseModule,
+    DatabaseModule,
     // BookingsModule,
     // OrdersModule,
     // AuthModule,
     // AffiliatesModule,
   ],
-  controllers: [AppController, TentController],
+  controllers: [AppController],
   providers: [
     AppService,
     // TrackingService,
     // TasksService,
     PrismaService,
-    TentService,
   ],
 })
 export class AppModule implements NestModule {
