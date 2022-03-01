@@ -10,26 +10,14 @@ import { RouterModule } from '@nestjs/core/router/router-module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AdminModule } from './admin/admin.module';
-import { AffiliatesModule } from './affiliates/affiliates.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
 import { PreAuthMiddleware } from './auth/pre-auth.middleware';
-import { BookingsModule } from './bookings/bookings.module';
 import databaseConfig from './database/database.config';
-import { DatabaseModule } from './database/database.module';
 import { FirebaseModule } from './firebase/firebase.module';
-import { OrdersModule } from './orders/orders.module';
-import { PaymentsModule } from './payments/payments.module';
-import { RestaurantsModule } from './restaurants/restaurants.module';
-import { SupportModule } from './support/support.module';
-import { SyncsModule } from './syncs/syncs.module';
-import { TasksService } from './tasks/tasks.service';
-import { TrackingService } from './tracking/tracking.service';
-import { UsersModule } from './users/users.module';
 import { PrismaService } from './prisma/prisma.service';
-import { TentService } from './tent/tent.service';
 import { TentController } from './tent/tent.controller';
+import { TentService } from './tent/tent.service';
 
 @Module({
   imports: [
@@ -61,22 +49,27 @@ import { TentController } from './tent/tent.controller';
       },
     ]),
     ScheduleModule.forRoot(),
-    DatabaseModule,
     FirebaseModule,
-    AdminModule,
-    SyncsModule,
-    SupportModule,
-    UsersModule,
-    RestaurantsModule,
-    PaymentsModule,
-    DatabaseModule,
-    BookingsModule,
-    OrdersModule,
-    AuthModule,
-    AffiliatesModule,
+    // AdminModule,
+    // SyncsModule,
+    // SupportModule,
+    // UsersModule,
+    // RestaurantsModule,
+    // PaymentsModule,
+    // DatabaseModule,
+    // BookingsModule,
+    // OrdersModule,
+    // AuthModule,
+    // AffiliatesModule,
   ],
   controllers: [AppController, TentController],
-  providers: [AppService, TrackingService, TasksService, PrismaService, TentService],
+  providers: [
+    AppService,
+    // TrackingService,
+    // TasksService,
+    PrismaService,
+    TentService,
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
