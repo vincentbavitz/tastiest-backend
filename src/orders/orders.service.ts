@@ -1,22 +1,13 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
 import {
   CmsApi,
   generateUserFacingId,
+  Order,
   Promo,
-  UserRole,
 } from '@tastiest-io/tastiest-utils';
 import { AuthenticatedUser } from 'src/auth/auth.model';
-import { OrderEntity } from 'src/orders/entities/order.entity';
-import { UserEntity } from 'src/users/entities/user.entity';
-import { UsersService } from 'src/users/users.service';
-import { DeepPartial, Repository } from 'typeorm';
-import { v4 as uuid } from 'uuid';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 type CreateOrderOptionals = {
   promoCode?: string;
@@ -30,12 +21,9 @@ export class OrdersService {
    * @ignore
    */
   constructor(
-    private usersService: UsersService,
+    // private usersService: UsersService,
     private configService: ConfigService,
-    @InjectRepository(OrderEntity)
-    private ordersRepository: Repository<OrderEntity>,
-    @InjectRepository(UserEntity)
-    private usersRepository: Repository<UserEntity>,
+    private prisma: PrismaService, // @InjectRepository(OrderEntity) // private ordersRepository: Repository<OrderEntity>,
   ) {}
 
   /**
@@ -75,7 +63,6 @@ export class OrdersService {
     // Gross price
     const subtotal = experiencePost.deal.pricePerHeadGBP * heads;
 
-    const token = uuid();
     const priceAfterPromo = this.calculatePromoPrice(
       subtotal,
       'promo' as any as Promo,
@@ -83,52 +70,48 @@ export class OrdersService {
 
     const { total: final, fees } = this.calculatePaymentFees(priceAfterPromo);
 
-    const user: DeepPartial<UserEntity> = await this.usersService.getUser(uid);
-    // const restaurant = deal.restaurant.id ? await this.
-
-    this.ordersRepository;
-
     // Validate number of heads
-    const order = this.ordersRepository.create({
-      token,
-      user,
-      experience: experiencePost.deal,
-      userFacingOrderId: generateUserFacingId(),
-      heads: Math.floor(heads),
-      price: {
-        subtotal,
-        fees,
-        final,
-        currency: 'GBP',
-      },
-      fromSlug: experiencePost.slug,
-      createdAt: new Date(),
-      bookedFor: new Date(bookedForTimestamp),
-      isUserFollowing: false,
-      isTest,
-    });
+    const order = this.prisma.order.create({
+      data: {
+        user_id: uid,
+        restaurant_id: experiencePost.restaurant.id,
+        user_facing_id: generateUserFacingId(),
+        heads: Math.floor(heads),
 
-    // Add to user's orders (automatically syncs to orders table)
-    user.orders = [...(user.orders ?? []), order];
-    await this.usersRepository.save(user);
+        price: JSON.stringify({
+          subtotal,
+          fees,
+          final,
+          currency: 'GBP',
+        }),
+
+        experience: JSON.stringify(experiencePost.deal),
+        from_slug: experiencePost.slug,
+        booked_for: new Date(bookedForTimestamp),
+
+        is_user_following: false,
+        is_test: isTest,
+      },
+    });
 
     return order;
   }
 
   async getOrder(token: string, requestUser: AuthenticatedUser) {
-    const order = await this.ordersRepository.findOne({ where: { token } });
+    // const order = await this.ordersRepository.findOne({ where: { token } });
+    const order = null as Order;
 
     if (!order) {
       throw new NotFoundException();
     }
 
-    // Only admins and verified users can access the order.
-    if (
-      !requestUser.roles.includes(UserRole.ADMIN) &&
-      order.user.uid !== requestUser.uid
-    ) {
-      throw new UnauthorizedException(`This order doesn't belong to you.`);
-    }
+    // // Only admins and verified users can access the order.
+    // if (
+    //   !requestUser.roles.includes(UserRole.ADMIN) &&
+    //   order.user.uid !== requestUser.uid
+    // ) {
+    //   throw new UnauthorizedException(`This order doesn't belong to you.`);
+    // }
 
     return order;
   }

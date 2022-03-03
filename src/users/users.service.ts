@@ -1,20 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { InjectRepository } from '@nestjs/typeorm';
+import { FollowRelation, User } from '@prisma/client';
 import {
   FirestoreCollection,
   UserData,
   UserRole,
 } from '@tastiest-io/tastiest-utils';
 import { UserRecord } from 'firebase-admin/lib/auth/user-record';
+import lodash from 'lodash';
 import { DateTime } from 'luxon';
 import { AccountService } from 'src/admin/account/account.service';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import RegisterDto from 'src/auth/dto/register.dto';
-import { FollowerEntity } from 'src/entities/follower.entity';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { UserEntity } from 'src/users/entities/user.entity';
-import { DeepPartial, Repository } from 'typeorm';
+import { DeepPartial } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import UpdateUserDto from './dto/update-user.dto';
 import { UserCreatedEvent } from './events/user-created.event';
@@ -43,10 +44,7 @@ export class UsersService {
     private readonly firebaseApp: FirebaseService,
     private readonly accountService: AccountService,
     private readonly eventEmitter: EventEmitter2,
-    @InjectRepository(UserEntity)
-    private usersRepository: Repository<UserEntity>,
-    @InjectRepository(FollowerEntity)
-    private followersRepository: Repository<FollowerEntity>,
+    private readonly prisma: PrismaService, // @InjectRepository(UserEntity) // private usersRepository: Repository<UserEntity>, // @InjectRepository(FollowerEntity) // private followersRepository: Repository<FollowerEntity>,
   ) {}
 
   // FIX ME. TEMPORARY. SYNC FROM FIRESTORE
@@ -151,24 +149,21 @@ export class UsersService {
       .createCustomToken(userRecord.uid);
 
     // Now we create the user in Postgres
-    const entity = this.usersRepository.create({
-      id: uuid(),
-      uid: userRecord.uid,
-      email,
-      firstName,
-      isTestAccount,
-      metrics: {
-        totalBookings: 0,
-        totalSpent: { GBP: 0 },
-        recentSearches: [],
-        restaurantsVisited: [],
-        restaurantsFollowed: [],
+    this.prisma.user.create({
+      data: {
+        id: userRecord.uid,
+        email,
+        first_name: firstName,
+        isTestAccount,
+        metrics: {
+          totalBookings: 0,
+          totalSpent: { GBP: 0 },
+          recentSearches: [],
+          restaurantsVisited: [],
+          restaurantsFollowed: [],
+        },
       },
-      lastActive: new Date(),
-      createdAt: new Date(),
     });
-
-    await this.usersRepository.save(entity);
 
     // Event handles Stripe user creation and etc.
     this.eventEmitter.emit(
@@ -186,13 +181,19 @@ export class UsersService {
     return { token };
   }
 
-  async getUser(uid: string, relations: Array<'orders' | 'bookings'> = []) {
-    const userEntity = await this.usersRepository.findOne({
-      where: { uid: uid },
-      relations,
+  async getUser(
+    uid: string,
+    relations: Array<'orders' | 'bookings' | 'following'> = [],
+  ) {
+    const userEntity = await this.prisma.user.findUnique({
+      where: { id: uid },
+      include: {
+        orders: relations.some((r) => r === 'orders'),
+        bookings: relations.some((r) => r === 'bookings'),
+        following: relations.some((r) => r === 'following'),
+      },
     });
 
-    // Hide ID and financial from non-admins.
     if (!userEntity) {
       throw new NotFoundException('User not found');
     }
@@ -201,7 +202,9 @@ export class UsersService {
   }
 
   async getUsers() {
-    const users = await this.usersRepository.find();
+    const users = await this.prisma.user.findMany({
+      orderBy: { created_at: 'desc' },
+    });
 
     if (users?.length) {
       return users;
@@ -210,32 +213,56 @@ export class UsersService {
     return [];
   }
 
-  async updateUser(update: UpdateUserDto) {
+  async updateUser(uid: string, update: Omit<UpdateUserDto, 'uid'>) {
     console.log('users.service ➡️ update:', update);
 
-    const user = await this.getUser(update.uid);
+    const user = await this.getUser(uid);
 
-    const updatedUser = {
+    // Update data with any undefined key-value pairs removed.
+    const updateData = lodash.omitBy<
+      Omit<
+        User,
+        | 'id'
+        | 'email'
+        | 'is_test_account'
+        | 'metrics'
+        | 'preferences'
+        | 'created_at'
+        | 'last_active'
+      >
+    >(
+      {
+        first_name: update.firstName,
+        last_name: update.lastName,
+        mobile: update.mobile,
+        birthday: update.birthday,
+        location_lon: update.location?.lon,
+        location_lat: update.location?.lat,
+        location_address: update.location?.address,
+        location_display: update.location?.display,
+        location_postcode: update.location?.postcode,
+        stripe_customer_id: update.financial?.stripeCustomerId,
+        stripe_setup_secret: update.financial?.stripeSetupSecret,
+      },
+      lodash.isUndefined,
+    );
+
+    console.log('users.service ➡️ updateData:', updateData);
+
+    const updatedUser: User = {
       ...user,
-      ...update,
-
-      // Ensure you properly destructure all nested objects.
-      location: {
-        ...user.location,
-        ...update.location,
-      },
-
-      financial: {
-        ...user.financial,
-        ...update.financial,
-      },
+      ...updateData,
     };
 
     console.log('users.service ➡️ updatedUser:', updatedUser);
 
-    return this.usersRepository.save(updatedUser);
+    return this.prisma.user.update({ where: { id: uid }, data: updatedUser });
   }
 
+  /**
+   * INCOMPLETE!
+   * Think about events for Segment and TEST every possibility.
+   */
   async followRestaurant(
     restaurantId: string,
     authenticatedUser: AuthenticatedUser,
@@ -247,20 +274,33 @@ export class UsersService {
       notifySpecialExperiences,
     }: SetRestaurantFollowingNotifications | undefined,
   ) {
-    const user = await this.getUser(authenticatedUser.uid);
-    // const restaurant = await this.restaurantsService.
-
-    this.followersRepository.create({
-      user,
-      // restaurant: '' as never as RestaurantEntity,
-      followedAt: new Date(),
-      notifyNewMenu: false,
-      notifyGeneralInfo: false,
-      notifyLastMinuteTables: false,
-      notifyLimitedTimeDishes: false,
-      notifySpecialExperiences: false,
+    // Get this specific relation if it exists
+    // We can't do a simple upsert because restaurant_id and
+    // user_id aren't uniquely specifying parameters.
+    const followRelation = await this.prisma.followRelation.findFirst({
+      where: { restaurant_id: restaurantId, user_id: authenticatedUser.uid },
     });
 
-    return null;
+    const newRelationData: Omit<FollowRelation, 'id'> = {
+      user_id: authenticatedUser.uid,
+      restaurant_id: restaurantId,
+      followed_at: new Date(),
+      notify_new_menu: notifyNewMenu,
+      notify_general_info: notifyGeneralInfo,
+      notify_last_minute_tables: notifyLastMinuteTables,
+      notify_limited_time_dishes: notifyLimitedTimeDishes,
+      notify_special_experiences: notifySpecialExperiences,
+    };
+
+    if (followRelation) {
+      return this.prisma.followRelation.update({
+        where: { id: followRelation.id },
+        data: newRelationData,
+      });
+    }
+
+    return this.prisma.followRelation.create({
+      data: newRelationData,
+    });
   }
 }
