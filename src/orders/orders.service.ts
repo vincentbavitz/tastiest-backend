@@ -1,12 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   CmsApi,
+  FirestoreCollection,
+  generateConfirmationCode,
   generateUserFacingId,
-  Order,
   Promo,
+  UserRole,
 } from '@tastiest-io/tastiest-utils';
 import { AuthenticatedUser } from 'src/auth/auth.model';
+import { FirebaseService } from 'src/firebase/firebase.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 type CreateOrderOptionals = {
@@ -22,6 +29,7 @@ export class OrdersService {
    */
   constructor(
     // private usersService: UsersService,
+    private firebaseApp: FirebaseService,
     private configService: ConfigService,
     private prisma: PrismaService, // @InjectRepository(OrderEntity) // private ordersRepository: Repository<OrderEntity>,
   ) {}
@@ -71,47 +79,75 @@ export class OrdersService {
     const { total: final, fees } = this.calculatePaymentFees(priceAfterPromo);
 
     // Validate number of heads
-    const order = this.prisma.order.create({
+    const order = await this.prisma.order.create({
       data: {
         user_id: uid,
         restaurant_id: experiencePost.restaurant.id,
         user_facing_id: generateUserFacingId(),
         heads: Math.floor(heads),
-
         price: JSON.stringify({
           subtotal,
           fees,
           final,
           currency: 'GBP',
         }),
-
         experience: JSON.stringify(experiencePost.deal),
-        from_slug: experiencePost.slug,
         booked_for: new Date(bookedForTimestamp),
-
+        from_slug: experiencePost.slug,
         is_user_following: false,
         is_test: isTest,
       },
     });
 
+    const booking = await this.prisma.booking.create({
+      data: {
+        booked_for: new Date(bookedForTimestamp),
+        confirmation_code: generateConfirmationCode(),
+        restaurant_id: experiencePost.restaurant.id,
+        order_id: order.id,
+        user_id: uid,
+      },
+    });
+
+    const restaurantSnapshot = await this.firebaseApp
+      .firestore()
+      .collection(FirestoreCollection.RESTAURANTS)
+      .doc(experiencePost.restaurant.id)
+      .get();
+
+    const restaurant = restaurantSnapshot.data();
+
+    await this.firebaseApp
+      .firestore()
+      .collection(FirestoreCollection.BOOKINGS)
+      .add({
+        confirmationCode: '0033',
+        orderId: '190844b5-ae91-481d-a438-d85f8233d1aa',
+        userId: uid,
+        restaurant,
+        hasArrived: false,
+      });
+
     return order;
   }
 
   async getOrder(token: string, requestUser: AuthenticatedUser) {
-    // const order = await this.ordersRepository.findOne({ where: { token } });
-    const order = null as Order;
+    const order = await this.prisma.order.findUnique({
+      where: { token },
+      include: { restaurant: true },
+    });
 
     if (!order) {
       throw new NotFoundException();
     }
 
-    // // Only admins and verified users can access the order.
-    // if (
-    //   !requestUser.roles.includes(UserRole.ADMIN) &&
-    //   order.user.uid !== requestUser.uid
-    // ) {
-    //   throw new UnauthorizedException(`This order doesn't belong to you.`);
-    // }
+    // Only admins and verified users can access the order.
+    if (
+      !requestUser.roles.includes(UserRole.ADMIN) &&
+      order.user_id !== requestUser.uid
+    ) {
+      throw new UnauthorizedException(`This order doesn't belong to you.`);
+    }
 
     return order;
   }

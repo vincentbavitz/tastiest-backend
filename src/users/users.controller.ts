@@ -47,8 +47,8 @@ export class UsersController {
 
   /**
    * Update a user record.
-   * NOTE! This must come before @Get(':uid')
-   * otherwise the dyanmic route will catch it.
+   * NOTE! This must come sequentially before @Get(':uid') in
+   * the class otherwise the dyanmic route will catch it.
    */
   @Post('update')
   async updateUser(
@@ -64,14 +64,22 @@ export class UsersController {
       throw new ForbiddenException('Unauthorized');
     }
 
-    const updated = await this.userService.updateUser(updateUserDto);
+    const updated = await this.userService.updateUser(
+      updateUserDto.uid,
+      updateUserDto,
+    );
 
     return {
       ...updated,
 
       // Only Admins may view these properties
       id: this.isAdmin(request) ? updated.id : undefined,
-      financial: this.isAdmin(request) ? updated.financial : undefined,
+      stripe_setup_secret: this.isAdmin(request)
+        ? updated.stripe_setup_secret
+        : undefined,
+      stripe_customer_id: this.isAdmin(request)
+        ? updated.stripe_customer_id
+        : undefined,
     };
   }
 
@@ -129,7 +137,12 @@ export class UsersController {
       ...user,
 
       // The following properties are only visible to Admins.
-      financial: this.isAdmin(request) ? user.financial : undefined,
+      stripe_setup_secret: this.isAdmin(request)
+        ? user.stripe_setup_secret
+        : undefined,
+      stripe_customer_id: this.isAdmin(request)
+        ? user.stripe_customer_id
+        : undefined,
     };
   }
 

@@ -39,8 +39,7 @@ export class UserCreatedListener {
     });
 
     // Save to the new users database entry.
-    await this.usersService.updateUser({
-      uid: event.userRecord.uid,
+    await this.usersService.updateUser(event.userRecord.uid, {
       financial: {
         stripeCustomerId: customer.id ?? null,
         stripeSetupSecret: intent.client_secret ?? null,

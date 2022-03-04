@@ -49,7 +49,7 @@ model User {
 
 model Order {
   id             String   @id @default(uuid())
-  token          String   @default(uuid())
+  token          String   @unique() @default(uuid())
   user_facing_id String   @db.VarChar(16)
   booked_for     DateTime @db.Timestamptz()
   heads          Decimal  @db.Decimal
@@ -90,31 +90,98 @@ model Order {
 }
 
 model Booking {
-  id                  String   @id @default(uuid())
-  userFacingBookingId String   @db.VarChar
-  bookedFor           DateTime @db.Timestamp()
-  confirmationCode    String   @db.VarChar
-  hasArrived          Boolean
-  hasCancelled        Boolean
-  cancelledAt         DateTime @db.Timestamp()
+  id         String   @id @default(uuid())
+  booked_for DateTime @db.Timestamptz()
+
+  cancelled_at      DateTime? @db.Timestamptz()
+  confirmation_code String    @db.VarChar
 
   // Bools
-  is_confirmation_code_verified Boolean
-  is_synced_with_booking_system Boolean
-  is_test                       Boolean
-
+  has_arrived                   Boolean @default(false)
+  has_cancelled                 Boolean @default(false)
+  is_test                       Boolean @default(false)
+  is_confirmation_code_verified Boolean @default(false)
+  is_synced_with_booking_system Boolean @default(false)
 
   // Relations
   restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
   restaurant_id String     @db.VarChar
 
   order    Order  @relation(fields: [order_id], references: [id])
-  order_id String @db.VarChar@unique
+  order_id String @unique @db.VarChar
 
   user    User   @relation(fields: [user_id], references: [id])
   user_id String @db.VarChar
 
   @@map(name: "booking")
+}
+
+model Restaurant {
+  /// Set by Firebase Auth.
+  id       String @unique() @db.VarChar
+  name     String @db.VarChar
+  city     String @db.VarChar
+  cuisine  String @db.VarChar
+  uri_name String @db.VarChar
+
+  location_lat      Float?  @db.DoublePrecision
+  location_lon      Float?  @db.DoublePrecision
+  location_address  String? @db.VarChar(256)
+  location_postcode String? @db.VarChar(16)
+  location_display  String? @db.VarChar
+
+  contact_first_name   String  @db.VarChar
+  contact_last_name    String? @db.VarChar
+  contact_email        String? @db.VarChar
+  contact_phone_number String? @db.VarChar
+
+  realtime_available_booking_slots String[]
+  realtime_last_slots_sync         DateTime? @db.Timestamptz()
+
+  booking_system     String? @db.VarChar
+  has_accepted_terms Boolean @default(false)
+
+  financial_connect_account Json?  @db.Json
+  financial_cut_default     Float? @default(0.9) @db.DoublePrecision
+  financial_cut_followers   Float? @default(0.95) @db.DoublePrecision
+
+  metrics_quiet_times      Json?
+  metrics_open_times       Json?
+  metrics_seating_duration Int?  @db.Integer
+
+  settings_notify_bookings     Boolean @default(true)
+  settings_fallback_open_times Boolean @default(true)
+
+  // Toggles
+  is_demo           Boolean @default(false)
+  is_archived       Boolean @default(false)
+  is_setup_complete Boolean @default(false)
+
+  // Relations
+  orders    Order[]
+  bookings  Booking[]
+  followers FollowRelation[]
+  profile   RestaurantProfile?
+
+  @@map(name: "restaurant")
+}
+
+model RestaurantProfile {
+  id                   String  @id() @default(uuid())
+  website              String? @db.VarChar
+  public_phone_number  String? @db.VarChar
+  profile_picture      Json?   @db.Json
+  backdrop_video       Json?   @db.Json
+  backdrop_still_frame Json?   @db.Json
+  display_photograph   Json?   @db.Json
+  hero_illustration    Json?   @db.Json
+  description          Json?   @db.Json
+  meta                 Json?   @db.Json
+
+  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
+  restaurant_id String     @unique @db.VarChar
+
+  @@map(name: "restaurant_profile")
 }
 
 /// A relation between a restaurant and a user following them.
@@ -136,69 +203,6 @@ model FollowRelation {
   restaurant_id String     @db.VarChar
 
   @@map(name: "follow_relation")
-}
-
-model Restaurant {
-  id                   String   @id @default(uuid())
-  uid                  String   @db.VarChar
-  name                 String   @db.VarChar
-  city                 String   @db.VarChar
-  cuisine              String   @db.VarChar
-  uri_name             String   @db.VarChar
-  booking_system       String?  @db.VarChar
-  realtime             String?
-  has_accepted_terms   Boolean  @default(false)
-  // profileId                    Int?                @unique(map: "REL_8edf520e963cdb0fba4e825eaf")
-  location_Lat         Decimal? @db.Decimal
-  location_Lon         Decimal? @db.Decimal
-  location_Address     String?  @db.VarChar
-  location_Postcode    String?  @db.VarChar
-  location_Display     String?  @db.VarChar
-  contact_first_name   String   @db.VarChar
-  contact_last_name    String?  @db.VarChar
-  contact_Email        String?  @db.VarChar
-  contact_Phone_number String?  @db.VarChar
-
-  financial_connect_account    String?
-  financial_cut_followers      Decimal? @default(0.95) @db.Decimal
-  financial_cut_default        Decimal? @default(0.9) @db.Decimal
-  metrics_quiet_times          Json?
-  metrics_open_times           Json?
-  metrics_Seating_duration     Decimal? @db.Decimal
-  settings_Notify_bookings     Boolean  @default(true)
-  settings_Fallback_open_times Boolean  @default(true)
-  // restaurant_profile           Restaurant_Profile? @relation(fields: [profileId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_8edf520e963cdb0fba4e825eafd")
-  // booking                      Booking[]
-
-
-  // Toggles
-  is_setup_complete Boolean @default(false)
-  is_archived       Boolean @default(false)
-  is_demo           Boolean @default(false)
-
-  // Relations
-  orders    Order[]
-  bookings  Booking[]
-  followers FollowRelation[]
-
-  @@map(name: "restaurant")
-}
-
-model RestaurantProfile {
-  id                   String  @id() @default(uuid())
-  website              String? @db.VarChar
-  public_phone_number  String? @db.VarChar
-  profile_picture      String?
-  backdrop_video       String?
-  backdrop_still_frame String?
-  display_photograph   String?
-  hero_illustration    String?
-  description          String?
-  meta                 String?
-
-  // restaurant           Restaurant?
-
-  @@map(name: "restaurant_profile")
 }
 
 model RestaurateurApplication {

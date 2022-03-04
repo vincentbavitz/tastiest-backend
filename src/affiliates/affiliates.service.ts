@@ -24,6 +24,7 @@ export class AffiliatesService {
     return null;
   }
 
+  /** FIX ME MIGRATE TO PRISMA */
   async createNewSubmission(
     platform: string,
     reference: string,
@@ -50,8 +51,8 @@ export class AffiliatesService {
 
     // Add user to entity if it exists
     if (userId) {
-      const userEntity = await this.usersService.getUser(userId);
-      entity.user = userEntity;
+      const user = await this.usersService.getUser(userId);
+      // entity.userId = user;
     }
 
     return this.affiliateSubmissionsRepository.save(entity);

@@ -14,9 +14,6 @@ import { AuthenticatedUser } from 'src/auth/auth.model';
 import RegisterDto from 'src/auth/dto/register.dto';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserEntity } from 'src/users/entities/user.entity';
-import { DeepPartial } from 'typeorm';
-import { v4 as uuid } from 'uuid';
 import UpdateUserDto from './dto/update-user.dto';
 import { UserCreatedEvent } from './events/user-created.event';
 
@@ -44,7 +41,7 @@ export class UsersService {
     private readonly firebaseApp: FirebaseService,
     private readonly accountService: AccountService,
     private readonly eventEmitter: EventEmitter2,
-    private readonly prisma: PrismaService, // @InjectRepository(UserEntity) // private usersRepository: Repository<UserEntity>, // @InjectRepository(FollowerEntity) // private followersRepository: Repository<FollowerEntity>,
+    private readonly prisma: PrismaService,
   ) {}
 
   // FIX ME. TEMPORARY. SYNC FROM FIRESTORE
@@ -71,53 +68,41 @@ export class UsersService {
         })
       : null;
 
-    const updatedUserEntity: DeepPartial<UserEntity> = {
-      uid: uid,
+    const updatedUser: Omit<User, 'created_at' | 'last_active'> = {
+      id: uid,
       email: userData.details.email,
-      firstName: userData.details.firstName,
-      lastName: userData.details?.lastName ?? null,
-      isTestAccount: Boolean(userRecord?.customClaims['isTestAccount']),
+      first_name: userData.details.firstName,
+      last_name: userData.details?.lastName,
+      is_test_account: Boolean(userRecord?.customClaims['isTestAccount']),
       mobile: userData.details.mobile ?? null,
-      metrics: userData.metrics,
+      metrics: JSON.stringify(userData.metrics),
       birthday: userBirthdayDateTime?.isValid
         ? userBirthdayDateTime.toJSDate()
-        : null,
-      preferences: userData.preferences ?? null,
-      financial: { ...userData.paymentDetails },
-      location: {
-        ...userData.details.address,
-        postcode: userData.details?.postalCode
-          ?.replace(/[\s-]/gm, '')
-          .toUpperCase(),
-      },
+        : undefined,
+      preferences: userData.preferences
+        ? JSON.stringify(userData.preferences)
+        : undefined,
+      location_lon: userData.details?.address?.lon,
+      location_lat: userData.details?.address?.lat,
+      location_address: userData.details?.address?.address,
+      location_display: userData.details?.address?.displayLocation,
+      location_postcode: userData.details?.postalCode,
+      stripe_customer_id: userData.paymentDetails?.stripeCustomerId,
+      stripe_setup_secret: userData.paymentDetails?.stripeSetupSecret,
     };
 
-    // Exists?
-    const user = await this.usersRepository.findOne({ where: { uid } });
+    const user = await this.prisma.user.findUnique({ where: { id: uid } });
 
     if (user) {
-      console.log('Saved user as', {
-        id: user.id,
-        ...user,
-        ...updatedUserEntity,
-      });
-
-      return this.usersRepository.save({
-        id: user.id,
-        ...user,
-        ...updatedUserEntity,
-        uid: '44',
+      return this.prisma.user.update({
+        where: { id: user.id },
+        data: updatedUser,
       });
     }
 
-    const newUserFromFirestore = this.usersRepository.create({
-      id: uuid(),
-      ...updatedUserEntity,
+    return this.prisma.user.create({
+      data: updatedUser,
     });
-
-    console.log('Created user as', newUserFromFirestore);
-
-    return this.usersRepository.save(newUserFromFirestore);
   }
 
   async createUser(
@@ -149,12 +134,12 @@ export class UsersService {
       .createCustomToken(userRecord.uid);
 
     // Now we create the user in Postgres
-    this.prisma.user.create({
+    await this.prisma.user.create({
       data: {
         id: userRecord.uid,
         email,
         first_name: firstName,
-        isTestAccount,
+        is_test_account: isTestAccount,
         metrics: {
           totalBookings: 0,
           totalSpent: { GBP: 0 },

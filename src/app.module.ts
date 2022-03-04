@@ -13,9 +13,13 @@ import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PreAuthMiddleware } from './auth/pre-auth.middleware';
+import { BookingsModule } from './bookings/bookings.module';
 import databaseConfig from './database/database.config';
 import { FirebaseModule } from './firebase/firebase.module';
 import { OrdersModule } from './orders/orders.module';
+import { RestaurantsModule } from './restaurants/restaurants.module';
+import { TasksService } from './tasks/tasks.service';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -51,11 +55,11 @@ import { OrdersModule } from './orders/orders.module';
     // AdminModule,
     // SyncsModule,
     // SupportModule,
-    // UsersModule,
-    // RestaurantsModule,
+    UsersModule,
+    RestaurantsModule,
     // PaymentsModule,
     // DatabaseModule,
-    // BookingsModule,
+    BookingsModule,
     OrdersModule,
     // AuthModule,
     // AffiliatesModule,
@@ -64,7 +68,7 @@ import { OrdersModule } from './orders/orders.module';
   providers: [
     AppService,
     // TrackingService,
-    // TasksService,
+    TasksService,
   ],
 })
 export class AppModule implements NestModule {

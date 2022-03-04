@@ -33,7 +33,7 @@
     "prisma:format": "yarn prisma format",
     "prisma:migration:generate": "yarn prisma generate",
     "prisma:migration:dev": "yarn prisma migrate dev --name",
-    "prisma:migration:sync-dev": "yarn prisma db push --preview-feature"
+    "prisma:sync-dev": "yarn prisma db push"
   },
   "dependencies": {
     "@compodoc/compodoc": "^1.1.16",

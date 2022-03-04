@@ -5,7 +5,6 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import {
   Booking,
   FirestoreCollection,
@@ -16,8 +15,6 @@ import { DateTime } from 'luxon';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { TrackingService } from 'src/tracking/tracking.service';
-import { UserEntity } from 'src/users/entities/user.entity';
-import { Repository } from 'typeorm';
 
 @Injectable()
 export class BookingsService {
@@ -27,8 +24,6 @@ export class BookingsService {
   constructor(
     private readonly firebaseApp: FirebaseService,
     private readonly trackingService: TrackingService,
-    @InjectRepository(UserEntity)
-    private usersRepository: Repository<UserEntity>,
   ) {}
 
   async getBookings(
