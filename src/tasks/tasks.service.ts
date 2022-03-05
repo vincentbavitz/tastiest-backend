@@ -1,10 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
-import {
-  FirestoreCollection,
-  RestaurantData,
-  UserData,
-} from '@tastiest-io/tastiest-utils';
+import { FirestoreCollection, UserData } from '@tastiest-io/tastiest-utils';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { RestaurantsService } from 'src/restaurants/restaurants.service';
 import { UsersService } from 'src/users/users.service';
@@ -32,7 +28,7 @@ export class TasksService {
     this.logger.log('sdf');
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_HOUR)
   async syncUsers() {
     const firebaseUsersSnapshot = await this.firebaseApp
       .db(FirestoreCollection.USERS)
@@ -51,22 +47,23 @@ export class TasksService {
     });
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
-  async syncRestaurants() {
-    const firebaseRestaurantsSnapshot = await this.firebaseApp
-      .db(FirestoreCollection.RESTAURANTS)
-      .limit(1000)
-      .get();
+  // We no longer want to do this; we don't want any reliance on Firestore.
+  // @Cron(CronExpression.EVERY_HOUR)
+  // async syncRestaurants() {
+  //   const firebaseRestaurantsSnapshot = await this.firebaseApp
+  //     .db(FirestoreCollection.RESTAURANTS)
+  //     .limit(1000)
+  //     .get();
 
-    const firebaseRestaurants: RestaurantData[] = [];
+  //   const firebaseRestaurants: RestaurantData[] = [];
 
-    firebaseRestaurantsSnapshot.forEach((doc) =>
-      firebaseRestaurants.push(doc.data() as RestaurantData),
-    );
+  //   firebaseRestaurantsSnapshot.forEach((doc) =>
+  //     firebaseRestaurants.push(doc.data() as RestaurantData),
+  //   );
 
-    firebaseRestaurants.forEach(async (restaurant) => {
-      console.log('Syncing restaurant:', restaurant.details.name);
-      await this.restaurantsService.syncFromFirestore(restaurant.details.id);
-    });
-  }
+  //   firebaseRestaurants.forEach(async (restaurant) => {
+  //     console.log('Syncing restaurant:', restaurant.details.name);
+  //     await this.restaurantsService.syncFromFirestore(restaurant.details.id);
+  //   });
+  // }
 }

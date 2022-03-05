@@ -130,7 +130,7 @@ model Restaurant {
   location_postcode String? @db.VarChar(16)
   location_display  String? @db.VarChar
 
-  contact_first_name   String  @db.VarChar
+  contact_first_name   String?  @db.VarChar
   contact_last_name    String? @db.VarChar
   contact_email        String? @db.VarChar
   contact_phone_number String? @db.VarChar

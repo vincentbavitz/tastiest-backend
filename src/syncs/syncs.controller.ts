@@ -1,14 +1,27 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Headers, Post, Request } from '@nestjs/common';
+import { RequestWithUser } from 'src/auth/auth.model';
 import { SegmentWebhookBody } from './sync.model';
 import { SyncsService } from './syncs.service';
 
-@Controller('syncs')
+@Controller('public/syncs')
 export class SyncsController {
   constructor(private readonly syncsService: SyncsService) {}
 
   @Post('segment')
   syncSegmentEvent(@Body() body: SegmentWebhookBody): any {
     return this.syncsService.syncSegmentEvent(body as SegmentWebhookBody);
+  }
+
+  @Post('contentful/restaurant')
+  async syncRestaurantFromContentful(
+    @Body() body: any,
+    @Request() request: RequestWithUser,
+    @Headers() headers,
+  ) {
+    return this.syncsService.syncRestaurantFromContentful(
+      body,
+      String(request.headers['x-secret-key']),
+    );
   }
 
   @Post('contentful/experience-product')

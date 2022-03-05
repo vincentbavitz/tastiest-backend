@@ -31,7 +31,7 @@
     "typeorm:migration:generate": "npm run typeorm -- migration:generate -n",
     "typeorm:migration:run": "npm run typeorm -- migration:run",
     "prisma:format": "yarn prisma format",
-    "prisma:migration:generate": "yarn prisma generate",
+    "prisma:generate": "yarn prisma generate",
     "prisma:migration:dev": "yarn prisma migrate dev --name",
     "prisma:sync-dev": "yarn prisma db push"
   },
@@ -46,7 +46,7 @@
     "@nestjs/schedule": "^1.0.1",
     "@nestjs/typeorm": "^8.0.2",
     "@prisma/client": "^3.10.0",
-    "@tastiest-io/tastiest-utils": "^1.67.0",
+    "@tastiest-io/tastiest-utils": "^1.68.0",
     "@types/hapi__joi": "^17.1.8",
     "analytics-node": "^6.0.0",
     "class-transformer": "0.4.0",

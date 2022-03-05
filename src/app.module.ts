@@ -18,6 +18,7 @@ import databaseConfig from './database/database.config';
 import { FirebaseModule } from './firebase/firebase.module';
 import { OrdersModule } from './orders/orders.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
+import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
 import { UsersModule } from './users/users.module';
 
@@ -53,7 +54,7 @@ import { UsersModule } from './users/users.module';
     ScheduleModule.forRoot(),
     FirebaseModule,
     // AdminModule,
-    // SyncsModule,
+    SyncsModule,
     // SupportModule,
     UsersModule,
     RestaurantsModule,
