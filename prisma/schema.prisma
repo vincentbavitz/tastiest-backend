@@ -54,8 +54,8 @@ model Order {
   booked_for     DateTime @db.Timestamptz()
   heads          Decimal  @db.Decimal
 
-  experience Json
-  from_slug  String @db.VarChar
+  product   Json
+  from_slug String @db.VarChar
 
   // Payment information
   price          Json
@@ -130,7 +130,7 @@ model Restaurant {
   location_postcode String? @db.VarChar(16)
   location_display  String? @db.VarChar
 
-  contact_first_name   String?  @db.VarChar
+  contact_first_name   String? @db.VarChar
   contact_last_name    String? @db.VarChar
   contact_email        String? @db.VarChar
   contact_phone_number String? @db.VarChar
@@ -141,7 +141,7 @@ model Restaurant {
   booking_system     String? @db.VarChar
   has_accepted_terms Boolean @default(false)
 
-  financial_connect_account Json?  @db.Json
+  financial_connect_account Json?  @db.JsonB
   financial_cut_default     Float? @default(0.9) @db.DoublePrecision
   financial_cut_followers   Float? @default(0.95) @db.DoublePrecision
 
@@ -163,6 +163,9 @@ model Restaurant {
   followers FollowRelation[]
   profile   RestaurantProfile?
 
+  posts    ExperiencePost[]
+  products ExperienceProduct[]
+
   @@map(name: "restaurant")
 }
 
@@ -170,18 +173,68 @@ model RestaurantProfile {
   id                   String  @id() @default(uuid())
   website              String? @db.VarChar
   public_phone_number  String? @db.VarChar
-  profile_picture      Json?   @db.Json
-  backdrop_video       Json?   @db.Json
-  backdrop_still_frame Json?   @db.Json
-  display_photograph   Json?   @db.Json
-  hero_illustration    Json?   @db.Json
-  description          Json?   @db.Json
-  meta                 Json?   @db.Json
+  profile_picture      Json?   @db.JsonB
+  backdrop_video       Json?   @db.JsonB
+  backdrop_still_frame Json?   @db.JsonB
+  display_photograph   Json?   @db.JsonB
+  hero_illustration    Json?   @db.JsonB
+  description          Json?   @db.JsonB
+  meta                 Json?   @db.JsonB
 
   restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
   restaurant_id String     @unique @db.VarChar
 
   @@map(name: "restaurant_profile")
+}
+
+model ExperiencePost {
+  id    String   @id() @db.VarChar()
+  title String   @db.VarChar()
+  date  DateTime @db.Timestamptz()
+
+  body        Json?  @db.JsonB
+  city        String @db.VarChar(32)
+  cuisine     String @db.VarChar(32)
+  description String @db.VarChar(512)
+
+  // Visual items
+  /// Eg. East London
+  /// Displayed under the title
+  display_location      String @db.VarChar(512)
+  plate_image           Json?  @db.JsonB
+  menu_image            Json?  @db.JsonB
+  auxiliary_image       Json?  @db.JsonB
+  see_restaurant_button Json?  @db.JsonB
+
+  // Descriptive
+  meta Json?    @db.JsonB
+  slug String   @db.VarChar
+  tags String[]
+
+  product    ExperienceProduct @relation(fields: [product_id], references: [id])
+  product_id String            @unique @db.VarChar
+
+  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
+  restaurant_id String     @unique @db.VarChar
+
+  @@map(name: "post")
+}
+
+model ExperienceProduct {
+  id            String @id() @db.VarChar()
+  name          String @db.VarChar
+  image         Json?  @db.JsonB
+  allowed_heads Int[]
+
+  /// Per head, in GBP
+  price Float @db.DoublePrecision
+
+  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
+  restaurant_id String     @unique @db.VarChar
+
+  post ExperiencePost?
+
+  @@map(name: "product")
 }
 
 /// A relation between a restaurant and a user following them.

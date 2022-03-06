@@ -6,8 +6,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   CmsApi,
-  FirestoreCollection,
-  generateConfirmationCode,
   generateUserFacingId,
   Promo,
   UserRole,
@@ -45,13 +43,16 @@ export class OrdersService {
     bookedForTimestamp: number,
     { promoCode, userAgent, isTest = true }: CreateOrderOptionals,
   ) {
-    // Sync deals and promos from Contentful with Webhooks so we can grab it from Postgres in 2ms
+    // Sync products and promos from Contentful with Webhooks so we can grab it from Postgres in 2ms
     const cms = new CmsApi(
       this.configService.get('CONTENTFUL_SPACE_ID'),
       this.configService.get('CONTENTFUL_ACCESS_TOKEN'),
     );
 
-    const experiencePost = await cms.getPostByDealId(experienceProductId);
+    // Grab post from our DB.
+    // Note that our DB syncs posts from Contentful automatically.
+    // const experiencePost = await this.prisma.product
+    const experiencePost = await cms.getPostByProductId(experienceProductId);
 
     if (!experiencePost) {
       throw new NotFoundException('Experience does not exist');
@@ -60,16 +61,16 @@ export class OrdersService {
     // Is userId valid and is user online?
     // Is promoCode valid? If so, calculate Promo and final price
     // const promo: Promo = await cms.getPromo(orderRequest.promoCode);
-    // const promoIsValid = validatePromo(deal, orderRequest?.userId, promo);
+    // const promoIsValid = validatePromo(product, orderRequest?.userId, promo);
     // if (promo?.validTo < Date.now()) {
     // Out of date
     // }
 
-    // Validate deal and slug, validate that deal is still available
+    // Validate product and slug, validate that product is still available
     //
 
     // Gross price
-    const subtotal = experiencePost.deal.pricePerHeadGBP * heads;
+    const subtotal = experiencePost.product.pricePerHeadGBP * heads;
 
     const priceAfterPromo = this.calculatePromoPrice(
       subtotal,
@@ -85,48 +86,19 @@ export class OrdersService {
         restaurant_id: experiencePost.restaurant.id,
         user_facing_id: generateUserFacingId(),
         heads: Math.floor(heads),
-        price: JSON.stringify({
+        price: {
           subtotal,
           fees,
           final,
           currency: 'GBP',
-        }),
-        experience: JSON.stringify(experiencePost.deal),
+        },
+        product: experiencePost.product as any,
         booked_for: new Date(bookedForTimestamp),
         from_slug: experiencePost.slug,
         is_user_following: false,
         is_test: isTest,
       },
     });
-
-    const booking = await this.prisma.booking.create({
-      data: {
-        booked_for: new Date(bookedForTimestamp),
-        confirmation_code: generateConfirmationCode(),
-        restaurant_id: experiencePost.restaurant.id,
-        order_id: order.id,
-        user_id: uid,
-      },
-    });
-
-    const restaurantSnapshot = await this.firebaseApp
-      .firestore()
-      .collection(FirestoreCollection.RESTAURANTS)
-      .doc(experiencePost.restaurant.id)
-      .get();
-
-    const restaurant = restaurantSnapshot.data();
-
-    await this.firebaseApp
-      .firestore()
-      .collection(FirestoreCollection.BOOKINGS)
-      .add({
-        confirmationCode: '0033',
-        orderId: '190844b5-ae91-481d-a438-d85f8233d1aa',
-        userId: uid,
-        restaurant,
-        hasArrived: false,
-      });
 
     return order;
   }
