@@ -259,26 +259,26 @@ model FollowRelation {
 }
 
 model RestaurateurApplication {
-  id                String @id() @default(uuid())
-  name              String @db.VarChar
-  email             String @db.VarChar
-  contactNumber     String @db.VarChar
-  restaurantName    String @db.VarChar
-  restaurantWebsite String @db.VarChar
-  restaurantAddress String @db.VarChar
-  description       String @db.VarChar
+  id                 String @id() @default(uuid())
+  name               String @db.VarChar
+  email              String @db.VarChar
+  contact_number     String @db.VarChar
+  restaurant_name    String @db.VarChar
+  restaurant_website String @db.VarChar
+  restaurant_address String @db.VarChar
+  description        String @db.VarChar
 
   @@map(name: "restaurataur_application")
 }
 
 model AffiliateSubmission {
-
-  id            String @id() @default(uuid())
-  platform      String @db.VarChar
-  reference     String @db.VarChar
-  affiliateType String @default("") @db.VarChar
+  id             String @id() @default(uuid())
+  platform       String @db.VarChar
+  reference      String @db.VarChar
+  affiliate_type String @default("") @db.VarChar
 
   user_id String? @db.VarChar
   user    User?   @relation(fields: [user_id], references: [id])
+
   @@map(name: "affiliate_submission")
 }

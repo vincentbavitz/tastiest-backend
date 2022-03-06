@@ -46,24 +46,4 @@ export class TasksService {
       await this.usersService.syncFromFirestore(user.id);
     });
   }
-
-  // We no longer want to do this; we don't want any reliance on Firestore.
-  // @Cron(CronExpression.EVERY_HOUR)
-  // async syncRestaurants() {
-  //   const firebaseRestaurantsSnapshot = await this.firebaseApp
-  //     .db(FirestoreCollection.RESTAURANTS)
-  //     .limit(1000)
-  //     .get();
-
-  //   const firebaseRestaurants: RestaurantData[] = [];
-
-  //   firebaseRestaurantsSnapshot.forEach((doc) =>
-  //     firebaseRestaurants.push(doc.data() as RestaurantData),
-  //   );
-
-  //   firebaseRestaurants.forEach(async (restaurant) => {
-  //     console.log('Syncing restaurant:', restaurant.details.name);
-  //     await this.restaurantsService.syncFromFirestore(restaurant.details.id);
-  //   });
-  // }
 }

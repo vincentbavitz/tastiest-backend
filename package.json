@@ -26,10 +26,6 @@
     "docker:down": "docker-compose down",
     "documentation:build": "npx @compodoc/compodoc --theme Vagrant -p tsconfig.json",
     "documentation:serve": "npx @compodoc/compodoc --theme Vagrant -p tsconfig.json --serve",
-    "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
-    "typeorm:migration:create": "npm run typeorm -- migration:create -n",
-    "typeorm:migration:generate": "npm run typeorm -- migration:generate -n",
-    "typeorm:migration:run": "npm run typeorm -- migration:run",
     "prisma:format": "yarn prisma format",
     "prisma:generate": "yarn prisma generate",
     "prisma:migration:dev": "yarn prisma migrate dev --name",
@@ -44,7 +40,6 @@
     "@nestjs/event-emitter": "^1.0.0",
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/schedule": "^1.0.1",
-    "@nestjs/typeorm": "^8.0.2",
     "@prisma/client": "^3.10.0",
     "@tastiest-io/tastiest-utils": "^1.69.0",
     "@types/hapi__joi": "^17.1.8",
@@ -65,7 +60,6 @@
     "rxjs": "^7.2.0",
     "stripe": "^8.200.0",
     "swr": "^1.2.0",
-    "typeorm": "^0.2.41",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

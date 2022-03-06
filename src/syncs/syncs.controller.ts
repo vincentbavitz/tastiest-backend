@@ -23,7 +23,7 @@ export class SyncsController {
     );
   }
 
-  @Post('contentful/experience-product')
+  @Post('contentful/experience')
   async syncExperienceProductFromContentful(
     @Body() body: any,
     @Request() request: RequestWithUser,

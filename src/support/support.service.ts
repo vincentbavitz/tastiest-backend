@@ -19,6 +19,10 @@ import UpdateUserTicketDto from './dto/update-user-ticket.dto';
 
 type SupportRequestCategory = 'user' | 'restaurant';
 
+/**
+ * REPLACE THIS SERVICE WITH A SAAS PRODUCT.
+ * DO NOT RE-INVENT THE WHEEL.
+ */
 @Injectable()
 export class SupportService {
   /**

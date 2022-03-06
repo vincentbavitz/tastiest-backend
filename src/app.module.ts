@@ -10,11 +10,11 @@ import { RouterModule } from '@nestjs/core/router/router-module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AdminModule } from './admin/admin.module';
+import { AffiliatesModule } from './affiliates/affiliates.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PreAuthMiddleware } from './auth/pre-auth.middleware';
 import { BookingsModule } from './bookings/bookings.module';
-import databaseConfig from './database/database.config';
 import { FirebaseModule } from './firebase/firebase.module';
 import { OrdersModule } from './orders/orders.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
@@ -26,7 +26,6 @@ import { UsersModule } from './users/users.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig],
       validationSchema: Joi.object({
         FIREBASE_PROJECT_ID: Joi.string().required(),
         FIREBASE_CLIENT_EMAIL: Joi.string().required(),
@@ -53,17 +52,16 @@ import { UsersModule } from './users/users.module';
     ]),
     ScheduleModule.forRoot(),
     FirebaseModule,
-    // AdminModule,
+    AdminModule,
     SyncsModule,
     // SupportModule,
     UsersModule,
     RestaurantsModule,
     // PaymentsModule,
-    // DatabaseModule,
     BookingsModule,
     OrdersModule,
     // AuthModule,
-    // AffiliatesModule,
+    AffiliatesModule,
   ],
   controllers: [AppController],
   providers: [

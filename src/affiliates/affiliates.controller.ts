@@ -1,4 +1,6 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { UserRole } from '@tastiest-io/tastiest-utils';
+import RoleGuard from 'src/auth/role.guard';
 import { AffiliatesService } from './affiliates.service';
 import NewAffiliateSubmissionDto from './dto/new-affiliate-submission.dto';
 
@@ -20,5 +22,11 @@ export class AffiliatesController {
       newAffiliateSubmissionDto.userId,
       newAffiliateSubmissionDto.anonymousId,
     );
+  }
+
+  @UseGuards(RoleGuard(UserRole.ADMIN))
+  @Get()
+  getAffiliateSubmissions() {
+    return this.affiliatesService.getAffiliateSubmissions();
   }
 }
