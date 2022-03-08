@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 /////////////////////     THIS FILE IS AUTO-GENERATED.   //////////////////////
@@ -6,15 +7,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 export type HorusRoutesGET =
-  | `${'accounts'}/${string}`
+  | 'accounts/:uid'
   | 'server/system-stats'
-  | `${'bookings'}/${string}`
-  | `${'orders'}/${string}`
+  | 'bookings/:id'
+  | 'orders/:token'
   | 'support/users'
   | 'support/restaurants'
-  | `${'support/users/ticket'}/${string}`
-  | `${'support/restaurants/ticket'}/${string}`
-  | `${'users'}/${string}`
+  | 'support/users/ticket/:id'
+  | 'support/restaurants/ticket/:id'
+  | 'users/:uid'
   | 'users/me';
 
 export type HorusRoutesPOST =
@@ -36,3 +37,4 @@ export type HorusRoutesPOST =
   | 'users/update'
   | 'users/follow-restaurant'
   | 'users/unfollow-restaurant';
+

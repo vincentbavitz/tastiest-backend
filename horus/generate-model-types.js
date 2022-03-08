@@ -14,9 +14,6 @@ const regexModelTypes = new RegExp(
 
 const matches = data.match(regexModelTypes);
 
-console.log(matches[0]);
-// regexModelTypes.exec(data)
-
 let horusTypesFileContent = '';
 
 matches.forEach((match) => {
@@ -42,14 +39,10 @@ matches.forEach((match) => {
   // with something like
   // price: OrderPrice
   linesWithCustomTypes?.forEach((line) => {
-    console.log('generate-model-types ➡️ line:', line);
-
     const newTypeName = line.replace(
       /(?:[\s\S]*?type\s)([\w.]*)(?:[\n\s\S]*)/gm,
       '$1'
     );
-
-    console.log('generate-model-types ➡️ newTypeName:', newTypeName);
 
     // Remove the above comment about the type.
     let cleanedLine;

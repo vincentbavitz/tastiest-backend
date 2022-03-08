@@ -22,7 +22,6 @@ const routes = {
 const controllers = [];
 
 glob('../src/**/*.controller.ts', (_, files) => {
-  console.log(files);
   // files is an array of filenames.
   // If the `nonull` option is set, and nothing
   // was found, then files is ["**/*.js"]
@@ -74,7 +73,7 @@ glob('../src/**/*.controller.ts', (_, files) => {
   // a TypeScript .d.ts file containing them all.
 
   // File content
-  const fileHeaderContent = `
+  const fileHeaderContent = `/* eslint-disable prettier/prettier */
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 /////////////////////     THIS FILE IS AUTO-GENERATED.   //////////////////////
@@ -88,11 +87,14 @@ glob('../src/**/*.controller.ts', (_, files) => {
   const transformRouteToType = (route) => {
     // Produces a Typescript string template type like   `${users/me}`
     // or like this in the dynamic case, eg users/:uid   `${users}/{string}`
-    const routeTemplate = "`${'" + route + "'}`";
+    // const routeTemplate = "`${'" + route + "'}`";
 
-    return route.includes('/:')
-      ? routeTemplate.replace(/\/:[\w]*'/, "'}/${string")
-      : `'${route}'`;
+    // Template strings aren't good for intellisense.
+    // return route.includes('/:')
+    //   ? routeTemplate.replace(/\/:[\w]*'/, "'}/${string")
+    //   : `'${route}'`;
+
+    return `'${route}'`;
   };
 
   if (routes.GET.length) {
@@ -179,6 +181,4 @@ glob('../src/**/*.controller.ts', (_, files) => {
 
   // `
   //   );
-
-  console.log('routes ➡️ routes:', routes);
 });
