@@ -3,16 +3,11 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import {
-  CmsApi,
-  generateUserFacingId,
-  Promo,
-  UserRole,
-} from '@tastiest-io/tastiest-utils';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Promo, UserRole } from '@tastiest-io/tastiest-utils';
 import { AuthenticatedUser } from 'src/auth/auth.model';
-import { FirebaseService } from 'src/firebase/firebase.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { OrderCreatedEvent } from './events/order-created.event';
 
 type CreateOrderOptionals = {
   promoCode?: string;
@@ -26,10 +21,8 @@ export class OrdersService {
    * @ignore
    */
   constructor(
-    // private usersService: UsersService,
-    private firebaseApp: FirebaseService,
-    private configService: ConfigService,
-    private prisma: PrismaService, // @InjectRepository(OrderEntity) // private ordersRepository: Repository<OrderEntity>,
+    private eventEmitter: EventEmitter2,
+    private prisma: PrismaService,
   ) {}
 
   /**
@@ -43,16 +36,12 @@ export class OrdersService {
     bookedForTimestamp: number,
     { promoCode, userAgent, isTest = true }: CreateOrderOptionals,
   ) {
-    // Sync products and promos from Contentful with Webhooks so we can grab it from Postgres in 2ms
-    const cms = new CmsApi(
-      this.configService.get('CONTENTFUL_SPACE_ID'),
-      this.configService.get('CONTENTFUL_ACCESS_TOKEN'),
-    );
-
     // Grab post from our DB.
     // Note that our DB syncs posts from Contentful automatically.
-    // const experiencePost = await this.prisma.product
-    const experiencePost = await cms.getPostByProductId(experienceProductId);
+    const experiencePost = await this.prisma.experiencePost.findUnique({
+      where: { product_id: experienceProductId },
+      include: { product: true, restaurant: true },
+    });
 
     if (!experiencePost) {
       throw new NotFoundException('Experience does not exist');
@@ -60,6 +49,7 @@ export class OrdersService {
 
     // Is userId valid and is user online?
     // Is promoCode valid? If so, calculate Promo and final price
+
     // const promo: Promo = await cms.getPromo(orderRequest.promoCode);
     // const promoIsValid = validatePromo(product, orderRequest?.userId, promo);
     // if (promo?.validTo < Date.now()) {
@@ -67,10 +57,9 @@ export class OrdersService {
     // }
 
     // Validate product and slug, validate that product is still available
-    //
 
     // Gross price
-    const subtotal = experiencePost.product.pricePerHeadGBP * heads;
+    const subtotal = experiencePost.product.price * heads;
 
     const priceAfterPromo = this.calculatePromoPrice(
       subtotal,
@@ -84,7 +73,7 @@ export class OrdersService {
       data: {
         user_id: uid,
         restaurant_id: experiencePost.restaurant.id,
-        user_facing_id: generateUserFacingId(),
+        user_facing_id: this.generateUserFacingId(),
         heads: Math.floor(heads),
         price: {
           subtotal,
@@ -100,7 +89,16 @@ export class OrdersService {
       },
     });
 
-    return order;
+    // Event handles Stripe user creation and etc.
+    this.eventEmitter.emit(
+      'order.created',
+      new OrderCreatedEvent(order, userAgent),
+    );
+
+    return this.prisma.order.findUnique({
+      where: { token: order.token },
+      include: { restaurant: true },
+    });
   }
 
   async getOrder(token: string, requestUser: AuthenticatedUser) {
@@ -125,7 +123,6 @@ export class OrdersService {
   }
 
   /**
-   * DELETE ME
    * Calculate price after applying promocode.
    */
   private calculatePromoPrice(price: number, promo: Promo) {
@@ -168,5 +165,16 @@ export class OrdersService {
       total: Number((price + fees).toFixed(2)),
       fees: Number(fees.toFixed(2)),
     };
+  }
+
+  /**
+   * Generate user facing IDs.
+   * For orders, bookings, products, etc.
+   */
+  private generateUserFacingId(length = 9): string {
+    return Array(length)
+      .fill(undefined)
+      .map((_) => String(Math.floor(Math.random() * 10)))
+      .join('');
   }
 }

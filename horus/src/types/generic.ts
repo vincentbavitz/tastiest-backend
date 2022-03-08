@@ -9,3 +9,6 @@ export interface MetaDetails {
   description: string; // displayed in google search results
   image: Media; // og-image
 }
+
+export type StripeAccount = import('stripe').Stripe.Account;
+export type Document = import('@contentful/rich-text-types').Document;

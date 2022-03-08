@@ -2,6 +2,15 @@ generator client {
   provider = "prisma-client-js"
 }
 
+/// These are typings used by our /horus type generator.
+/// Note that comments before a column like `/// type Model`
+/// are crucial for our type generator to function.
+/// NOTE: Any instances of `/// type [\w]*` must be a Prisma.Json type.
+generator horus {
+  provider = "prisma-client-js"
+  output   = "../horus/generated"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -15,11 +24,6 @@ model User {
   last_name  String?   @db.VarChar(32)
   mobile     String?   @db.VarChar(20)
   birthday   DateTime? @db.Timestamptz()
-
-  /// JSON data of type UserPreferences
-  preferences Json?
-
-  metrics Json?
 
   location_lat      Float?  @db.DoublePrecision
   location_lon      Float?  @db.DoublePrecision
@@ -54,12 +58,16 @@ model Order {
   booked_for     DateTime @db.Timestamptz()
   heads          Decimal  @db.Decimal
 
-  product   Json
   from_slug String @db.VarChar
 
   // Payment information
+  /// type OrderPrice
   price          Json
+
+  /// type RefundDetails
   refund         Json?
+
+  /// type PaymentCardDetails
   payment_card   Json?
   payment_method String? @db.VarChar
   discount_code  String? @db.VarChar
@@ -78,6 +86,9 @@ model Order {
   is_test           Boolean
 
   // Relations
+  product    ExperienceProduct @relation(fields: [product_id], references: [id])
+  product_id String            @db.VarChar
+
   user    User   @relation(fields: [user_id], references: [id])
   user_id String @db.VarChar
 
@@ -141,12 +152,16 @@ model Restaurant {
   booking_system     String? @db.VarChar
   has_accepted_terms Boolean @default(false)
 
+  /// type StripeAccount
   financial_connect_account Json?  @db.JsonB
   financial_cut_default     Float? @default(0.9) @db.DoublePrecision
   financial_cut_followers   Float? @default(0.95) @db.DoublePrecision
 
+  /// type WeekQuietTimes
   metrics_quiet_times      Json?
+  /// type WeekOpenTimes
   metrics_open_times       Json?
+
   metrics_seating_duration Int?  @db.Integer
 
   settings_notify_bookings     Boolean @default(true)
@@ -170,16 +185,30 @@ model Restaurant {
 }
 
 model RestaurantProfile {
-  id                   String  @id() @default(uuid())
-  website              String? @db.VarChar
-  public_phone_number  String? @db.VarChar
-  profile_picture      Json?   @db.JsonB
-  backdrop_video       Json?   @db.JsonB
-  backdrop_still_frame Json?   @db.JsonB
-  display_photograph   Json?   @db.JsonB
-  hero_illustration    Json?   @db.JsonB
-  description          Json?   @db.JsonB
-  meta                 Json?   @db.JsonB
+  id                  String  @id() @default(uuid())
+  website             String? @db.VarChar
+  public_phone_number String? @db.VarChar
+
+  /// type Media
+  profile_picture Json? @db.JsonB
+
+  /// type Media
+  backdrop_video Json? @db.JsonB
+
+  /// type Media
+  backdrop_still_frame Json? @db.JsonB
+
+  /// type Media
+  display_photograph Json? @db.JsonB
+
+  /// type Media
+  hero_illustration Json? @db.JsonB
+
+  /// type Document
+  description Json? @db.JsonB
+
+  /// type MetaDetails
+  meta Json? @db.JsonB
 
   restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
   restaurant_id String     @unique @db.VarChar
@@ -192,21 +221,29 @@ model ExperiencePost {
   title String   @db.VarChar()
   date  DateTime @db.Timestamptz()
 
-  body        Json?  @db.JsonB
-  city        String @db.VarChar(32)
-  cuisine     String @db.VarChar(32)
-  description String @db.VarChar(512)
+  /// type Document
+  body                  Json?   @db.JsonB
+  city                  String  @db.VarChar(32)
+  cuisine               String  @db.VarChar(32)
+  description           String  @db.VarChar(512)
+  see_restaurant_button String?
 
   // Visual items
   /// Eg. East London
   /// Displayed under the title
-  display_location      String @db.VarChar(512)
-  plate_image           Json?  @db.JsonB
-  menu_image            Json?  @db.JsonB
-  auxiliary_image       Json?  @db.JsonB
-  see_restaurant_button Json?  @db.JsonB
+  display_location String @db.VarChar(512)
+
+  /// type Media
+  plate_image Json? @db.JsonB
+
+  /// type Media
+  menu_image Json? @db.JsonB
+
+  /// type Media
+  auxiliary_image Json? @db.JsonB
 
   // Descriptive
+  /// type MetaDetails
   meta Json?    @db.JsonB
   slug String   @db.VarChar
   tags String[]
@@ -223,8 +260,10 @@ model ExperiencePost {
 model ExperienceProduct {
   id            String @id() @db.VarChar()
   name          String @db.VarChar
-  image         Json?  @db.JsonB
   allowed_heads Int[]
+  
+  /// type Media
+  image         Json?  @db.JsonB
 
   /// Per head, in GBP
   price Float @db.DoublePrecision
@@ -232,7 +271,8 @@ model ExperienceProduct {
   restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
   restaurant_id String     @unique @db.VarChar
 
-  post ExperiencePost?
+  orders Order[]
+  post   ExperiencePost?
 
   @@map(name: "product")
 }

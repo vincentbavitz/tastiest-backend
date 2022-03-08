@@ -1,8 +1,6 @@
-import { UserMetrics, UserPreferences } from '@tastiest-io/tastiest-utils';
 import { Type } from 'class-transformer';
 import {
   IsDateString,
-  IsJSON,
   IsOptional,
   IsString,
   ValidateNested,
@@ -35,13 +33,10 @@ class UpdateUserDto {
   @Type(() => UserLocationDto)
   location?: UserLocationDto;
 
-  @IsOptional()
-  @IsJSON()
-  metrics?: Partial<UserMetrics>;
-
-  @IsOptional()
-  @IsJSON()
-  preferences?: Partial<UserPreferences>;
+  // Add this in later
+  // @IsOptional()
+  // @IsJSON()
+  // preferences?: Partial<UserPreferences>;
 
   @IsOptional()
   @ValidateNested()

@@ -11,7 +11,7 @@ import {
 class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
-  experienceId: string;
+  productId: string;
 
   @IsNumber()
   @IsInt()

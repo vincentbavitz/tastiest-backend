@@ -13,6 +13,7 @@ const regexModelTypes = new RegExp(
 );
 
 const matches = data.match(regexModelTypes);
+const usedCustomTypes = [];
 
 let horusTypesFileContent = '';
 
@@ -44,6 +45,11 @@ matches.forEach((match) => {
       '$1'
     );
 
+    // Add to our list of custom types so we can import them in the output document.
+    if (!usedCustomTypes.includes(newTypeName)) {
+      usedCustomTypes.push(newTypeName);
+    }
+
     // Remove the above comment about the type.
     let cleanedLine;
     cleanedLine = line.replace(/\/\*\*[\s\S]*?\*\/\n\s\s/gm, '');
@@ -68,14 +74,16 @@ const fileHeaderContent = `/* eslint-disable prettier/prettier */
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 /////////////////////     THIS FILE IS AUTO-GENERATED.   //////////////////////
-/////////////////////     DO NOT EDIT                    //////////////////////
+/////////////////////             DO NOT EDIT            //////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-\n\n`;
+\n`;
 
 // Here is where we give magical imports to models labelled with `/// type SomeType`
-const fileTypeImports = `
-import 
-`;
+// prettier-ignore
+const fileTypeImports = `import {\n  ${usedCustomTypes.join(',\n  ')}\n} from '../index';\n\n\n`;
 
-fs.writeFileSync(outputFilename, fileHeaderContent + horusTypesFileContent);
+fs.writeFileSync(
+  outputFilename,
+  fileHeaderContent + fileTypeImports + horusTypesFileContent
+);

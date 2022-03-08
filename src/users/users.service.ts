@@ -75,12 +75,8 @@ export class UsersService {
       last_name: userData.details?.lastName,
       is_test_account: Boolean(userRecord?.customClaims['isTestAccount']),
       mobile: userData.details.mobile ?? null,
-      metrics: JSON.stringify(userData.metrics),
       birthday: userBirthdayDateTime?.isValid
         ? userBirthdayDateTime.toJSDate()
-        : undefined,
-      preferences: userData.preferences
-        ? JSON.stringify(userData.preferences)
         : undefined,
       location_lon: userData.details?.address?.lon,
       location_lat: userData.details?.address?.lat,
@@ -140,13 +136,6 @@ export class UsersService {
         email,
         first_name: firstName,
         is_test_account: isTestAccount,
-        metrics: {
-          totalBookings: 0,
-          totalSpent: { GBP: 0 },
-          recentSearches: [],
-          restaurantsVisited: [],
-          restaurantsFollowed: [],
-        },
       },
     });
 
@@ -207,13 +196,7 @@ export class UsersService {
     const updateData = lodash.omitBy<
       Omit<
         User,
-        | 'id'
-        | 'email'
-        | 'is_test_account'
-        | 'metrics'
-        | 'preferences'
-        | 'created_at'
-        | 'last_active'
+        'id' | 'email' | 'is_test_account' | 'created_at' | 'last_active'
       >
     >(
       {

@@ -24,7 +24,7 @@ export class OrdersController {
     @Request() request: RequestWithUser,
   ) {
     const order = await this.ordersService.createOrder(
-      createOrderDto.experienceId,
+      createOrderDto.productId,
       request.user.uid,
       createOrderDto.heads,
       createOrderDto.bookedForTimestamp,

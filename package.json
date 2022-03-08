@@ -29,7 +29,8 @@
     "prisma:format": "yarn prisma format",
     "prisma:generate": "yarn prisma generate",
     "prisma:migration:dev": "yarn prisma migrate dev --name",
-    "prisma:sync-dev": "yarn prisma db push"
+    "prisma:sync-dev": "yarn prisma db push",
+    "horus:publish": "yarn prisma:generate && cd horus && yarn publish:minor"
   },
   "dependencies": {
     "@compodoc/compodoc": "^1.1.16",

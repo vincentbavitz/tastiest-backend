@@ -1,11 +1,18 @@
 {
-  "version": "0.1.0",
-  "license": "MIT",
+  "name": "@tastiest-io/tastiest-horus",
+  "owner": "tastiest-io",
+  "author": "Vincent Bavitz",
+  "description": "Typings and Utils for the Tastiest Backend",
+  "license": "TASTIEST TECHNOLOGIES",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": "git://github.com:tastiest-io/tastiest-backend",
+  "version": "0.5.0",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "engines": {
     "node": ">=10"
@@ -15,10 +22,11 @@
     "build": "yarn generate:types && tsdx build",
     "test": "tsdx test",
     "lint": "tsdx lint",
-    "prepare": "tsdx build",
+    "prepare": "yarn generate:types && tsdx build",
     "size": "size-limit",
     "analyze": "size-limit --why",
-    "generate:types": "node ./generate-route-types.js && node ./generate-model-types.js"
+    "generate:types": "node ./generate-route-types.js && node ./generate-model-types.js",
+    "publish:minor": "npm version minor && npm publish"
   },
   "peerDependencies": {},
   "husky": {
@@ -32,8 +40,6 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "horus",
-  "author": "Vincent Bavitz",
   "module": "dist/horus.esm.js",
   "size-limit": [
     {
@@ -49,7 +55,9 @@
     "@size-limit/preset-small-lib": "^7.0.8",
     "@types/glob": "^7.2.0",
     "eslint": "^8.10.0",
+    "glob": "^7.2.0",
     "husky": "^7.0.4",
+    "lodash": "^4.17.21",
     "prettier": "^2.5.1",
     "size-limit": "^7.0.8",
     "tsdx": "^0.14.1",
@@ -57,8 +65,7 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
-    "@types/stripe": "^8.0.417",
-    "glob": "^7.2.0",
-    "lodash": "^4.17.21"
+    "@contentful/rich-text-types": "^15.11.1",
+    "@types/stripe": "^8.0.417"
   }
 }
