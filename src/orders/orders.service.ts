@@ -69,10 +69,12 @@ export class OrdersService {
     const { total: final, fees } = this.calculatePaymentFees(priceAfterPromo);
 
     // Validate number of heads
+    // Creating with relations are done as such:
+    // https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#connect-an-existing-record
     const order = await this.prisma.order.create({
       data: {
-        user_id: uid,
-        restaurant_id: experiencePost.restaurant.id,
+        user: { connect: { id: uid } },
+        restaurant: { connect: { id: experiencePost.restaurant.id } },
         user_facing_id: this.generateUserFacingId(),
         heads: Math.floor(heads),
         price: {

@@ -1,19 +1,12 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
-  NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  Booking,
-  FirestoreCollection,
-  TIME,
-  UserRole,
-} from '@tastiest-io/tastiest-utils';
-import { DateTime } from 'luxon';
+import { Booking } from '@prisma/client';
+import { UserRole } from '@tastiest-io/tastiest-utils';
 import { AuthenticatedUser } from 'src/auth/auth.model';
-import { FirebaseService } from 'src/firebase/firebase.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { TrackingService } from 'src/tracking/tracking.service';
 
 @Injectable()
@@ -22,8 +15,8 @@ export class BookingsService {
    * @ignore
    */
   constructor(
-    private readonly firebaseApp: FirebaseService,
     private readonly trackingService: TrackingService,
+    private prisma: PrismaService,
   ) {}
 
   async getBookings(
@@ -46,16 +39,7 @@ export class BookingsService {
         return this.getBookingsOfRestaurant(restaurantId);
       }
 
-      const bookingsSnapshot = await this.firebaseApp
-        .db(FirestoreCollection.BOOKINGS)
-        .get();
-
-      const bookings: Booking[] = [];
-      bookingsSnapshot.forEach((booking) =>
-        bookings.push(booking.data() as Booking),
-      );
-
-      return bookings;
+      return this.prisma.booking.findMany();
     }
 
     // If user, ensure they have the permissions to view.
@@ -87,17 +71,14 @@ export class BookingsService {
    * NB. The booking ID is equivalent to the corresponding order ID.
    */
   async getBooking(id: string, user: AuthenticatedUser) {
-    const bookingSnapshot = await this.firebaseApp
-      .db(FirestoreCollection.BOOKINGS)
-      .doc(id)
-      .get();
+    const booking = await this.prisma.booking.findFirst({
+      where: { id, user_id: user.uid },
+    });
 
     // Does the booking exist?
-    if (!bookingSnapshot.exists) {
+    if (!booking) {
       throw new NotFoundException(`Booking with the given ID doesn't exist.`);
     }
-
-    const booking = bookingSnapshot.data() as Booking;
 
     // Ensure the request is coming from the owner of the ticket or an admin.
     if (!this.validateBookingOwnership(user, booking)) {
@@ -108,37 +89,36 @@ export class BookingsService {
   }
 
   async getBookingsOfUser(uid: string, fromRestaurantId?: string) {
-    const query = fromRestaurantId
-      ? this.firebaseApp
-          .db(FirestoreCollection.BOOKINGS)
-          .where('userId', '==', uid)
-          .where('restaurantId', '==', fromRestaurantId)
-      : this.firebaseApp
-          .db(FirestoreCollection.BOOKINGS)
-          .where('userId', '==', uid);
+    // const query = fromRestaurantId
+    //   ? this.firebaseApp
+    //       .db(FirestoreCollection.BOOKINGS)
+    //       .where('userId', '==', uid)
+    //       .where('restaurantId', '==', fromRestaurantId)
+    //   : this.firebaseApp
+    //       .db(FirestoreCollection.BOOKINGS)
+    //       .where('userId', '==', uid);
 
-    const bookingsSnapshot = await query.get();
+    // const bookingsSnapshot = await query.get();
 
-    const bookings: Booking[] = [];
-    bookingsSnapshot.forEach((booking) =>
-      bookings.push(booking.data() as Booking),
-    );
+    // const bookings: Booking[] = [];
+    // bookingsSnapshot.forEach((booking) =>
+    //   bookings.push(booking.data() as Booking),
+    // );
 
-    return bookings;
+    const where = { user_id: uid };
+    if (fromRestaurantId) {
+      where['restaurant_id'] = fromRestaurantId;
+    }
+
+    return this.prisma.booking.findMany({
+      where,
+    });
   }
 
   async getBookingsOfRestaurant(restaurantId: string) {
-    const bookingsSnapshot = await this.firebaseApp
-      .db(FirestoreCollection.BOOKINGS)
-      .where('restaurantId', '==', restaurantId)
-      .get();
-
-    const bookings: Booking[] = [];
-    bookingsSnapshot.forEach((booking) =>
-      bookings.push(booking.data() as Booking),
-    );
-
-    return bookings;
+    return this.prisma.booking.findMany({
+      where: { restaurant_id: restaurantId },
+    });
   }
 
   /**
@@ -149,160 +129,160 @@ export class BookingsService {
    * 3. may modify `bookedForTimestamp` when `hasCancelled` or `hasArrived` is true.
    * 4. may set `bookedForTimestamp` to a date that is in the past.
    */
-  async updateBooking(
-    bookingId: string,
-    user: AuthenticatedUser,
-    {
-      hasArrived,
-      hasCancelled,
-      bookedForTimestamp,
-    }: {
-      hasArrived?: boolean;
-      hasCancelled?: boolean;
-      bookedForTimestamp?: number;
-    },
-  ) {
-    if (
-      hasArrived === undefined &&
-      hasCancelled === undefined &&
-      bookedForTimestamp === undefined
-    ) {
-      throw new BadRequestException(
-        'Nothing to update. Please provide at least one update parameter.',
-      );
-    }
+  // async updateBooking(
+  //   bookingId: string,
+  //   user: AuthenticatedUser,
+  //   {
+  //     hasArrived,
+  //     hasCancelled,
+  //     bookedForTimestamp,
+  //   }: {
+  //     hasArrived?: boolean;
+  //     hasCancelled?: boolean;
+  //     bookedForTimestamp?: number;
+  //   },
+  // ) {
+  //   if (
+  //     hasArrived === undefined &&
+  //     hasCancelled === undefined &&
+  //     bookedForTimestamp === undefined
+  //   ) {
+  //     throw new BadRequestException(
+  //       'Nothing to update. Please provide at least one update parameter.',
+  //     );
+  //   }
 
-    // This automatically verifies the booking ownership.
-    const booking = await this.getBooking(bookingId, user);
-    const updatedBooking: Booking = { ...booking };
+  //   // This automatically verifies the booking ownership.
+  //   const booking = await this.getBooking(bookingId, user);
+  //   const updatedBooking: Booking = { ...booking };
 
-    // Can't modify if they've arrived or cancelled.
-    // Admins can override this.
-    if (
-      !user.roles.includes(UserRole.ADMIN) &&
-      (booking.hasArrived || booking.hasCancelled)
-    ) {
-      throw new BadRequestException(
-        'Booking can not be modified after the customer has arrived or the booking has been cancelled.',
-      );
-    }
+  //   // Can't modify if they've arrived or cancelled.
+  //   // Admins can override this.
+  //   if (
+  //     !user.roles.includes(UserRole.ADMIN) &&
+  //     (booking.hasArrived || booking.hasCancelled)
+  //   ) {
+  //     throw new BadRequestException(
+  //       'Booking can not be modified after the customer has arrived or the booking has been cancelled.',
+  //     );
+  //   }
 
-    // Is the new booking timestamp valid?
-    if (bookedForTimestamp) {
-      // Admins are allowed to set bookings in the past.
-      if (
-        !user.roles.includes(UserRole.ADMIN) &&
-        bookedForTimestamp < Date.now()
-      ) {
-        throw new NotAcceptableException(
-          'Can not set `bookedForTimestamp` to a date in the past.',
-        );
-      }
+  //   // Is the new booking timestamp valid?
+  //   if (bookedForTimestamp) {
+  //     // Admins are allowed to set bookings in the past.
+  //     if (
+  //       !user.roles.includes(UserRole.ADMIN) &&
+  //       bookedForTimestamp < Date.now()
+  //     ) {
+  //       throw new NotAcceptableException(
+  //         'Can not set `bookedForTimestamp` to a date in the past.',
+  //       );
+  //     }
 
-      // prettier-ignore
-      updatedBooking.bookedForHumanDate = DateTime.fromMillis(bookedForTimestamp, {zone: TIME.LOCALES.LONDON}).toFormat('hh:mm a, DDD');
-      updatedBooking.bookedForTimestamp = bookedForTimestamp;
-    }
+  //     // prettier-ignore
+  //     updatedBooking.bookedForHumanDate = DateTime.fromMillis(bookedForTimestamp, {zone: TIME.LOCALES.LONDON}).toFormat('hh:mm a, DDD');
+  //     updatedBooking.bookedForTimestamp = bookedForTimestamp;
+  //   }
 
-    // Is the hasArrived value different and valid?
-    if (hasArrived !== undefined && hasArrived !== booking.hasArrived) {
-      updatedBooking.hasArrived = hasArrived;
+  //   // Is the hasArrived value different and valid?
+  //   if (hasArrived !== undefined && hasArrived !== booking.hasArrived) {
+  //     updatedBooking.hasArrived = hasArrived;
 
-      // Track `Arrived` with Segment
-      if (updatedBooking.hasArrived) {
-        await this.trackingService.track(
-          'Eater Arrived',
-          { userId: booking.userId },
-          {
-            email: booking.eaterEmail,
-            bookingId: booking.orderId,
-            restaurant: booking.restaurant,
-            customerUserId: booking.userId,
-            booking: updatedBooking,
-          },
-        );
-      }
-    }
+  //     // Track `Arrived` with Segment
+  //     if (updatedBooking.hasArrived) {
+  //       await this.trackingService.track(
+  //         'Eater Arrived',
+  //         { userId: booking.userId },
+  //         {
+  //           email: booking.eaterEmail,
+  //           bookingId: booking.orderId,
+  //           restaurant: booking.restaurant,
+  //           customerUserId: booking.userId,
+  //           booking: updatedBooking,
+  //         },
+  //       );
+  //     }
+  //   }
 
-    // Is the hasCancelled value different and valid?
-    if (hasCancelled !== undefined && hasCancelled !== booking.hasCancelled) {
-      updatedBooking.hasCancelled = hasCancelled;
+  //   // Is the hasCancelled value different and valid?
+  //   if (hasCancelled !== undefined && hasCancelled !== booking.hasCancelled) {
+  //     updatedBooking.hasCancelled = hasCancelled;
 
-      // Track update in Segment
-      if (updatedBooking.hasCancelled) {
-        await this.trackingService.track(
-          'Booking Cancelled',
-          {
-            userId: user.uid,
-          },
-          {
-            email: booking.eaterEmail,
-            bookingId: booking.orderId,
-            restaurant: booking.restaurant,
-            customerUserId: booking.userId,
-            booking: updatedBooking,
-          },
-        );
-      }
-    }
+  //     // Track update in Segment
+  //     if (updatedBooking.hasCancelled) {
+  //       await this.trackingService.track(
+  //         'Booking Cancelled',
+  //         {
+  //           userId: user.uid,
+  //         },
+  //         {
+  //           email: booking.eaterEmail,
+  //           bookingId: booking.orderId,
+  //           restaurant: booking.restaurant,
+  //           customerUserId: booking.userId,
+  //           booking: updatedBooking,
+  //         },
+  //       );
+  //     }
+  //   }
 
-    // Update booking in Firestore
-    await this.firebaseApp.db(FirestoreCollection.BOOKINGS).doc(bookingId).set(
-      {
-        hasArrived: updatedBooking.hasArrived,
-        hasCancelled: updatedBooking.hasCancelled,
-        bookedForTimestamp: updatedBooking.bookedForTimestamp,
-        bookedForHumanDate: updatedBooking.bookedForHumanDate,
-      },
-      { merge: true },
-    );
+  //   // Update booking in Firestore
+  //   await this.firebaseApp.db(FirestoreCollection.BOOKINGS).doc(bookingId).set(
+  //     {
+  //       hasArrived: updatedBooking.hasArrived,
+  //       hasCancelled: updatedBooking.hasCancelled,
+  //       bookedForTimestamp: updatedBooking.bookedForTimestamp,
+  //       bookedForHumanDate: updatedBooking.bookedForHumanDate,
+  //     },
+  //     { merge: true },
+  //   );
 
-    // Update the corresponding order and track
-    if (
-      bookedForTimestamp &&
-      bookedForTimestamp !== booking.bookedForTimestamp
-    ) {
-      // Track update in Segment
-      await this.trackingService.track(
-        'Booking Date Updated',
-        { userId: user.uid },
-        {
-          email: booking.eaterEmail,
-          bookingId: booking.orderId,
-          restaurant: booking.restaurant,
-          customerUserId: booking.userId,
+  //   // Update the corresponding order and track
+  //   if (
+  //     bookedForTimestamp &&
+  //     bookedForTimestamp !== booking.bookedForTimestamp
+  //   ) {
+  //     // Track update in Segment
+  //     await this.trackingService.track(
+  //       'Booking Date Updated',
+  //       { userId: user.uid },
+  //       {
+  //         email: booking.eaterEmail,
+  //         bookingId: booking.orderId,
+  //         restaurant: booking.restaurant,
+  //         customerUserId: booking.userId,
 
-          before: {
-            hasArrived: booking.hasArrived,
-            hasCancelled: booking.hasCancelled,
-            bookedForTimestamp: booking.bookedForTimestamp,
-            bookedForHumanDate: booking.bookedForHumanDate,
-          },
-          after: {
-            hasArrived: updatedBooking.hasArrived,
-            hasCancelled: updatedBooking.hasCancelled,
-            bookedForTimestamp: updatedBooking.bookedForTimestamp,
-            bookedForHumanDate: updatedBooking.bookedForHumanDate,
-          },
+  //         before: {
+  //           hasArrived: booking.hasArrived,
+  //           hasCancelled: booking.hasCancelled,
+  //           bookedForTimestamp: booking.bookedForTimestamp,
+  //           bookedForHumanDate: booking.bookedForHumanDate,
+  //         },
+  //         after: {
+  //           hasArrived: updatedBooking.hasArrived,
+  //           hasCancelled: updatedBooking.hasCancelled,
+  //           bookedForTimestamp: updatedBooking.bookedForTimestamp,
+  //           bookedForHumanDate: updatedBooking.bookedForHumanDate,
+  //         },
 
-          ...updatedBooking,
-        },
-      );
+  //         ...updatedBooking,
+  //       },
+  //     );
 
-      await this.firebaseApp
-        .db(FirestoreCollection.ORDERS)
-        .doc(bookingId)
-        .set({ bookedForTimestamp }, { merge: true });
-    }
+  //     await this.firebaseApp
+  //       .db(FirestoreCollection.ORDERS)
+  //       .doc(bookingId)
+  //       .set({ bookedForTimestamp }, { merge: true });
+  //   }
 
-    return {
-      bookingId,
-      hasArrived: updatedBooking.hasArrived,
-      hasCancelled: updatedBooking.hasCancelled,
-      bookedForTimestamp: updatedBooking.bookedForTimestamp,
-      bookedForHumanDate: updatedBooking.bookedForHumanDate,
-    };
-  }
+  //   return {
+  //     bookingId,
+  //     hasArrived: updatedBooking.hasArrived,
+  //     hasCancelled: updatedBooking.hasCancelled,
+  //     bookedForTimestamp: updatedBooking.bookedForTimestamp,
+  //     bookedForHumanDate: updatedBooking.bookedForHumanDate,
+  //   };
+  // }
 
   //   async updateTicket(data: UpdateUserTicketDto) {
   //     const ref = this.firebaseApp
@@ -348,12 +328,12 @@ export class BookingsService {
 
     // Does it belong to the user?
     if (user.roles.includes(UserRole.EATER)) {
-      return booking.userId === user.uid;
+      return booking.user_id === user.uid;
     }
 
     // Does it belong to the restaurant?
     if (user.roles.includes(UserRole.RESTAURANT)) {
-      return booking.restaurantId === user.uid;
+      return booking.restaurant_id === user.uid;
     }
 
     return false;

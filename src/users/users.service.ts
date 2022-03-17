@@ -1,11 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FollowRelation, User } from '@prisma/client';
-import {
-  FirestoreCollection,
-  UserData,
-  UserRole,
-} from '@tastiest-io/tastiest-utils';
+import { FirestoreCollection, UserRole } from '@tastiest-io/tastiest-utils';
 import { UserRecord } from 'firebase-admin/lib/auth/user-record';
 import lodash from 'lodash';
 import { DateTime } from 'luxon';
@@ -51,7 +47,7 @@ export class UsersService {
       .doc(uid)
       .get();
 
-    const userData = userDataSnapshot.data() as UserData;
+    const userData = userDataSnapshot.data() as any;
 
     let userRecord: UserRecord;
     try {

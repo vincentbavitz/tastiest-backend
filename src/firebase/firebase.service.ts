@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  FirestoreCollection,
-  RestaurantDataApi,
-  UserDataApi,
-} from '@tastiest-io/tastiest-utils';
+import { FirestoreCollection } from '@tastiest-io/tastiest-utils';
 import * as firebase from 'firebase-admin';
 
 @Injectable()
@@ -37,13 +33,5 @@ export class FirebaseService {
 
   firestore = (): firebase.firestore.Firestore => {
     return this.firebaseApp.firestore();
-  };
-
-  getRestaurantDataApi = (restaurantId: string) => {
-    return new RestaurantDataApi(firebase, restaurantId);
-  };
-
-  getUserDataApi = (userId: string) => {
-    return new UserDataApi(firebase, userId);
   };
 }

@@ -24,14 +24,14 @@ export class OrdersController {
     @Request() request: RequestWithUser,
   ) {
     const order = await this.ordersService.createOrder(
-      createOrderDto.productId,
+      createOrderDto.product_id,
       request.user.uid,
       createOrderDto.heads,
-      createOrderDto.bookedForTimestamp,
+      createOrderDto.booked_for_timestamp,
       {
-        promoCode: createOrderDto.promoCode ?? null,
-        userAgent: createOrderDto.userAgent ?? null,
-        isTest: createOrderDto.isTest ?? false,
+        promoCode: createOrderDto.promo_code ?? null,
+        userAgent: createOrderDto.user_agent ?? null,
+        isTest: createOrderDto.is_test ?? false,
       },
     );
 

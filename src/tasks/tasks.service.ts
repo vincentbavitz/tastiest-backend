@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
-import { FirestoreCollection, UserData } from '@tastiest-io/tastiest-utils';
+import { FirestoreCollection } from '@tastiest-io/tastiest-utils';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { RestaurantsService } from 'src/restaurants/restaurants.service';
 import { UsersService } from 'src/users/users.service';
 
 type UserDataWithId = {
   id: string;
-} & UserData;
+} & any;
 
 @Injectable()
 export class TasksService {

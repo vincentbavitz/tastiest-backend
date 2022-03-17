@@ -11,7 +11,7 @@ import {
 class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
-  productId: string;
+  product_id: string;
 
   @IsNumber()
   @IsInt()
@@ -21,19 +21,19 @@ class CreateOrderDto {
   @IsNumber()
   @IsInt()
   @IsPositive()
-  bookedForTimestamp: number;
+  booked_for_timestamp: number;
 
   @IsOptional()
   @IsString()
-  promoCode?: string;
+  promo_code?: string;
 
   @IsOptional()
   @IsString()
-  userAgent?: string;
+  user_agent?: string;
 
   @IsOptional()
   @IsBoolean()
-  isTest?: boolean;
+  is_test?: boolean;
 }
 
 export default CreateOrderDto;

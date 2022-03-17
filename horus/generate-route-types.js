@@ -62,11 +62,11 @@ glob('../src/**/*.controller.ts', (_, files) => {
     const dPut = lodash.uniq(allPut);
 
     // Add all routes to their corresponding route designation
-    dGet.forEach((match) => routes.GET.push(`${controller}/${match}`));
-    dPost.forEach((match) => routes.POST.push(`${controller}/${match}`));
-    dDelete.forEach((match) => routes.DELETE.push(`${controller}/${match}`));
-    dPatch.forEach((match) => routes.PATCH.push(`${controller}/${match}`));
-    dPut.forEach((match) => routes.PUT.push(`${controller}/${match}`));
+    dGet.forEach((match) => routes.GET.push(`/${controller}/${match}`));
+    dPost.forEach((match) => routes.POST.push(`/${controller}/${match}`));
+    dDelete.forEach((match) => routes.DELETE.push(`/${controller}/${match}`));
+    dPatch.forEach((match) => routes.PATCH.push(`/${controller}/${match}`));
+    dPut.forEach((match) => routes.PUT.push(`/${controller}/${match}`));
   });
 
   // Now that we have all the routes, we want to write

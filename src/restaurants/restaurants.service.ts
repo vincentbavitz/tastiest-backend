@@ -1,5 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { UserRole } from '@tastiest-io/tastiest-utils';
+import { WeekOpenTimes } from 'horus/dist';
+import { AuthenticatedUser } from 'src/auth/auth.model';
 import EmailSchedulingService from 'src/email/schedule/email-schedule.service';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -24,6 +31,38 @@ export class RestaurantsService {
 
   async createRestaurant(restaurantId: string) {
     null;
+  }
+
+  async getRestaurant(restaurantId: string) {
+    const restaurant = await this.prisma.restaurant.findUnique({
+      where: { id: restaurantId },
+    });
+
+    if (!restaurant) {
+      throw new NotFoundException('Restaurant not found.');
+    }
+
+    return restaurant;
+  }
+
+  async getOpenTimes(restaurantId: string) {
+    const { metrics_open_times } = await this.getRestaurant(restaurantId);
+    return metrics_open_times as WeekOpenTimes;
+  }
+
+  async setOpenTimes(
+    restaurantId: string,
+    openTimes: WeekOpenTimes,
+    user: AuthenticatedUser,
+  ) {
+    this.validateRestaurantOwnership(user, restaurantId);
+
+    await this.prisma.restaurant.update({
+      where: { id: restaurantId },
+      data: { metrics_open_times: openTimes },
+    });
+
+    return 'success';
   }
 
   // async scheduleFollowersEmail(data: NotifyDto) {
@@ -91,4 +130,21 @@ export class RestaurantsService {
 
   //   return { ...application, id: undefined };
   // }
+
+  /**
+   * Throws an error if the request is not coming from an Admin or the user
+   * who owns the restaurant.
+   */
+  private validateRestaurantOwnership(
+    user: AuthenticatedUser,
+    restaurantId: string,
+  ) {
+    if (user.roles.includes(UserRole.ADMIN)) {
+      return;
+    }
+
+    if (user.uid !== restaurantId) {
+      throw new ForbiddenException();
+    }
+  }
 }

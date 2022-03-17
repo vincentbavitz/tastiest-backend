@@ -35,12 +35,13 @@ export class BookingsController {
     @Body() updateBookingDto: UpdateBookingDto,
     @Request() request: RequestWithUser,
   ) {
-    return this.bookingsService.updateBooking(
-      updateBookingDto.bookingId,
-      request.user,
-      {
-        ...updateBookingDto,
-      },
-    );
+    // return this.bookingsService.updateBooking(
+    //   updateBookingDto.bookingId,
+    //   request.user,
+    //   {
+    //     ...updateBookingDto,
+    //   },
+    // );
+    return null;
   }
 }
