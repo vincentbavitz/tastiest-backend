@@ -1,5 +1,16 @@
-import { IsJSON, IsNotEmpty, IsString, MinLength } from 'class-validator';
-import { WeekOpenTimes } from 'horus/dist';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  MinLength,
+} from 'class-validator';
+import { TimeRange } from 'horus/dist';
 
 class SetOpenTimesDto {
   @IsString()
@@ -7,8 +18,56 @@ class SetOpenTimesDto {
   @IsNotEmpty()
   restaurant_id: string;
 
-  @IsJSON()
-  open_times: WeekOpenTimes;
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(2)
+  @ArrayMaxSize(2)
+  @IsNumber({}, { each: true })
+  @IsPositive({ each: true })
+  @IsInt({ each: true })
+  monday: TimeRange;
+
+  @IsArray()
+  @ArrayMinSize(2)
+  @ArrayMaxSize(2)
+  @IsNumber({}, { each: true })
+  @IsInt({ each: true })
+  tuesday: TimeRange;
+
+  @IsArray()
+  @ArrayMinSize(2)
+  @ArrayMaxSize(2)
+  @IsNumber({}, { each: true })
+  @IsInt({ each: true })
+  wednesday: TimeRange;
+
+  @IsArray()
+  @ArrayMinSize(2)
+  @ArrayMaxSize(2)
+  @IsNumber({}, { each: true })
+  @IsInt({ each: true })
+  thursday: TimeRange;
+
+  @IsArray()
+  @ArrayMinSize(2)
+  @ArrayMaxSize(2)
+  @IsNumber({}, { each: true })
+  @IsInt({ each: true })
+  friday: TimeRange;
+
+  @IsArray()
+  @ArrayMinSize(2)
+  @ArrayMaxSize(2)
+  @IsNumber({}, { each: true })
+  @IsInt({ each: true })
+  saturday: TimeRange;
+
+  @IsArray()
+  @ArrayMinSize(2)
+  @ArrayMaxSize(2)
+  @IsNumber({}, { each: true })
+  @IsInt({ each: true })
+  sunday: TimeRange;
 }
 
 export default SetOpenTimesDto;

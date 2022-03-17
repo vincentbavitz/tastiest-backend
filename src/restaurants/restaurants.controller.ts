@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Post,
@@ -7,6 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserRole } from '@tastiest-io/tastiest-utils';
+import { DayOfWeek, TimeRange } from 'horus/dist';
 import { RequestWithUser } from 'src/auth/auth.model';
 import RoleGuard from 'src/auth/role.guard';
 import EmailSchedulingService from 'src/email/schedule/email-schedule.service';
@@ -30,15 +32,32 @@ export class RestaurantsController {
     return this.restaurantsService.getOpenTimes(getOpenTimesDto.restaurant_id);
   }
 
+  /**
+   * If day is given in DTO as [0, 0] (or any negatives for both 0 and 1), is it marked as closed.
+   * Eg: `{ monday: [0, 0] }` is closed,
+   */
   @Post('set-open-times')
   @UseGuards(RoleGuard(UserRole.RESTAURANT))
   async setOpenTimes(
-    @Query() setOpenTimesDto: SetOpenTimesDto,
+    @Body() setOpenTimesDto: SetOpenTimesDto,
     @Request() request: RequestWithUser,
   ) {
+    const dayToMetricDay = (range: TimeRange) => ({
+      open: range[0] === 0 && range[1] === 0,
+      range,
+    });
+
     return this.restaurantsService.setOpenTimes(
       setOpenTimesDto.restaurant_id,
-      setOpenTimesDto.open_times,
+      {
+        [DayOfWeek.MONDAY]: dayToMetricDay(setOpenTimesDto.monday),
+        [DayOfWeek.TUESDAY]: dayToMetricDay(setOpenTimesDto.tuesday),
+        [DayOfWeek.WEDNESDAY]: dayToMetricDay(setOpenTimesDto.wednesday),
+        [DayOfWeek.THURSDAY]: dayToMetricDay(setOpenTimesDto.thursday),
+        [DayOfWeek.FRIDAY]: dayToMetricDay(setOpenTimesDto.friday),
+        [DayOfWeek.SATURDAY]: dayToMetricDay(setOpenTimesDto.saturday),
+        [DayOfWeek.SUNDAY]: dayToMetricDay(setOpenTimesDto.sunday),
+      },
       request.user,
     );
   }
