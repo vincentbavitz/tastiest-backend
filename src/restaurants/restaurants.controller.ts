@@ -43,7 +43,7 @@ export class RestaurantsController {
     @Request() request: RequestWithUser,
   ) {
     const dayToMetricDay = (range: TimeRange) => ({
-      open: range[0] <= 0 && range[1] <= 0,
+      open: range[0] > 0 && range[1] > 0,
       range,
     });
 
