@@ -1,3 +1,4 @@
+import { TimeRange } from '@tastiest-io/tastiest-horus';
 import {
   ArrayMaxSize,
   ArrayMinSize,
@@ -10,7 +11,6 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
-import { TimeRange } from 'horus/dist';
 
 class SetOpenTimesDto {
   @IsString()

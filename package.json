@@ -42,6 +42,7 @@
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/schedule": "^1.0.1",
     "@prisma/client": "^3.10.0",
+    "@tastiest-io/tastiest-horus": "^0.10.0",
     "@tastiest-io/tastiest-utils": "^1.75.0",
     "@types/hapi__joi": "^17.1.8",
     "analytics-node": "^6.0.0",

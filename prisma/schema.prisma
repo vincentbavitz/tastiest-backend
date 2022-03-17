@@ -62,10 +62,10 @@ model Order {
 
   // Payment information
   /// type OrderPrice
-  price          Json
+  price Json
 
   /// type RefundDetails
-  refund         Json?
+  refund Json?
 
   /// type PaymentCardDetails
   payment_card   Json?
@@ -158,11 +158,11 @@ model Restaurant {
   financial_cut_followers   Float? @default(0.95) @db.DoublePrecision
 
   /// type WeekQuietTimes
-  metrics_quiet_times      Json?
+  metrics_quiet_times Json?
   /// type WeekOpenTimes
-  metrics_open_times       Json?
+  metrics_open_times  Json?
 
-  metrics_seating_duration Int?  @db.Integer
+  metrics_seating_duration Int? @db.Integer
 
   settings_notify_bookings     Boolean @default(true)
   settings_fallback_open_times Boolean @default(true)
@@ -261,9 +261,9 @@ model ExperienceProduct {
   id            String @id() @db.VarChar()
   name          String @db.VarChar
   allowed_heads Int[]
-  
+
   /// type Media
-  image         Json?  @db.JsonB
+  image Json? @db.JsonB
 
   /// Per head, in GBP
   price Float @db.DoublePrecision

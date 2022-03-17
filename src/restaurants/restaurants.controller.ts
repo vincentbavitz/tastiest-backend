@@ -7,8 +7,8 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { DayOfWeek, TimeRange } from '@tastiest-io/tastiest-horus';
 import { UserRole } from '@tastiest-io/tastiest-utils';
-import { DayOfWeek, TimeRange } from 'horus/dist';
 import { RequestWithUser } from 'src/auth/auth.model';
 import RoleGuard from 'src/auth/role.guard';
 import EmailSchedulingService from 'src/email/schedule/email-schedule.service';
@@ -43,7 +43,7 @@ export class RestaurantsController {
     @Request() request: RequestWithUser,
   ) {
     const dayToMetricDay = (range: TimeRange) => ({
-      open: range[0] === 0 && range[1] === 0,
+      open: range[0] <= 0 && range[1] <= 0,
       range,
     });
 

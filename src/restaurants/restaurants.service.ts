@@ -4,8 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WeekOpenTimes } from '@tastiest-io/tastiest-horus';
 import { UserRole } from '@tastiest-io/tastiest-utils';
-import { WeekOpenTimes } from 'horus/dist';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import EmailSchedulingService from 'src/email/schedule/email-schedule.service';
 import { FirebaseService } from 'src/firebase/firebase.service';

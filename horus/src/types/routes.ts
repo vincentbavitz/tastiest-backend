@@ -11,7 +11,7 @@ export type HorusRoutesGET =
   | '/server/system-stats'
   | '/bookings/:id'
   | '/orders/:token'
-  | '/restaurants//public/open-times'
+  | '/restaurants/public/open-times'
   | '/users/:uid'
   | '/users/me';
 
@@ -22,6 +22,7 @@ export type HorusRoutesPOST =
   | '/bookings/update'
   | '/email-scheduling/schedule'
   | '/orders/new'
+  | '/restaurants/set-open-times'
   | '/restaurants/notify'
   | '/restaurants/public/apply'
   | '/public/syncs/segment'
