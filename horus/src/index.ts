@@ -1,3 +1,4 @@
+export * from './types/bookings';
 export * from './types/generic';
 export * from './types/models';
 export * from './types/payment';

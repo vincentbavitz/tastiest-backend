@@ -62,6 +62,20 @@ export class RestaurantsController {
     );
   }
 
+  @Get('public/booking-slots')
+  async getBookingSlots() {
+    return this.restaurantsService.getBookingSlots(
+      'XbaeHvEpzeckv0TjPazUEeS0PqF3',
+    );
+  }
+
+  @Get('public/auth')
+  async auth() {
+    return this.restaurantsService.getBookingSlots(
+      'XbaeHvEpzeckv0TjPazUEeS0PqF3',
+    );
+  }
+
   // @Post('notify')
   // async notify(@Body() notifyData: NotifyDto) {
   //   return this.restaurantsService.scheduleFollowersEmail(notifyData);
