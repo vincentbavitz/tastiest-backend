@@ -31,7 +31,7 @@ matches.forEach((match) => {
 
   // Eg: `picture: Media`
   const linesWithCustomTypes = match.match(
-    /(?:\/\*\*\n[\s]*\*\stype\s[\w.]*\n[\s]*\*\/\n[\s]*)(.*)(?:)/gm,
+    /(?:\/\*\*\n[\s]*\*\stype\s[\w.\[\]]*\n[\s]*\*\/\n[\s]*)(.*)(?:)/gm,
     ''
   );
 
@@ -47,7 +47,8 @@ matches.forEach((match) => {
 
     // Add to our list of custom types so we can import them in the output document.
     if (!usedCustomTypes.includes(newTypeName)) {
-      usedCustomTypes.push(newTypeName);
+      // Replace makes MyType[] into MyType for imports.
+      usedCustomTypes.push(newTypeName.replace('[]', ''));
     }
 
     // Remove the above comment about the type.
@@ -59,7 +60,10 @@ matches.forEach((match) => {
     columnName = cleanedLine.replace(/\:.*$/, '');
 
     // Now we add all the lines back into the match.
-    matcher = `(?:\\/\\*\\*\\n[\\s]*\\*\\stype\\s${newTypeName}*\\n[\\s]*\\*\\/\\n[\\s]*)(${columnName}.*)(?:)`;
+    // We replace [] with \[\] for compatible regex
+    const typeMatcher = newTypeName.replace('[]', `\\[\\]`);
+    const matcher = `(?:\\/\\*\\*\\n[\\s]*\\*\\stype\\s${typeMatcher}*\\n[\\s]*\\*\\/\\n[\\s]*)(${columnName}.*)(?:)`;
+
     lineSelelector = new RegExp(matcher, 'gm');
 
     match = match.replace(lineSelelector, cleanedLine);

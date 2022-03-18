@@ -14,6 +14,7 @@ import {
   WeekQuietTimes,
   WeekOpenTimes,
   Media,
+  YouTubeVideo,
   Document,
   MetaDetails
 } from '../index';
@@ -152,10 +153,7 @@ export type HorusRestaurantProfile = {
   backdrop_still_frame: Media | null
   display_photograph: Media | null
   hero_illustration: Media | null
-  /**
-   * type YouTubeVideo[]
-   */
-  feature_videos: any | null
+  feature_videos: YouTubeVideo[] | null
   description: Document | null
   meta: MetaDetails | null
   restaurant_id: string
