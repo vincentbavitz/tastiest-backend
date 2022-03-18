@@ -147,6 +147,7 @@ export class SyncsService {
       public_phone_number: restaurant.public_phone_number,
       display_photograph: restaurant.display_photograph,
       hero_illustration: restaurant.hero_illustration,
+      feature_videos: restaurant.feature_videos,
       backdrop_still_frame: restaurant.backdrop_still_frame,
       backdrop_video: restaurant.backdrop_video,
       website: restaurant.website,

@@ -204,6 +204,9 @@ model RestaurantProfile {
   /// type Media
   hero_illustration Json? @db.JsonB
 
+  /// type YouTubeVideo[]
+  feature_videos Json? @db.JsonB
+
   /// type Document
   description Json? @db.JsonB
 

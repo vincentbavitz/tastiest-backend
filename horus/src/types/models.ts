@@ -152,6 +152,10 @@ export type HorusRestaurantProfile = {
   backdrop_still_frame: Media | null
   display_photograph: Media | null
   hero_illustration: Media | null
+  /**
+   * type YouTubeVideo[]
+   */
+  feature_videos: any | null
   description: Document | null
   meta: MetaDetails | null
   restaurant_id: string

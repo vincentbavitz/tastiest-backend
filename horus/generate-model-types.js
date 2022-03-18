@@ -41,7 +41,7 @@ matches.forEach((match) => {
   // price: OrderPrice
   linesWithCustomTypes?.forEach((line) => {
     const newTypeName = line.replace(
-      /(?:[\s\S]*?type\s)([\w.]*)(?:[\n\s\S]*)/gm,
+      /(?:[\s\S]*?type\s)([\w.\[\]]*)(?:[\n\s\S]*)/gm,
       '$1'
     );
 
