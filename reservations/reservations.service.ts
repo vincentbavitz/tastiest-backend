@@ -1,9 +1,11 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { FirestoreCollection } from '@tastiest-io/tastiest-utils';
 import { BookingSystem } from 'horus/src';
 import { DateTime } from 'luxon';
 import { firstValueFrom } from 'rxjs';
+import { FirebaseService } from 'src/firebase/firebase.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RedisService } from 'src/redis/redis.service';
 import { RestaurantsService } from 'src/restaurants/restaurants.service';
@@ -43,11 +45,40 @@ export class ReservationsService {
   constructor(
     private restaurantsService: RestaurantsService,
     private configService: ConfigService,
+    private firebase: FirebaseService,
     private prisma: PrismaService,
     private redis: RedisService,
     private http: HttpService,
   ) {
     this.eresBaseEndpoint = `https://secure.kernow-software.com/erestaurant/rest/api-v0.1`;
+  }
+
+  /**
+   * Get available datetimes which are open for bookings.
+   * Note. In the future it would be prudent to take parameters like
+   * `heads`, `duration`, etc in order to better operate with the
+   * restaurant's internal booking system.
+   *
+   * Returns ISO8601 formatted dates as strings as well as the time of
+   * the last successful sync (as a millisecond timestamp).
+   */
+  async getOpenSlots(restaurantId: string) {
+    // NOTE! 19 March 2022
+    // For now we get the infromation from Firebase until e-Res gives us a nice API.
+    // We are only working with Numa and El-Vaquero for now so we're only using e-Res.
+
+    const restaurantFirestoreSnapshot = await this.firebase
+      .db(FirestoreCollection.RESTAURANTS)
+      .doc(restaurantId)
+      .get();
+
+    const restaurantFirestore = restaurantFirestoreSnapshot.data();
+    const realtime = restaurantFirestore?.realtime;
+
+    const slots = realtime?.availableBookingSlots ?? [];
+    const last_synced = realtime?.lastBookingSlotsSync ?? -1;
+
+    return { slots, last_synced };
   }
 
   /**
