@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { RouterModule } from '@nestjs/core/router/router-module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ReservationsModule } from 'reservations/reservations.module';
 import { AdminModule } from './admin/admin.module';
 import { AffiliatesModule } from './affiliates/affiliates.module';
 import { AppController } from './app.controller';
@@ -54,6 +55,7 @@ import { UsersModule } from './users/users.module';
     FirebaseModule,
     AdminModule,
     SyncsModule,
+    ReservationsModule,
     // SupportModule,
     UsersModule,
     RestaurantsModule,

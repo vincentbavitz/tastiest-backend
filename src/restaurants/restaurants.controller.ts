@@ -19,8 +19,8 @@ import { RestaurantsService } from './restaurants.service';
 @Controller('restaurants')
 export class RestaurantsController {
   constructor(
-    private readonly restaurantsService: RestaurantsService,
-    private readonly emailSchedulingService: EmailSchedulingService,
+    private restaurantsService: RestaurantsService,
+    private emailSchedulingService: EmailSchedulingService,
   ) {}
 
   /**
@@ -59,20 +59,6 @@ export class RestaurantsController {
         [DayOfWeek.SUNDAY]: dayToMetricDay(setOpenTimesDto.sunday),
       },
       request.user,
-    );
-  }
-
-  @Get('public/booking-slots')
-  async getBookingSlots() {
-    return this.restaurantsService.getBookingSlots(
-      'XbaeHvEpzeckv0TjPazUEeS0PqF3',
-    );
-  }
-
-  @Get('public/auth')
-  async auth() {
-    return this.restaurantsService.getBookingSlots(
-      'XbaeHvEpzeckv0TjPazUEeS0PqF3',
     );
   }
 

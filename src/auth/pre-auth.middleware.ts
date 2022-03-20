@@ -10,7 +10,7 @@ export class PreAuthMiddleware implements NestMiddleware {
   private auth: firebase.auth.Auth;
 
   constructor(private firebaseApp: FirebaseService) {
-    this.auth = firebaseApp.getAuth();
+    this.auth = this.firebaseApp.getAuth();
   }
 
   /**
@@ -29,7 +29,7 @@ export class PreAuthMiddleware implements NestMiddleware {
     // This allows, for example...
     // /auth/public/register
     // /public/content/
-    // ...et
+    // ...etc
     if (req.url.split('/').includes('public')) {
       req['user'] = null;
       return next();
