@@ -36,12 +36,16 @@ export class OrdersService {
     bookedForTimestamp: number,
     { promoCode, userAgent, isTest = true }: CreateOrderOptionals,
   ) {
+    console.log('orders.service ➡️ experienceProductId:', experienceProductId);
+
     // Grab post from our DB.
     // Note that our DB syncs posts from Contentful automatically.
     const experiencePost = await this.prisma.experiencePost.findUnique({
       where: { product_id: experienceProductId },
       include: { product: true, restaurant: true },
     });
+
+    console.log('orders.service ➡️ experiencePost:', experiencePost);
 
     if (!experiencePost) {
       throw new NotFoundException('Experience does not exist');
@@ -75,6 +79,7 @@ export class OrdersService {
       data: {
         user: { connect: { id: uid } },
         restaurant: { connect: { id: experiencePost.restaurant.id } },
+        product: { connect: { id: experienceProductId } },
         user_facing_id: this.generateUserFacingId(),
         heads: Math.floor(heads),
         price: {
@@ -83,7 +88,6 @@ export class OrdersService {
           final,
           currency: 'GBP',
         },
-        product: experiencePost.product as any,
         booked_for: new Date(bookedForTimestamp),
         from_slug: experiencePost.slug,
         is_user_following: false,

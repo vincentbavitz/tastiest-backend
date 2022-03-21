@@ -7,9 +7,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserRole } from '@tastiest-io/tastiest-utils';
-import { ReservationsService } from 'reservations/reservations.service';
 import { RequestWithUser } from 'src/auth/auth.model';
 import RoleGuard from 'src/auth/role.guard';
+import { ReservationsService } from 'src/reservations/reservations.service';
 import GetOpenSlotsDto from './dto/get-open-slots.dto';
 import GetReservationsDto from './dto/get-reservations.dto';
 
@@ -24,9 +24,9 @@ export class ReservationsController {
    */
   @Get('public/open-slots')
   async getOpenSlots(
-    @Query() { restaurant_id: restaurantId }: GetOpenSlotsDto,
+    @Query() { restaurant_id: restaurantId, timezone }: GetOpenSlotsDto,
   ) {
-    return this.reservationsService.getOpenSlots(restaurantId);
+    return this.reservationsService.getOpenSlots(restaurantId, timezone);
   }
 
   /**

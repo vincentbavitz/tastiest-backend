@@ -8,6 +8,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { User } from '@prisma/client';
 import { UserRole } from '@tastiest-io/tastiest-utils';
 import { RequestWithUser } from 'src/auth/auth.model';
 import RoleGuard from 'src/auth/role.guard';
@@ -42,7 +43,8 @@ export class UsersController {
    */
   @Get('me')
   async getUserFromToken(@Request() request: RequestWithUser) {
-    return this.userService.getUser(request.user.uid);
+    const user = await this.userService.getUser(request.user.uid);
+    return this.sanitizeUserDataIfNeeded(user, request);
   }
 
   /**
@@ -69,18 +71,7 @@ export class UsersController {
       updateUserDto,
     );
 
-    return {
-      ...updated,
-
-      // Only Admins may view these properties
-      id: this.isAdmin(request) ? updated.id : undefined,
-      stripe_setup_secret: this.isAdmin(request)
-        ? updated.stripe_setup_secret
-        : undefined,
-      stripe_customer_id: this.isAdmin(request)
-        ? updated.stripe_customer_id
-        : undefined,
-    };
+    return this.sanitizeUserDataIfNeeded(updated, request);
   }
 
   /**
@@ -126,12 +117,27 @@ export class UsersController {
   async getUser(
     @Param('uid') uid: string,
     @Request() request: RequestWithUser,
-  ) {
+  ): Promise<Partial<User>> {
     if (!this.isAdmin(request) && uid !== request.user.uid) {
       throw new ForbiddenException();
     }
 
     const user = await this.userService.getUser(uid);
+    return this.sanitizeUserDataIfNeeded(user, request);
+  }
+
+  private isAdmin(request: RequestWithUser): boolean {
+    return request.user.roles.includes(UserRole.ADMIN);
+  }
+
+  /** Remove sensitive user-data for non-admins. */
+  private sanitizeUserDataIfNeeded(
+    user: Partial<User>,
+    request: RequestWithUser,
+  ) {
+    if (request.user.roles.includes(UserRole.ADMIN)) {
+      return user;
+    }
 
     return {
       ...user,
@@ -139,14 +145,10 @@ export class UsersController {
       // The following properties are only visible to Admins.
       stripe_setup_secret: this.isAdmin(request)
         ? user.stripe_setup_secret
-        : undefined,
+        : null,
       stripe_customer_id: this.isAdmin(request)
         ? user.stripe_customer_id
-        : undefined,
+        : null,
     };
-  }
-
-  private isAdmin(request: RequestWithUser): boolean {
-    return request.user.roles.includes(UserRole.ADMIN);
   }
 }

@@ -9,15 +9,17 @@ import { ConfigModule } from '@nestjs/config';
 import { RouterModule } from '@nestjs/core/router/router-module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ReservationsModule } from 'reservations/reservations.module';
+import { ReservationsModule } from 'src/reservations/reservations.module';
 import { AdminModule } from './admin/admin.module';
 import { AffiliatesModule } from './affiliates/affiliates.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 import { PreAuthMiddleware } from './auth/pre-auth.middleware';
 import { BookingsModule } from './bookings/bookings.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
@@ -59,10 +61,10 @@ import { UsersModule } from './users/users.module';
     // SupportModule,
     UsersModule,
     RestaurantsModule,
-    // PaymentsModule,
+    PaymentsModule,
     BookingsModule,
     OrdersModule,
-    // AuthModule,
+    AuthModule,
     AffiliatesModule,
   ],
   controllers: [AppController],

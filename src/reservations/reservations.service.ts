@@ -1,9 +1,10 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AvailableSlot } from '@tastiest-io/tastiest-horus';
 import { FirestoreCollection } from '@tastiest-io/tastiest-utils';
 import { BookingSystem } from 'horus/src';
-import { DateTime } from 'luxon';
+import { DateTime, Zone } from 'luxon';
 import { firstValueFrom } from 'rxjs';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -59,10 +60,10 @@ export class ReservationsService {
    * `heads`, `duration`, etc in order to better operate with the
    * restaurant's internal booking system.
    *
-   * Returns ISO8601 formatted dates as strings as well as the time of
-   * the last successful sync (as a millisecond timestamp).
+   * Returns an array of slots having the type `AvailableSlot`
+   * as well as the last successful sync (as a millisecond timestamp).
    */
-  async getOpenSlots(restaurantId: string) {
+  async getOpenSlots(restaurantId: string, timezone: Zone) {
     // NOTE! 19 March 2022
     // For now we get the infromation from Firebase until e-Res gives us a nice API.
     // We are only working with Numa and El-Vaquero for now so we're only using e-Res.
@@ -75,8 +76,18 @@ export class ReservationsService {
     const restaurantFirestore = restaurantFirestoreSnapshot.data();
     const realtime = restaurantFirestore?.realtime;
 
-    const slots = realtime?.availableBookingSlots ?? [];
+    const slotsISO8601: string[] = realtime?.availableBookingSlots ?? [];
     const last_synced = realtime?.lastBookingSlotsSync ?? -1;
+
+    const slots: AvailableSlot[] = slotsISO8601.map((slot) => {
+      const datetime = DateTime.fromISO(slot).setZone(timezone);
+      return {
+        ordinal: datetime.ordinal,
+        timestamp: datetime.toMillis(),
+        minutes_into_day: datetime.hour * 60 + datetime.minute,
+        duration: null,
+      };
+    });
 
     return { slots, last_synced };
   }

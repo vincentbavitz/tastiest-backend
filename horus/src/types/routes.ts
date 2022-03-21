@@ -11,6 +11,8 @@ export type HorusRoutesGET =
   | '/server/system-stats'
   | '/bookings/:id'
   | '/orders/:token'
+  | '/reservations/public/open-slots'
+  | '/reservations/list'
   | '/restaurants/public/open-times'
   | '/users/:uid'
   | '/users/me';

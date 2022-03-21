@@ -50,3 +50,15 @@ export interface DateObject {
   month: number;
   year: number;
 }
+
+/** Used for getting available reservation times */
+export type AvailableSlot = {
+  timestamp: number;
+  minutes_into_day: number;
+
+  // Ordinal day of the year
+  ordinal: number;
+
+  // In mintues
+  duration: number | null;
+};

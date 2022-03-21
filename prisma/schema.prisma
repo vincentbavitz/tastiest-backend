@@ -220,7 +220,7 @@ model RestaurantProfile {
 }
 
 model ExperiencePost {
-  id    String   @id() @db.VarChar()
+  id    String   @id() @default(uuid()) @db.VarChar()
   title String   @db.VarChar()
   date  DateTime @db.Timestamptz()
 
@@ -261,7 +261,7 @@ model ExperiencePost {
 }
 
 model ExperienceProduct {
-  id            String @id() @db.VarChar()
+  id            String @id() @default(uuid()) @db.VarChar()
   name          String @db.VarChar
   allowed_heads Int[]
 

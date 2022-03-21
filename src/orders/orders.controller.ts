@@ -23,6 +23,8 @@ export class OrdersController {
     @Body() createOrderDto: CreateOrderDto,
     @Request() request: RequestWithUser,
   ) {
+    console.log('orders.controller ➡️ createOrderDto:', createOrderDto);
+
     const order = await this.ordersService.createOrder(
       createOrderDto.product_id,
       request.user.uid,
@@ -37,7 +39,7 @@ export class OrdersController {
 
     return {
       ...order,
-      // These properties are admin-Only
+      // These properties are admin-only
       id: this.isAdmin(request) ? order.id : null,
     };
   }

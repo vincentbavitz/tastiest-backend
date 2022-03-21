@@ -3,7 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FollowRelation, User } from '@prisma/client';
 import { FirestoreCollection, UserRole } from '@tastiest-io/tastiest-utils';
 import { UserRecord } from 'firebase-admin/lib/auth/user-record';
-import lodash from 'lodash';
+import * as lodash from 'lodash';
 import { DateTime } from 'luxon';
 import { AccountService } from 'src/admin/account/account.service';
 import { AuthenticatedUser } from 'src/auth/auth.model';
