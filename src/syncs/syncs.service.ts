@@ -4,13 +4,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  ExperiencePost,
-  ExperienceProduct,
-  Restaurant,
-  RestaurantProfile,
-} from '@prisma/client';
-import { CmsApi, dlog, FirestoreCollection } from '@tastiest-io/tastiest-utils';
+import { Restaurant, RestaurantProfile } from '@prisma/client';
+import { CmsApi, FirestoreCollection } from '@tastiest-io/tastiest-utils';
 import { EntryCollection } from 'contentful';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -97,35 +92,6 @@ export class SyncsService {
     return { synced: restaurantIds };
   }
 
-  /**
-   * This syncs both all experience posts and all experience products
-   */
-  async syncExperienceFromContentful(body: any, headerSecretKey: string) {
-    this.authorizeContentfulWebhook(body, headerSecretKey);
-
-    // We're syncing a singular experience post, not its embedded entries or assets.
-    if (body.sys?.contentType?.sys?.id === 'post') {
-      const slug: string = body.fields?.slug?.['en-US'] ?? body.fields?.slug;
-      await this.nestedSyncParticularExperience(slug);
-      return { synced: [slug] };
-    }
-
-    // If one of the nested properties changes, get its associated entries and sync.
-    const linkedEntries = await this.contentfulFetchLinkedEntries(
-      body.sys.type,
-      body.sys.id,
-    );
-
-    // Get the postSlug for each linked item and sync them.
-    const slugs = linkedEntries?.items
-      ?.filter((item) => item.sys.contentType.sys.id === 'post')
-      ?.map((item) => item.fields.id);
-
-    await Promise.all(slugs?.map(this.nestedSyncParticularExperience));
-
-    return { synced: slugs };
-  }
-
   syncPromoCodeFromContentful(body: any) {
     null;
   }
@@ -202,102 +168,6 @@ export class SyncsService {
     });
 
     return restaurantId;
-  }
-
-  /**
-   * We have a nested function so we can call when an experience syncs or
-   * its nested entries, assets or `product` syncs, all of them will be synced
-   * correctly with our database.
-   */
-  private async nestedSyncParticularExperience(slug: string) {
-    const post = await this.cms.getPostBySlug(slug);
-
-    const updatedExperiencePost: Omit<
-      ExperiencePost,
-      'product_id' | 'restaurant_id'
-    > = {
-      id: post.id,
-      title: post.title,
-      date: new Date(post.date),
-      body: post.body as any,
-      city: post.city,
-      cuisine: post.cuisine,
-      description: post.description,
-      display_location: post.display_location,
-      plate_image: post.plate_image,
-      menu_image: post.menu_image ?? undefined,
-      auxiliary_image: post.auxiliary_image ?? undefined,
-      see_restaurant_button: post.see_restaurant_button,
-      meta: post.meta as any,
-      tags: post.tags,
-      slug,
-    };
-
-    dlog('syncs.service ➡️ updatedExperiencePost:', updatedExperiencePost);
-
-    const updatedExperienceProduct: Omit<ExperienceProduct, 'restaurant_id'> = {
-      id: post.product.id,
-      name: post.product.name,
-      image: post.product.image,
-      allowed_heads: post.product.allowed_heads,
-      price: post.product.price,
-    };
-
-    // Sync associated restaurant if it doesn't exist
-    const associatedRestaurant = await this.prisma.restaurant.findUnique({
-      where: { id: post.restaurant.id },
-    });
-
-    if (!associatedRestaurant) {
-      await this.nestedSyncParticularRestaurant(post.restaurant.id);
-    }
-
-    console.log(
-      'syncs.service ➡️ post.product.restaurant.id:',
-      post.product.restaurant.id,
-    );
-
-    // Sync the corresponding ExperienceProduct
-    // We sync this first so that product_id is valid
-    // for new rows in the database.
-    await this.prisma.experienceProduct.upsert({
-      where: { id: post.product.id },
-      update: {
-        ...updatedExperienceProduct,
-        restaurant: { connect: { id: post.product.restaurant.id } },
-      },
-      create: {
-        ...updatedExperienceProduct,
-        restaurant: { connect: { id: post.product.restaurant.id } },
-      },
-    });
-
-    const experiencePost = await this.prisma.experiencePost.findUnique({
-      where: { id: post.id },
-    });
-
-    console.log('syncs.service ➡️ experiencePost:', experiencePost);
-
-    // if (experiencePost) {
-    //   await this.prisma.experiencePost.update({
-    //     where: { id: post.id },
-    //     data: updatedExperiencePost,
-    //   });
-
-    //   return slug;
-    // }
-
-    await this.prisma.experiencePost.create({
-      data: {
-        ...updatedExperiencePost,
-        product: { connect: { id: post.product.id } },
-        restaurant: { connect: { id: post.product.restaurant.id } },
-        // product_id: post.product.id,
-        // restaurant_id: post.restaurant.id,
-      },
-    });
-
-    return slug;
   }
 
   /**

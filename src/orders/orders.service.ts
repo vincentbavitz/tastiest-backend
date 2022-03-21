@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Promo, UserRole } from '@tastiest-io/tastiest-utils';
+import { CmsApi, Promo, UserRole } from '@tastiest-io/tastiest-utils';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OrderCreatedEvent } from './events/order-created.event';
@@ -38,12 +38,17 @@ export class OrdersService {
   ) {
     console.log('orders.service ➡️ experienceProductId:', experienceProductId);
 
-    // Grab post from our DB.
-    // Note that our DB syncs posts from Contentful automatically.
-    const experiencePost = await this.prisma.experiencePost.findUnique({
-      where: { product_id: experienceProductId },
-      include: { product: true, restaurant: true },
-    });
+    // I was going to get posts from our DB and have it sync with Contentful.
+    // But getting directly from Contentful makes more sense than syncing all
+    // the time. Just let Contentful be good at what it's good at.
+    // However, products SHOULD be synced.
+    const cmsApi = new CmsApi();
+    const experiencePost = await cmsApi.getPostByProductId(experienceProductId);
+
+    // prisma.experiencePost.findUnique({
+    //   where: { product_id: experienceProductId },
+    //   include: { product: true, restaurant: true },
+    // });
 
     console.log('orders.service ➡️ experiencePost:', experiencePost);
 
@@ -79,7 +84,11 @@ export class OrdersService {
       data: {
         user: { connect: { id: uid } },
         restaurant: { connect: { id: experiencePost.restaurant.id } },
-        product: { connect: { id: experienceProductId } },
+        product_id: experienceProductId,
+        product_name: experiencePost.product.name,
+        product_allowed_heads: experiencePost.product.allowed_heads,
+        product_price: experiencePost.product.price,
+        product_image: experiencePost.product.image,
         user_facing_id: this.generateUserFacingId(),
         heads: Math.floor(heads),
         price: {

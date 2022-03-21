@@ -22,15 +22,4 @@ export class SyncsController {
       String(request.headers['x-secret-key']),
     );
   }
-
-  @Post('contentful/experience')
-  async syncExperienceProductFromContentful(
-    @Body() body: any,
-    @Request() request: RequestWithUser,
-  ) {
-    return this.syncsService.syncExperienceFromContentful(
-      body,
-      String(request.headers['x-secret-key']),
-    );
-  }
 }

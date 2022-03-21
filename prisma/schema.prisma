@@ -85,9 +85,17 @@ model Order {
   is_user_following Boolean
   is_test           Boolean
 
-  // Relations
-  product    ExperienceProduct @relation(fields: [product_id], references: [id])
-  product_id String            @db.VarChar
+  /// We keep the static properties of the product because we want to 
+  /// capture the product as it was when the order was made.
+  /// Otherwise, if the order changes in Contentful ovder time, we will
+  /// have broken and incongruent records.
+ product_id            String @db.VarChar()
+  product_name          String @db.VarChar
+  product_allowed_heads Int[]
+  /// type Media
+  product_image Json? @db.JsonB
+  /// Per head, in GBP
+  product_price Float @db.DoublePrecision
 
   user    User   @relation(fields: [user_id], references: [id])
   user_id String @db.VarChar
@@ -178,8 +186,8 @@ model Restaurant {
   followers FollowRelation[]
   profile   RestaurantProfile?
 
-  posts    ExperiencePost[]
-  products ExperienceProduct[]
+  // posts    ExperiencePost[]
+  // products ExperienceProduct[]
 
   @@map(name: "restaurant")
 }
@@ -217,67 +225,6 @@ model RestaurantProfile {
   restaurant_id String     @unique @db.VarChar
 
   @@map(name: "restaurant_profile")
-}
-
-model ExperiencePost {
-  id    String   @id() @default(uuid()) @db.VarChar()
-  title String   @db.VarChar()
-  date  DateTime @db.Timestamptz()
-
-  /// type Document
-  body                  Json?   @db.JsonB
-  city                  String  @db.VarChar(32)
-  cuisine               String  @db.VarChar(32)
-  description           String  @db.VarChar(512)
-  see_restaurant_button String?
-
-  // Visual items
-  /// Eg. East London
-  /// Displayed under the title
-  display_location String @db.VarChar(512)
-
-  /// type Media
-  plate_image Json? @db.JsonB
-
-  /// type Media
-  menu_image Json? @db.JsonB
-
-  /// type Media
-  auxiliary_image Json? @db.JsonB
-
-  // Descriptive
-  /// type MetaDetails
-  meta Json?    @db.JsonB
-  slug String   @db.VarChar
-  tags String[]
-
-  product    ExperienceProduct @relation(fields: [product_id], references: [id])
-  product_id String            @unique @db.VarChar
-
-  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
-  restaurant_id String     @unique @db.VarChar
-
-  @@map(name: "post")
-}
-
-model ExperienceProduct {
-  id            String @id() @default(uuid()) @db.VarChar()
-  name          String @db.VarChar
-  allowed_heads Int[]
-
-  /// type Media
-  image Json? @db.JsonB
-
-  /// Per head, in GBP
-  price Float @db.DoublePrecision
-
-  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
-  restaurant_id String     @unique @db.VarChar
-
-  orders Order[]
-  post   ExperiencePost?
-
-  @@map(name: "product")
 }
 
 /// A relation between a restaurant and a user following them.
