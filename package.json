@@ -10,7 +10,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "docker-compose up -d && nest start",
-    "start:dev": "export TYPEORM_SYNCHRONIZE=true && docker-compose up -d && nest start --watch",
+    "start:dev": "dotenv -e .env.development -- docker-compose up -d && nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -28,8 +28,8 @@
     "documentation:serve": "npx @compodoc/compodoc --theme Vagrant -p tsconfig.json --serve",
     "prisma:format": "yarn prisma format",
     "prisma:generate": "yarn prisma generate",
-    "prisma:migration:dev": "yarn prisma migrate dev --name",
-    "prisma:sync-dev": "yarn prisma db push",
+    "prisma:migration:dev": "dotenv -e .env.development -- yarn prisma migrate dev --name",
+    "prisma:sync-dev": "dotenv -e .env.development -- yarn prisma db push",
     "horus:publish": "yarn prisma:generate && cd horus && yarn publish:minor"
   },
   "dependencies": {
@@ -52,6 +52,7 @@
     "class-transformer": "0.4.0",
     "class-validator": "^0.13.2",
     "date-fns": "^2.26.0",
+    "dotenv-cli": "^5.0.0",
     "firebase-admin": "^10.0.0",
     "lodash": "^4.17.21",
     "luxon": "^2.1.1",

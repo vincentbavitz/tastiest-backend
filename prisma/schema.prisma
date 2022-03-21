@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
 }
 
 /// These are typings used by our /horus type generator.
@@ -11,35 +12,41 @@ generator horus {
   output   = "../horus/generated"
 }
 
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
+
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
 }
 
 model User {
   /// Set by Firebase Auth.
-  id         String    @id @unique() @db.VarChar
+  id         String    @id @unique() @db.VarChar(255)
   email      String    @unique() @db.VarChar(255)
   first_name String    @db.VarChar(32)
   last_name  String?   @db.VarChar(32)
   mobile     String?   @db.VarChar(20)
-  birthday   DateTime? @db.Timestamptz()
+  birthday   DateTime? @db.DateTime()
 
-  location_lat      Float?  @db.DoublePrecision
-  location_lon      Float?  @db.DoublePrecision
+  location_lat      Float?  @db.Float
+  location_lon      Float?  @db.Float
   location_address  String? @db.VarChar(256)
   location_postcode String? @db.VarChar(16)
-  location_display  String? @db.VarChar
+  location_display  String? @db.VarChar(128)
 
   stripe_customer_id  String? @db.VarChar(128)
   stripe_setup_secret String? @db.VarChar(512)
 
   // Toggles
-  is_test_account Boolean @db.Boolean
+  is_test_account Boolean
 
   // Metadata
-  created_at  DateTime? @default(now()) @db.Timestamptz()
-  last_active DateTime? @db.Timestamptz()
+  created_at  DateTime? @db.DateTime()
+  last_active DateTime? @db.DateTime()
 
   // Relations
   orders    Order[]
@@ -55,10 +62,10 @@ model Order {
   id             String   @id @default(uuid())
   token          String   @unique() @default(uuid())
   user_facing_id String   @db.VarChar(16)
-  booked_for     DateTime @db.Timestamptz()
+  booked_for     DateTime @db.DateTime()
   heads          Decimal  @db.Decimal
 
-  from_slug String @db.VarChar
+  from_slug String @db.VarChar(256)
 
   // Payment information
   /// type OrderPrice
@@ -69,39 +76,41 @@ model Order {
 
   /// type PaymentCardDetails
   payment_card   Json?
-  payment_method String? @db.VarChar
-  discount_code  String? @db.VarChar
+  payment_method String? @db.VarChar(256)
+  discount_code  String? @db.VarChar(64)
 
-  created_at DateTime? @db.Timestamptz()
-  updated_at DateTime? @updatedAt @db.Timestamptz()
+  created_at DateTime? @db.DateTime()
+  updated_at DateTime? @updatedAt @db.DateTime()
 
-  paid_at      DateTime? @db.Timestamptz()
-  abandoned_at DateTime? @db.Timestamptz()
+  paid_at      DateTime? @db.DateTime()
+  abandoned_at DateTime? @db.DateTime()
 
-  tastiest_portion   Float? @db.DoublePrecision
-  restaurant_portion Float? @db.DoublePrecision
+  tastiest_portion   Float? @db.Float()
+  restaurant_portion Float? @db.Float()
 
   /// Specifically at the time the order was made.
   is_user_following Boolean
   is_test           Boolean
 
-  /// We keep the static properties of the product because we want to 
+  /// We keep the static properties of the product because we want to
   /// capture the product as it was when the order was made.
   /// Otherwise, if the order changes in Contentful ovder time, we will
   /// have broken and incongruent records.
- product_id            String @db.VarChar()
-  product_name          String @db.VarChar
-  product_allowed_heads Int[]
+  product_id   String @db.VarChar(128)
+  product_name String @db.VarChar(128)
+
+  /// Stringified array of numbers
+  product_allowed_heads String
   /// type Media
-  product_image Json? @db.JsonB
+  product_image         Json?  @db.Json
   /// Per head, in GBP
-  product_price Float @db.DoublePrecision
+  product_price         Float  @db.Float
 
   user    User   @relation(fields: [user_id], references: [id])
-  user_id String @db.VarChar
+  user_id String @db.VarChar(128)
 
   restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
-  restaurant_id String     @db.VarChar
+  restaurant_id String     @db.VarChar(128)
 
   booking Booking?
 
@@ -110,10 +119,10 @@ model Order {
 
 model Booking {
   id         String   @id @default(uuid())
-  booked_for DateTime @db.Timestamptz()
+  booked_for DateTime @db.DateTime()
 
-  cancelled_at      DateTime? @db.Timestamptz()
-  confirmation_code String    @db.VarChar
+  cancelled_at      DateTime? @db.DateTime()
+  confirmation_code String    @db.VarChar(16)
 
   // Bools
   has_arrived                   Boolean @default(false)
@@ -124,53 +133,53 @@ model Booking {
 
   // Relations
   restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
-  restaurant_id String     @db.VarChar
+  restaurant_id String     @db.VarChar(128)
 
   order    Order  @relation(fields: [order_id], references: [id])
-  order_id String @unique @db.VarChar
+  order_id String @unique @db.VarChar(128)
 
   user    User   @relation(fields: [user_id], references: [id])
-  user_id String @db.VarChar
+  user_id String @db.VarChar(128)
 
   @@map(name: "booking")
 }
 
 model Restaurant {
   /// Set by Firebase Auth.
-  id       String @unique() @db.VarChar
-  name     String @db.VarChar
-  city     String @db.VarChar
-  cuisine  String @db.VarChar
-  uri_name String @db.VarChar
+  id       String @unique() @db.VarChar(128)
+  name     String @db.VarChar(64)
+  city     String @db.VarChar(32)
+  cuisine  String @db.VarChar(32)
+  uri_name String @db.VarChar(128)
 
-  location_lat      Float?  @db.DoublePrecision
-  location_lon      Float?  @db.DoublePrecision
+  location_lat      Float?  @db.Float()
+  location_lon      Float?  @db.Float()
   location_address  String? @db.VarChar(256)
   location_postcode String? @db.VarChar(16)
-  location_display  String? @db.VarChar
+  location_display  String? @db.VarChar(128)
 
-  contact_first_name   String? @db.VarChar
-  contact_last_name    String? @db.VarChar
-  contact_email        String? @db.VarChar
-  contact_phone_number String? @db.VarChar
+  contact_first_name   String? @db.VarChar(64)
+  contact_last_name    String? @db.VarChar(64)
+  contact_email        String? @db.VarChar(128)
+  contact_phone_number String? @db.VarChar(24)
 
-  realtime_available_booking_slots String[]
-  realtime_last_slots_sync         DateTime? @db.Timestamptz()
+  realtime_available_booking_slots Json?     @db.Json
+  realtime_last_slots_sync         DateTime? @db.DateTime()
 
-  booking_system     String? @db.VarChar
+  booking_system     String? @db.VarChar(32)
   has_accepted_terms Boolean @default(false)
 
   /// type StripeAccount
-  financial_connect_account Json?  @db.JsonB
-  financial_cut_default     Float? @default(0.9) @db.DoublePrecision
-  financial_cut_followers   Float? @default(0.95) @db.DoublePrecision
+  financial_connect_account Json?  @db.Json
+  financial_cut_default     Float? @default(0.9) @db.Float
+  financial_cut_followers   Float? @default(0.95) @db.Float
 
   /// type WeekQuietTimes
   metrics_quiet_times Json?
   /// type WeekOpenTimes
   metrics_open_times  Json?
 
-  metrics_seating_duration Int? @db.Integer
+  metrics_seating_duration Int? @db.Int
 
   settings_notify_bookings     Boolean @default(true)
   settings_fallback_open_times Boolean @default(true)
@@ -194,35 +203,35 @@ model Restaurant {
 
 model RestaurantProfile {
   id                  String  @id() @default(uuid())
-  website             String? @db.VarChar
-  public_phone_number String? @db.VarChar
+  website             String? @db.VarChar(128)
+  public_phone_number String? @db.VarChar(24)
 
   /// type Media
-  profile_picture Json? @db.JsonB
+  profile_picture Json? @db.Json
 
   /// type Media
-  backdrop_video Json? @db.JsonB
+  backdrop_video Json? @db.Json
 
   /// type Media
-  backdrop_still_frame Json? @db.JsonB
+  backdrop_still_frame Json? @db.Json
 
   /// type Media
-  display_photograph Json? @db.JsonB
+  display_photograph Json? @db.Json
 
   /// type Media
-  hero_illustration Json? @db.JsonB
+  hero_illustration Json? @db.Json
 
   /// type YouTubeVideo[]
-  feature_videos Json? @db.JsonB
+  feature_videos Json? @db.Json
 
   /// type Document
-  description Json? @db.JsonB
+  description Json? @db.Json
 
   /// type MetaDetails
-  meta Json? @db.JsonB
+  meta Json? @db.Json
 
   restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
-  restaurant_id String     @unique @db.VarChar
+  restaurant_id String     @unique @db.VarChar(128)
 
   @@map(name: "restaurant_profile")
 }
@@ -231,7 +240,7 @@ model RestaurantProfile {
 model FollowRelation {
   id String @id @default(uuid())
 
-  followed_at DateTime @db.Timestamptz()
+  followed_at DateTime @db.DateTime()
 
   notify_new_menu            Boolean @default(true)
   notify_general_info        Boolean @default(true)
@@ -240,34 +249,34 @@ model FollowRelation {
   notify_special_experiences Boolean @default(true)
 
   user    User   @relation(fields: [user_id], references: [id])
-  user_id String @db.VarChar
+  user_id String @db.VarChar(128)
 
   restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
-  restaurant_id String     @db.VarChar
+  restaurant_id String     @db.VarChar(128)
 
   @@map(name: "follow_relation")
 }
 
 model RestaurateurApplication {
   id                 String @id() @default(uuid())
-  name               String @db.VarChar
-  email              String @db.VarChar
-  contact_number     String @db.VarChar
-  restaurant_name    String @db.VarChar
-  restaurant_website String @db.VarChar
-  restaurant_address String @db.VarChar
-  description        String @db.VarChar
+  name               String @db.VarChar(64)
+  email              String @db.VarChar(128)
+  contact_number     String @db.VarChar(24)
+  restaurant_name    String @db.VarChar(64)
+  restaurant_website String @db.VarChar(128)
+  restaurant_address String @db.VarChar(256)
+  description        String @db.VarChar(2000)
 
   @@map(name: "restaurataur_application")
 }
 
 model AffiliateSubmission {
   id             String @id() @default(uuid())
-  platform       String @db.VarChar
-  reference      String @db.VarChar
-  affiliate_type String @default("") @db.VarChar
+  platform       String @db.VarChar(64)
+  reference      String @db.VarChar(64)
+  affiliate_type String @default("") @db.VarChar(64)
 
-  user_id String? @db.VarChar
+  user_id String? @db.VarChar(128)
   user    User?   @relation(fields: [user_id], references: [id])
 
   @@map(name: "affiliate_submission")

@@ -10,10 +10,10 @@ import {
   OrderPrice,
   RefundDetails,
   PaymentCardDetails,
+  Media,
   StripeAccount,
   WeekQuietTimes,
   WeekOpenTimes,
-  Media,
   YouTubeVideo,
   Document,
   MetaDetails
@@ -74,7 +74,20 @@ export type HorusOrder = {
    */
   is_user_following: boolean
   is_test: boolean
+  /**
+   * We keep the static properties of the product because we want to
+   * capture the product as it was when the order was made.
+   * Otherwise, if the order changes in Contentful ovder time, we will
+   * have broken and incongruent records.
+   */
   product_id: string
+  product_name: string
+  product_allowed_heads: number[]
+  product_image: Media | null
+  /**
+   * Per head, in GBP
+   */
+  product_price: number
   user_id: string
   restaurant_id: string
 }
@@ -156,52 +169,6 @@ export type HorusRestaurantProfile = {
   feature_videos: YouTubeVideo[] | null
   description: Document | null
   meta: MetaDetails | null
-  restaurant_id: string
-}
-
-
-/**
- * Model ExperiencePost
- * 
- */
-export type HorusExperiencePost = {
-  id: string
-  title: string
-  date: Date
-  body: Document | null
-  city: string
-  cuisine: string
-  description: string
-  see_restaurant_button: string | null
-  /**
-   * Eg. East London
-   * Displayed under the title
-   */
-  display_location: string
-  plate_image: Media | null
-  menu_image: Media | null
-  auxiliary_image: Media | null
-  meta: MetaDetails | null
-  slug: string
-  tags: string[]
-  product_id: string
-  restaurant_id: string
-}
-
-
-/**
- * Model ExperienceProduct
- * 
- */
-export type HorusExperienceProduct = {
-  id: string
-  name: string
-  allowed_heads: number[]
-  image: Media | null
-  /**
-   * Per head, in GBP
-   */
-  price: number
   restaurant_id: string
 }
 

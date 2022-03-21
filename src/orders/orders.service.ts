@@ -84,11 +84,6 @@ export class OrdersService {
       data: {
         user: { connect: { id: uid } },
         restaurant: { connect: { id: experiencePost.restaurant.id } },
-        product_id: experienceProductId,
-        product_name: experiencePost.product.name,
-        product_allowed_heads: experiencePost.product.allowed_heads,
-        product_price: experiencePost.product.price,
-        product_image: experiencePost.product.image,
         user_facing_id: this.generateUserFacingId(),
         heads: Math.floor(heads),
         price: {
@@ -97,6 +92,13 @@ export class OrdersService {
           final,
           currency: 'GBP',
         },
+        product_id: experienceProductId,
+        product_name: experiencePost.product.name,
+        product_allowed_heads: JSON.stringify(
+          experiencePost.product.allowed_heads,
+        ),
+        product_price: experiencePost.product.price,
+        product_image: experiencePost.product.image,
         booked_for: new Date(bookedForTimestamp),
         from_slug: experiencePost.slug,
         is_user_following: false,
@@ -119,7 +121,7 @@ export class OrdersService {
   async getOrder(token: string, requestUser: AuthenticatedUser) {
     const order = await this.prisma.order.findUnique({
       where: { token },
-      include: { restaurant: true },
+      include: { restaurant: true, user: true },
     });
 
     if (!order) {

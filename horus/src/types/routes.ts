@@ -29,7 +29,6 @@ export type HorusRoutesPOST =
   | '/restaurants/public/apply'
   | '/public/syncs/segment'
   | '/public/syncs/contentful/restaurant'
-  | '/public/syncs/contentful/experience'
   | '/users/update'
   | '/users/follow-restaurant'
   | '/users/unfollow-restaurant';

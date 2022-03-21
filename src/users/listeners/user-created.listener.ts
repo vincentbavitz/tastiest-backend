@@ -17,9 +17,7 @@ export class UserCreatedListener {
 
   @OnEvent('user.created')
   async handleUserCreatedEvent(event: UserCreatedEvent) {
-    const STRIPE_SECRET_KEY = event.isTestAccount
-      ? this.configService.get('STRIPE_TEST_SECRET_KEY')
-      : this.configService.get('STRIPE_LIVE_SECRET_KEY');
+    const STRIPE_SECRET_KEY = this.configService.get('STRIPE_SECRET_KEY');
 
     const stripe = new Stripe(STRIPE_SECRET_KEY, {
       apiVersion: '2020-08-27',
