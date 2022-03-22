@@ -143,9 +143,6 @@ export class UsersController {
       ...user,
 
       // The following properties are only visible to Admins.
-      stripe_setup_secret: this.isAdmin(request)
-        ? user.stripe_setup_secret
-        : null,
       stripe_customer_id: this.isAdmin(request)
         ? user.stripe_customer_id
         : null,

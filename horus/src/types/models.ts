@@ -82,7 +82,10 @@ export type HorusOrder = {
    */
   product_id: string
   product_name: string
-  product_allowed_heads: number[]
+  /**
+   * Stringified array of numbers
+   */
+  product_allowed_heads: string
   product_image: Media | null
   /**
    * Per head, in GBP
@@ -135,7 +138,7 @@ export type HorusRestaurant = {
   contact_last_name: string | null
   contact_email: string | null
   contact_phone_number: string | null
-  realtime_available_booking_slots: string[]
+  realtime_available_booking_slots: any | null
   realtime_last_slots_sync: Date | null
   booking_system: string | null
   has_accepted_terms: boolean

@@ -112,6 +112,8 @@ export class OrdersService {
       new OrderCreatedEvent(order, userAgent),
     );
 
+    console.log('orders.service ➡️ order:', order);
+
     return this.prisma.order.findUnique({
       where: { token: order.token },
       include: { restaurant: true },
