@@ -1,5 +1,4 @@
 import {
-  IsBoolean,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -30,10 +29,6 @@ class CreateOrderDto {
   @IsOptional()
   @IsString()
   user_agent?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  is_test?: boolean;
 }
 
 export default CreateOrderDto;

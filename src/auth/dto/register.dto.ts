@@ -1,5 +1,4 @@
 import {
-  IsBoolean,
   IsEmail,
   IsOptional,
   IsString,
@@ -28,10 +27,6 @@ class RegisterDto {
   @IsOptional()
   @IsString()
   anonymousId: string;
-
-  @IsOptional()
-  @IsBoolean()
-  isTestAccount: boolean;
 }
 
 export default RegisterDto;

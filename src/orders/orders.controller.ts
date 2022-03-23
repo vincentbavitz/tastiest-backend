@@ -11,6 +11,7 @@ import { UserRole } from '@tastiest-io/tastiest-utils';
 import { RequestWithUser } from 'src/auth/auth.model';
 import RoleGuard from 'src/auth/role.guard';
 import CreateOrderDto from './dto/create-order.dto';
+import UserUpdateOrderDto from './dto/user-update-order.dto';
 import { OrdersService } from './orders.service';
 
 @Controller('orders')
@@ -20,20 +21,17 @@ export class OrdersController {
   @Post('new')
   @UseGuards(RoleGuard(UserRole.EATER))
   async createOrder(
-    @Body() createOrderDto: CreateOrderDto,
+    @Body() data: CreateOrderDto,
     @Request() request: RequestWithUser,
   ) {
-    console.log('orders.controller ➡️ createOrderDto:', createOrderDto);
-
     const order = await this.ordersService.createOrder(
-      createOrderDto.product_id,
+      data.product_id,
       request.user.uid,
-      createOrderDto.heads,
-      createOrderDto.booked_for_timestamp,
+      data.heads,
+      data.booked_for_timestamp,
       {
-        promoCode: createOrderDto.promo_code ?? null,
-        userAgent: createOrderDto.user_agent ?? null,
-        isTest: createOrderDto.is_test ?? false,
+        promoCode: data.promo_code ?? null,
+        userAgent: data.user_agent ?? null,
       },
     );
 
@@ -60,10 +58,15 @@ export class OrdersController {
     };
   }
 
+  @Post('update')
   @UseGuards(RoleGuard(UserRole.EATER))
-  updateOrder(@Body() updateOrderDto: any) {
-    updateOrderDto;
-    return null;
+  userUpdateOrder(
+    @Body() data: UserUpdateOrderDto,
+    @Request() request: RequestWithUser,
+  ) {
+    return this.ordersService.userUpdateOrder(data.token, request.user, {
+      payment_method: data.payment_method,
+    });
   }
 
   private isAdmin(request: RequestWithUser): boolean {

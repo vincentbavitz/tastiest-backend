@@ -1,19 +1,25 @@
 import {
+  ForbiddenException,
   Injectable,
+  NotAcceptableException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { CmsApi, Promo, UserRole } from '@tastiest-io/tastiest-utils';
+import { HorusOrder } from '@tastiest-io/tastiest-horus';
+import { CmsApi, dlog, Promo, UserRole } from '@tastiest-io/tastiest-utils';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import { PrismaService } from 'src/prisma/prisma.service';
+import Stripe from 'stripe';
 import { OrderCreatedEvent } from './events/order-created.event';
 
 type CreateOrderOptionals = {
   promoCode?: string;
   userAgent?: string;
-  isTest?: boolean;
 };
+
+type UpdateOrderOptionals = Partial<Pick<HorusOrder, 'payment_method'>>;
 
 @Injectable()
 export class OrdersService {
@@ -21,6 +27,7 @@ export class OrdersService {
    * @ignore
    */
   constructor(
+    private configService: ConfigService,
     private eventEmitter: EventEmitter2,
     private prisma: PrismaService,
   ) {}
@@ -34,7 +41,7 @@ export class OrdersService {
     uid: string,
     heads: number,
     bookedForTimestamp: number,
-    { promoCode, userAgent, isTest = true }: CreateOrderOptionals,
+    { promoCode, userAgent }: CreateOrderOptionals,
   ) {
     console.log('orders.service ➡️ experienceProductId:', experienceProductId);
 
@@ -102,7 +109,8 @@ export class OrdersService {
         booked_for: new Date(bookedForTimestamp),
         from_slug: experiencePost.slug,
         is_user_following: false,
-        is_test: isTest,
+        is_test: Boolean(this.configService.get('IS_DEV')),
+        created_at: new Date(),
       },
     });
 
@@ -139,6 +147,66 @@ export class OrdersService {
     }
 
     return order;
+  }
+
+  /**
+   * Update an existing order, where the request is coming from the user.
+   */
+  async userUpdateOrder(
+    token: string,
+    requestUser: AuthenticatedUser,
+    updated: UpdateOrderOptionals,
+  ) {
+    const order = await this.getOrder(token, requestUser);
+
+    // We prevent abandoned orders from being modified in-case the user comes back
+    // after a significant amount of time, and the product has since changed.
+    if (order.paid_at || order.abandoned_at) {
+      throw new NotAcceptableException('Order can no longer be updated.');
+    }
+
+    if (updated.payment_method) {
+      const STRIPE_SECRET_KEY = this.configService.get('STRIPE_SECRET_KEY');
+      const stripe = new Stripe(STRIPE_SECRET_KEY, {
+        apiVersion: '2020-08-27',
+      });
+
+      // Ensure it's a valid payment method.
+      let newPaymentMethod: Stripe.PaymentMethod;
+      try {
+        newPaymentMethod = await stripe.paymentMethods.retrieve(
+          updated.payment_method,
+        );
+      } catch (error) {
+        // If this is throwing, are you trying to access LIVE order from DEV or vice-versa?
+        throw new NotAcceptableException('Payment method does not exist.');
+      }
+
+      // User trying to use someone else's payment method?
+      // We get user from DB because `stripe_customer_id` is a hidden field.
+      const { stripe_customer_id } = await this.prisma.user.findUnique({
+        where: { id: order.user_id },
+      });
+
+      dlog('orders.service ➡️ stripe_customer_id:', stripe_customer_id);
+      dlog('orders.service ➡️ newPaymentMethod:', newPaymentMethod);
+
+      if (stripe_customer_id !== newPaymentMethod.customer) {
+        throw new ForbiddenException();
+      }
+
+      // ///////////////////////////////////////////////////////////////////
+      // ///////////////////////////////////////////////////////////////////
+
+      await this.prisma.order.update({
+        where: { id: order.id },
+        data: { payment_method: newPaymentMethod.id },
+      });
+
+      return 'success';
+    }
+
+    throw new NotAcceptableException('Nothing to update');
   }
 
   /**

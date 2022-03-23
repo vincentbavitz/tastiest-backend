@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FollowRelation, User } from '@prisma/client';
 import { FirestoreCollection, UserRole } from '@tastiest-io/tastiest-utils';
@@ -17,7 +18,6 @@ type CreateUserPrimaryParams = {
   email: string;
   password: string;
   firstName: string;
-  isTestAccount: boolean;
 };
 
 type SetRestaurantFollowingNotifications = {
@@ -34,10 +34,11 @@ export class UsersService {
    * @ignore
    */
   constructor(
-    private readonly firebaseApp: FirebaseService,
-    private readonly accountService: AccountService,
-    private readonly eventEmitter: EventEmitter2,
-    private readonly prisma: PrismaService,
+    private configService: ConfigService,
+    private firebaseApp: FirebaseService,
+    private accountService: AccountService,
+    private eventEmitter: EventEmitter2,
+    private prisma: PrismaService,
   ) {}
 
   // FIX ME. TEMPORARY. SYNC FROM FIRESTORE
@@ -98,16 +99,11 @@ export class UsersService {
   }
 
   async createUser(
-    {
-      email,
-      password,
-      firstName,
-      isTestAccount = false,
-      anonymousId,
-      userAgent,
-    }: RegisterDto,
+    { email, password, firstName, anonymousId, userAgent }: RegisterDto,
     user?: AuthenticatedUser,
   ) {
+    const isTestAccount = this.configService.get('IS_DEV');
+
     // First, we create an account with Firebase Auth.
     const userRecord = await this.accountService.createAccount(
       {
