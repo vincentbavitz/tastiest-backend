@@ -8,11 +8,19 @@ export const ANONYMOUS_USER_ID = 'anonymous-user';
 
 type TrackingContext = {
   userAgent?: string;
+  page?: any;
 };
 
 type TrackingWho = {
   userId?: string;
   anonymousId?: string;
+};
+
+type TrackingParams = {
+  who: TrackingWho;
+  properties: any;
+  context?: TrackingContext;
+  integrations?: Record<string, boolean>;
 };
 
 @Injectable()
@@ -47,12 +55,9 @@ export class TrackingService {
     });
   }
 
-  public async track(
-    event: string,
-    who: TrackingWho,
-    properties: any,
-    context?: TrackingContext,
-  ) {
+  public async track(event: string, params: TrackingParams) {
+    const { who, properties, context, integrations } = params;
+
     const anonymousId = who.userId
       ? undefined
       : who.anonymousId ?? ANONYMOUS_USER_ID;
@@ -64,6 +69,7 @@ export class TrackingService {
       properties,
       timestamp: new Date(),
       context: { ...context },
+      integrations: integrations ?? { All: true },
     });
   }
 }

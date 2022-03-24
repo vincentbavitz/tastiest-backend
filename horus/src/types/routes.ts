@@ -24,6 +24,8 @@ export type HorusRoutesPOST =
   | '/bookings/update'
   | '/email-scheduling/schedule'
   | '/orders/new'
+  | '/orders/update'
+  | '/payments/pay'
   | '/restaurants/set-open-times'
   | '/restaurants/notify'
   | '/restaurants/public/apply'

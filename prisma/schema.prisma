@@ -85,6 +85,7 @@ model Order {
   paid_at      DateTime? @db.DateTime()
   abandoned_at DateTime? @db.DateTime()
 
+  // Floats in GBP
   tastiest_portion   Float? @db.Float()
   restaurant_portion Float? @db.Float()
 
@@ -169,10 +170,9 @@ model Restaurant {
   booking_system     String? @db.VarChar(32)
   has_accepted_terms Boolean @default(false)
 
-  /// type StripeAccount
-  financial_connect_account Json?  @db.Json
-  financial_cut_default     Float? @default(0.9) @db.Float
-  financial_cut_followers   Float? @default(0.95) @db.Float
+  financial_cut_default        Float?  @default(0.9) @db.Float
+  financial_cut_followers      Float?  @default(0.95) @db.Float
+  financial_connect_account_id String? @db.VarChar(128)
 
   /// type WeekQuietTimes
   metrics_quiet_times Json?

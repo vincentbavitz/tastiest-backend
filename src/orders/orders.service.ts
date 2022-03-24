@@ -1,5 +1,4 @@
 import {
-  ForbiddenException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -7,12 +6,17 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Order, Restaurant, User } from '@prisma/client';
 import { HorusOrder } from '@tastiest-io/tastiest-horus';
-import { CmsApi, dlog, Promo, UserRole } from '@tastiest-io/tastiest-utils';
+import { CmsApi, Promo, UserRole } from '@tastiest-io/tastiest-utils';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import { PrismaService } from 'src/prisma/prisma.service';
-import Stripe from 'stripe';
 import { OrderCreatedEvent } from './events/order-created.event';
+
+export type OrderWithUserAndRestaurant = Order & {
+  user: User;
+  restaurant: Restaurant;
+};
 
 type CreateOrderOptionals = {
   promoCode?: string;
@@ -165,46 +169,8 @@ export class OrdersService {
       throw new NotAcceptableException('Order can no longer be updated.');
     }
 
-    if (updated.payment_method) {
-      const STRIPE_SECRET_KEY = this.configService.get('STRIPE_SECRET_KEY');
-      const stripe = new Stripe(STRIPE_SECRET_KEY, {
-        apiVersion: '2020-08-27',
-      });
-
-      // Ensure it's a valid payment method.
-      let newPaymentMethod: Stripe.PaymentMethod;
-      try {
-        newPaymentMethod = await stripe.paymentMethods.retrieve(
-          updated.payment_method,
-        );
-      } catch (error) {
-        // If this is throwing, are you trying to access LIVE order from DEV or vice-versa?
-        throw new NotAcceptableException('Payment method does not exist.');
-      }
-
-      // User trying to use someone else's payment method?
-      // We get user from DB because `stripe_customer_id` is a hidden field.
-      const { stripe_customer_id } = await this.prisma.user.findUnique({
-        where: { id: order.user_id },
-      });
-
-      dlog('orders.service ➡️ stripe_customer_id:', stripe_customer_id);
-      dlog('orders.service ➡️ newPaymentMethod:', newPaymentMethod);
-
-      if (stripe_customer_id !== newPaymentMethod.customer) {
-        throw new ForbiddenException();
-      }
-
-      // ///////////////////////////////////////////////////////////////////
-      // ///////////////////////////////////////////////////////////////////
-
-      await this.prisma.order.update({
-        where: { id: order.id },
-        data: { payment_method: newPaymentMethod.id },
-      });
-
-      return 'success';
-    }
+    // No need to add payment method; this is now done in /payments/pay
+    null;
 
     throw new NotAcceptableException('Nothing to update');
   }

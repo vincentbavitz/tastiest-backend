@@ -58,16 +58,15 @@ export class UserCreatedListener {
     }
 
     // No need to await tracking after we've identified them
-    this.trackingService.track(
-      'User Signed Up',
-      { userId: event.userRecord.uid },
-      {
+    this.trackingService.track('User Signed Up', {
+      who: { userId: event.userRecord.uid },
+      properties: {
         role: UserRole.EATER,
         name: event.firstName,
         email: event.userRecord.email,
       },
-      { userAgent: event.userAgent ?? null },
-    );
+      context: { userAgent: event.userAgent ?? null },
+    });
 
     console.log('event', event);
   }

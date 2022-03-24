@@ -125,7 +125,7 @@ export class SyncsService {
       | 'realtime_available_booking_slots'
       | 'realtime_last_slots_sync'
       | 'has_accepted_terms'
-      | 'financial_connect_account'
+      | 'financial_connect_account_id'
       | 'financial_cut_default'
       | 'financial_cut_followers'
       | 'metrics_quiet_times'

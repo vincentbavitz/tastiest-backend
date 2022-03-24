@@ -10,5 +10,6 @@ import { BookingsService } from './bookings.service';
   imports: [UsersModule],
   controllers: [BookingsController],
   providers: [BookingsService, TrackingService, AccountService, PrismaService],
+  exports: [BookingsService],
 })
 export class BookingsModule {}

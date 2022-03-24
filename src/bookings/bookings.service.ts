@@ -6,6 +6,7 @@ import {
 import { Booking } from '@prisma/client';
 import { UserRole } from '@tastiest-io/tastiest-utils';
 import { AuthenticatedUser } from 'src/auth/auth.model';
+import { OrderWithUserAndRestaurant } from 'src/orders/orders.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TrackingService } from 'src/tracking/tracking.service';
 
@@ -317,6 +318,35 @@ export class BookingsService {
   //   }
 
   /**
+   * Create a new booking; done ONLY form the PaymentsService
+   */
+  async createBooking(order: OrderWithUserAndRestaurant) {
+    return this.prisma.booking.create({
+      data: {
+        booked_for: order.booked_for,
+        confirmation_code: this.generateConfirmationCode(),
+        is_test: order.is_test,
+        restaurant: { connect: { id: order.restaurant_id } },
+        order: { connect: { id: order.id } },
+        user: { connect: { id: order.user_id } },
+      },
+    });
+  }
+
+  /**
+   * Confirmation code required for user to show restaurant
+   */
+  private generateConfirmationCode() {
+    // Random number between 1 and 9
+    const randomDigit = () => Math.floor(Math.random() * 10);
+
+    return Array(4)
+      .fill(null)
+      .map((_) => String(randomDigit()))
+      .join('');
+  }
+
+  /**
    * Validate that the request is coming from the owner
    * of the booking, the corresponding restaurant or an admin.
    */
@@ -337,18 +367,5 @@ export class BookingsService {
     }
 
     return false;
-  }
-
-  /**
-   * Confirmation code required for user to show restaurant
-   */
-  private generateConfirmationCode() {
-    // Random number between 1 and 9
-    const randomDigit = () => Math.floor(Math.random() * 10);
-
-    return Array(4)
-      .fill(null)
-      .map((_) => String(randomDigit()))
-      .join('');
   }
 }

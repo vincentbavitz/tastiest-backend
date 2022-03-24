@@ -20,6 +20,7 @@ import { BookingsModule } from './bookings/bookings.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
+import { RedisModule } from './redis/redis.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
@@ -63,20 +64,17 @@ import { UsersModule } from './users/users.module';
     RestaurantsModule,
     PaymentsModule,
     BookingsModule,
+    RedisModule,
     OrdersModule,
     AuthModule,
     AffiliatesModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    // TrackingService,
-    TasksService,
-  ],
+  providers: [AppService, TasksService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(PreAuthMiddleware).exclude('public').forRoutes({
+    consumer.apply(PreAuthMiddleware).forRoutes({
       path: '*',
       method: RequestMethod.ALL,
     });

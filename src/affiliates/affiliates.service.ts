@@ -31,11 +31,10 @@ export class AffiliatesService {
         ? 'New Affiliate Submission'
         : 'New Influencer Submission';
 
-    await this.trackingService.track(
-      eventName,
-      { userId, anonymousId },
-      { platform, reference },
-    );
+    await this.trackingService.track(eventName, {
+      who: { userId, anonymousId },
+      properties: { platform, reference },
+    });
 
     return this.prisma.affiliateSubmission.create({
       data: {

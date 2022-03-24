@@ -17,15 +17,17 @@ export class PaymentsController {
   ) {}
 
   /**
-   * Pay an order
+   * Pay an order from tastiest.io/checkout/[token]
    */
   @UseGuards(RoleGuard(UserRole.EATER))
-  @Post()
-  async pay(@Body() payDto: PayDto, @Request() request: RequestWithUser) {
-    return this.paymentsService.pay(
-      payDto.token,
-      request.user,
-      payDto.userAgent,
-    );
+  @Post('pay')
+  async pay(@Body() data: PayDto, @Request() request: RequestWithUser) {
+    return this.paymentsService.pay(data, request.user);
+  }
+
+  @Post('public/payment-success-webhook')
+  async onPaymentSuccessWebhook(@Body() data: any) {
+    return 'hi';
+    // return this.paymentsService.onPaymentSuccessWebhook(data);
   }
 }
