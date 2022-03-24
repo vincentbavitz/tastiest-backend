@@ -1,4 +1,11 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Headers,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { UserRole } from '@tastiest-io/tastiest-utils';
 import { RequestWithUser } from 'src/auth/auth.model';
 import RoleGuard from 'src/auth/role.guard';
@@ -8,7 +15,6 @@ import PayDto from './dto/pay.dto';
 import { PaymentsService } from './payments.service';
 
 @Controller('payments')
-@UseGuards(RoleGuard(UserRole.EATER))
 export class PaymentsController {
   constructor(
     private readonly paymentsService: PaymentsService,
@@ -25,8 +31,11 @@ export class PaymentsController {
     return this.paymentsService.pay(data, request.user);
   }
 
-  @Post('public/as')
-  async onPaymentSuccessWebhook(@Body() data: any) {
-    return this.paymentsService.onPaymentSuccessWebhook(data);
+  /**
+   * Coming directly from Stripe.
+   */
+  @Post('public/payment-success-webhook')
+  async onPaymentSuccessWebhook(@Body() body: any, @Headers() headers: any) {
+    return this.paymentsService.onPaymentSuccessWebhook(body, headers);
   }
 }

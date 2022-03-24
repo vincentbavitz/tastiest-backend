@@ -33,6 +33,14 @@ export class RestaurantsController {
   }
 
   /**
+   * Stripe Webhook: Restaurant Connected Acconut created or updated.
+   */
+  @Post('public/connect-account-webhook')
+  async updateConnectAccount(@Body() body: any) {
+    return this.restaurantsService.updateConnectAccount(body);
+  }
+
+  /**
    * If day is given in DTO as [0, 0] (or any negatives for both 0 and 1), is it marked as closed.
    * Eg: `{ monday: [0, 0] }` is closed,
    */

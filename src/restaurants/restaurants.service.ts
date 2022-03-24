@@ -8,6 +8,7 @@ import { WeekOpenTimes } from '@tastiest-io/tastiest-horus';
 import { UserRole } from '@tastiest-io/tastiest-utils';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { TrackingService } from 'src/tracking/tracking.service';
 
 // const MS_IN_ONE_MINUTE = 60 * 1000;
 
@@ -16,7 +17,10 @@ export class RestaurantsService {
   /**
    * @ignore
    */
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private trackingService: TrackingService,
+  ) {}
 
   async createRestaurant(restaurantId: string) {
     null;
@@ -56,6 +60,38 @@ export class RestaurantsService {
     await this.prisma.restaurant.update({
       where: { id: restaurantId },
       data: { metrics_open_times: openTimes },
+    });
+
+    return 'success';
+  }
+
+  /**
+   * Stripe Webhook: Restaurant Connected Acconut created or updated.
+   */
+  async updateConnectAccount(body: any) {
+    const restaurantId = body.data?.object?.metadata?.restaurant_id;
+    const connectId = body.data?.object?.id;
+
+    // Get the restaurant
+    const restaurant = await this.prisma.restaurant.findUnique({
+      where: { id: restaurantId },
+    });
+
+    // FIX ME -> Report internal error should be done from
+    // tastiest-backend not tastiest-utils.
+    if (!restaurant || !connectId) {
+      this.trackingService.track('Stripe Connect Webhook Failed', {
+        who: { anonymousId: 'INTERNAL_ERROR' },
+        properties: { webhook: 'onPaymentSuccessWebhook', restaurantId },
+      });
+    }
+
+    // Update connect-account ID.
+    await this.prisma.restaurant.update({
+      where: { id: restaurantId },
+      data: {
+        financial_connect_account_id: connectId,
+      },
     });
 
     return 'success';

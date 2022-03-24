@@ -53,7 +53,10 @@ export class PaymentsService {
     const order = await this.ordersService.getOrder(token, requestUser);
 
     // Ensure payment method is valid
-    await this.validatePaymentMethod(order, paymentMethodId);
+    const paymentMethod = await this.validatePaymentMethod(
+      order,
+      paymentMethodId,
+    );
 
     // Is the order expired or paid?
     const isExpired = order.created_at.getTime() + ORDER_EXPIRY_MS < Date.now();
@@ -89,6 +92,10 @@ export class PaymentsService {
         is_user_following: isUserFollowing,
         tastiest_portion: tastiestPortion,
         restaurant_portion: restaurantPortion,
+        payment_card: {
+          last4: paymentMethod.card.last4,
+          brand: paymentMethod.card.brand,
+        },
       },
     });
 
@@ -126,8 +133,47 @@ export class PaymentsService {
   }
 
   /** Coming directly from Stripe. */
-  async onPaymentSuccessWebhook(data: any) {
-    console.log('payments.service ➡️ data:', data);
+  async onPaymentSuccessWebhook(body: any, headers: any) {
+    const orderId = body.data?.object?.metadata?.order_id;
+
+    // A nicer way of doing things; typed event.
+    // const event = this.stripe.webhooks.constructEvent(
+    //   JSON.stringify(body),
+    //   JSON.stringify(headers),
+    //   'whsec_Q5Yqo73q6ycV2KsHoEnw1brCCc5q4p4w',
+    // );
+
+    // Get the order
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { restaurant: true, user: true, booking: true },
+    });
+
+    console.log('payments.service ➡️ order:', order);
+
+    // FIX ME -> Report internal error should be done from
+    // tastiest-backend not tastiest-utils.
+    if (!order) {
+      this.trackingService.track('Stripe Payment Webhook Failed', {
+        who: { anonymousId: 'INTERNAL_ERROR' },
+        properties: { webhook: 'onPaymentSuccessWebhook', orderId },
+      });
+    }
+
+    this.trackingService.track('Payment Success', {
+      who: { userId: order.user_id },
+      properties: { ...order },
+    });
+
+    // Send out email to restaurant that a new booking has been made.
+    if ((!order.is_test && order.restaurant.settings_notify_bookings) ?? true) {
+      this.trackingService.track('New Booking For Restaurant', {
+        who: { userId: order.restaurant_id },
+        properties: {
+          ...order,
+        },
+      });
+    }
 
     return 'success';
   }
@@ -144,7 +190,7 @@ export class PaymentsService {
       : order.restaurant.financial_cut_default;
 
     // prettier-ignore
-    const restaurantPortion = (order.price as OrderPrice).subtotal * (restaurantPc / 100);
+    const restaurantPortion = (order.price as OrderPrice).subtotal * restaurantPc;
 
     // prettier-ignore
     const tastiestPortion = (order.price as OrderPrice).final - restaurantPortion;
@@ -169,7 +215,7 @@ export class PaymentsService {
         },
         // Used to manage Stripe Webhooks like `onPaymentSuccessWebhook`
         metadata: {
-          orderId: order.id,
+          order_id: order.id,
         },
       });
     } catch (error) {
