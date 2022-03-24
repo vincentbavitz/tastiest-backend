@@ -26,6 +26,8 @@ export type HorusRoutesPOST =
   | '/orders/new'
   | '/orders/update'
   | '/payments/pay'
+  | '/payments/public/payment-success-webhook'
+  | '/restaurants/public/connect-account-webhook'
   | '/restaurants/set-open-times'
   | '/restaurants/notify'
   | '/restaurants/public/apply'

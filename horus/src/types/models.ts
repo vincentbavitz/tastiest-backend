@@ -11,7 +11,6 @@ import {
   RefundDetails,
   PaymentCardDetails,
   Media,
-  StripeAccount,
   WeekQuietTimes,
   WeekOpenTimes,
   YouTubeVideo,
@@ -142,9 +141,9 @@ export type HorusRestaurant = {
   realtime_last_slots_sync: Date | null
   booking_system: string | null
   has_accepted_terms: boolean
-  financial_connect_account: StripeAccount | null
   financial_cut_default: number | null
   financial_cut_followers: number | null
+  financial_connect_account_id: string | null
   metrics_quiet_times: WeekQuietTimes | null
   metrics_open_times: WeekOpenTimes | null
   metrics_seating_duration: number | null
