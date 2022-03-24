@@ -135,7 +135,7 @@ export class OrdersService {
   async getOrder(token: string, requestUser: AuthenticatedUser) {
     const order = await this.prisma.order.findUnique({
       where: { token },
-      include: { restaurant: true, user: true },
+      include: { restaurant: true, user: true, booking: true },
     });
 
     if (!order) {
