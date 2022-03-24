@@ -25,7 +25,7 @@ export class PaymentsController {
     return this.paymentsService.pay(data, request.user);
   }
 
-  @Post('public/payment-success-webhook')
+  @Post('public/as')
   async onPaymentSuccessWebhook(@Body() data: any) {
     return this.paymentsService.onPaymentSuccessWebhook(data);
   }

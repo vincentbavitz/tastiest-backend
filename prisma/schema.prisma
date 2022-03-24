@@ -1,6 +1,5 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["referentialIntegrity"]
 }
 
 /// These are typings used by our /horus type generator.
@@ -12,16 +11,11 @@ generator horus {
   output   = "../horus/generated"
 }
 
-// datasource db {
-//   provider = "postgresql"
-//   url      = env("DATABASE_URL")
-// }
-
 datasource db {
-  provider             = "mysql"
-  url                  = env("DATABASE_URL")
-  referentialIntegrity = "prisma"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
+
 
 model User {
   /// Set by Firebase Auth.
@@ -30,10 +24,10 @@ model User {
   first_name String    @db.VarChar(32)
   last_name  String?   @db.VarChar(32)
   mobile     String?   @db.VarChar(20)
-  birthday   DateTime? @db.DateTime()
+  birthday   DateTime? @db.Timestamptz()
 
-  location_lat      Float?  @db.Float
-  location_lon      Float?  @db.Float
+  location_lat      Float?  @db.DoublePrecision
+  location_lon      Float?  @db.DoublePrecision
   location_address  String? @db.VarChar(256)
   location_postcode String? @db.VarChar(16)
   location_display  String? @db.VarChar(128)
@@ -45,8 +39,8 @@ model User {
   is_test_account Boolean
 
   // Metadata
-  created_at  DateTime? @db.DateTime()
-  last_active DateTime? @db.DateTime()
+  created_at  DateTime? @db.Timestamptz()
+  last_active DateTime? @db.Timestamptz()
 
   // Relations
   orders    Order[]
@@ -62,7 +56,7 @@ model Order {
   id             String   @id @default(uuid())
   token          String   @unique() @default(uuid())
   user_facing_id String   @db.VarChar(16)
-  booked_for     DateTime @db.DateTime()
+  booked_for     DateTime @db.Timestamptz()
   heads          Decimal  @db.Decimal
 
   from_slug String @db.VarChar(256)
@@ -79,15 +73,15 @@ model Order {
   payment_method String? @db.VarChar(256)
   discount_code  String? @db.VarChar(64)
 
-  created_at DateTime? @db.DateTime()
-  updated_at DateTime? @updatedAt @db.DateTime()
+  created_at DateTime? @db.Timestamptz()
+  updated_at DateTime? @updatedAt @db.Timestamptz()
 
-  paid_at      DateTime? @db.DateTime()
-  abandoned_at DateTime? @db.DateTime()
+  paid_at      DateTime? @db.Timestamptz()
+  abandoned_at DateTime? @db.Timestamptz()
 
   // Floats in GBP
-  tastiest_portion   Float? @db.Float()
-  restaurant_portion Float? @db.Float()
+  tastiest_portion   Float? @db.DoublePrecision()
+  restaurant_portion Float? @db.DoublePrecision()
 
   /// Specifically at the time the order was made.
   is_user_following Boolean
@@ -105,7 +99,7 @@ model Order {
   /// type Media
   product_image         Json?  @db.Json
   /// Per head, in GBP
-  product_price         Float  @db.Float
+  product_price         Float  @db.DoublePrecision
 
   user    User   @relation(fields: [user_id], references: [id])
   user_id String @db.VarChar(128)
@@ -120,9 +114,9 @@ model Order {
 
 model Booking {
   id         String   @id @default(uuid())
-  booked_for DateTime @db.DateTime()
+  booked_for DateTime @db.Timestamptz()
 
-  cancelled_at      DateTime? @db.DateTime()
+  cancelled_at      DateTime? @db.Timestamptz()
   confirmation_code String    @db.VarChar(16)
 
   // Bools
@@ -153,8 +147,8 @@ model Restaurant {
   cuisine  String @db.VarChar(32)
   uri_name String @db.VarChar(128)
 
-  location_lat      Float?  @db.Float()
-  location_lon      Float?  @db.Float()
+  location_lat      Float?  @db.DoublePrecision()
+  location_lon      Float?  @db.DoublePrecision()
   location_address  String? @db.VarChar(256)
   location_postcode String? @db.VarChar(16)
   location_display  String? @db.VarChar(128)
@@ -165,13 +159,13 @@ model Restaurant {
   contact_phone_number String? @db.VarChar(24)
 
   realtime_available_booking_slots Json?     @db.Json
-  realtime_last_slots_sync         DateTime? @db.DateTime()
+  realtime_last_slots_sync         DateTime? @db.Timestamptz()
 
   booking_system     String? @db.VarChar(32)
   has_accepted_terms Boolean @default(false)
 
-  financial_cut_default        Float?  @default(0.9) @db.Float
-  financial_cut_followers      Float?  @default(0.95) @db.Float
+  financial_cut_default        Float?  @default(0.9) @db.DoublePrecision
+  financial_cut_followers      Float?  @default(0.95) @db.DoublePrecision
   financial_connect_account_id String? @db.VarChar(128)
 
   /// type WeekQuietTimes
@@ -179,7 +173,7 @@ model Restaurant {
   /// type WeekOpenTimes
   metrics_open_times  Json?
 
-  metrics_seating_duration Int? @db.Int
+  metrics_seating_duration Int? @db.Integer
 
   settings_notify_bookings     Boolean @default(true)
   settings_fallback_open_times Boolean @default(true)
@@ -240,7 +234,7 @@ model RestaurantProfile {
 model FollowRelation {
   id String @id @default(uuid())
 
-  followed_at DateTime @db.DateTime()
+  followed_at DateTime @db.Timestamptz()
 
   notify_new_menu            Boolean @default(true)
   notify_general_info        Boolean @default(true)

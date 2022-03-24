@@ -163,8 +163,8 @@ export class PaymentsService {
         // Automatically transfer to the restaurant's Connected Account
         transfer_data: {
           amount: transformPriceForStripe(restaurantPortion),
-          destination: process.env.IS_DEV
-            ? process.env.STRIPE_TEST_CONNECTED_ACCOUNT_ID
+          destination: Boolean(this.configService.get('IS_DEV'))
+            ? this.configService.get('STRIPE_TEST_CONNECTED_ACCOUNT_ID')
             : order.restaurant.financial_connect_account_id,
         },
         // Used to manage Stripe Webhooks like `onPaymentSuccessWebhook`

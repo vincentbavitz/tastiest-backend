@@ -102,7 +102,7 @@ export class UsersService {
     { email, password, firstName, anonymousId, userAgent }: RegisterDto,
     user?: AuthenticatedUser,
   ) {
-    const isTestAccount = this.configService.get('IS_DEV');
+    const isTestAccount = Boolean(this.configService.get('IS_DEV'));
 
     // First, we create an account with Firebase Auth.
     const userRecord = await this.accountService.createAccount(

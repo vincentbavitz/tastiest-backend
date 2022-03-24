@@ -74,7 +74,7 @@ import { UsersModule } from './users/users.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(PreAuthMiddleware).forRoutes({
+    consumer.apply(PreAuthMiddleware).exclude('public').forRoutes({
       path: '*',
       method: RequestMethod.ALL,
     });
