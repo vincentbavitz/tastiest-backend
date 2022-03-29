@@ -1,0 +1,13 @@
+diff --git a/node_modules/prisma/build/index.js b/node_modules/prisma/build/index.js
+index 442fc82..9119e0e 100755
+--- a/node_modules/prisma/build/index.js
++++ b/node_modules/prisma/build/index.js
+@@ -12938,6 +12938,8 @@ var require_getPlatform = __commonJS({
+     __name32(parseOpenSSLVersion, "parseOpenSSLVersion");
+     exports2.parseOpenSSLVersion = parseOpenSSLVersion;
+     async function getOpenSSLVersion() {
++      return '1.1.x'
++
+       const [version2, ls] = await Promise.all([
+         gracefulExec(`openssl version -v`),
+         gracefulExec(`
