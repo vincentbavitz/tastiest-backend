@@ -1,6 +1,7 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["referentialIntegrity"]
+  binaryTargets = ["native", "rhel-openssl-1.1.x"]
 }
 
 /// These are typings used by our /horus type generator.
@@ -10,6 +11,7 @@ generator client {
 generator horus {
   provider = "prisma-client-js"
   output   = "../horus/generated"
+  binaryTargets = ["native", "rhel-openssl-1.1.x"]
 }
 
 // datasource db {

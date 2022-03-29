@@ -1,3 +1,4 @@
+import { HttpService } from '@nestjs/axios';
 import {
   ForbiddenException,
   Injectable,
@@ -5,8 +6,10 @@ import {
   NotFoundException,
   PreconditionFailedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { FirebaseAuthError, UserRole } from '@tastiest-io/tastiest-utils';
 import { UserRecord } from 'firebase-admin/lib/auth/user-record';
+import { firstValueFrom } from 'rxjs';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import { FirebaseService } from 'src/firebase/firebase.service';
 
@@ -23,7 +26,11 @@ export class AccountService {
   /**
    * @ignore
    */
-  constructor(private readonly firebaseApp: FirebaseService) {}
+  constructor(
+    private firebaseApp: FirebaseService,
+    private configService: ConfigService,
+    private http: HttpService,
+  ) {}
 
   async createAccount(
     {
@@ -43,20 +50,42 @@ export class AccountService {
     }
 
     try {
-      const userRecord = await this.firebaseApp.getAuth().createUser({
-        email,
-        password,
-        emailVerified: false,
-        displayName: firstName,
-        disabled: false,
-      });
+      // We use the Firebase Rest API to generate a valid Firebase token from
+      // the sign-up endpoint in one request. We don't use `firebaseAdmin.auth` here.
+      // We do this because a custom token will NOT be accepted by our pre-auth-middleware.
+      // Ref. https://firebase.google.com/docs/refserence/rest/auth#section-verify-custom-token
+      const endpoint = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.configService.get(
+        'FIREBASE_API_KEY',
+      )}`;
+
+      const { data } = await firstValueFrom(
+        this.http.post(endpoint, {
+          email,
+          password,
+          returnSecureToken: true,
+        }),
+      );
+
+      const token = data.idToken;
+
+      console.log('account.service ➡️ data:', data);
+
+      const userRecord = await this.firebaseApp
+        .getAuth()
+        .updateUser(data.localId, {
+          email,
+          password,
+          emailVerified: false,
+          displayName: firstName,
+          disabled: false,
+        });
 
       await this.firebaseApp.getAuth().setCustomUserClaims(userRecord.uid, {
         [role]: true,
         isTestAccount,
       });
 
-      return userRecord;
+      return { userRecord, token };
     } catch (error) {
       const code = error.code as FirebaseAuthError;
 

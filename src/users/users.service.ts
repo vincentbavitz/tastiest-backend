@@ -105,7 +105,7 @@ export class UsersService {
     const isTestAccount = Boolean(this.configService.get('IS_DEV'));
 
     // First, we create an account with Firebase Auth.
-    const userRecord = await this.accountService.createAccount(
+    const { token, userRecord } = await this.accountService.createAccount(
       {
         email,
         password,
@@ -115,11 +115,6 @@ export class UsersService {
       },
       user,
     );
-
-    // Then we grab a JWT token for the account.
-    const token = await this.firebaseApp
-      .getAuth()
-      .createCustomToken(userRecord.uid);
 
     // Now we create the user in Postgres
     await this.prisma.user.create({

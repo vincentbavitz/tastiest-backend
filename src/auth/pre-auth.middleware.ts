@@ -32,7 +32,6 @@ export class PreAuthMiddleware implements NestMiddleware {
     // ...etc
     if (req.url.split('/').includes('public')) {
       req['user'] = null;
-      console.log('GELOOO');
       return next();
     }
 
@@ -57,7 +56,9 @@ export class PreAuthMiddleware implements NestMiddleware {
           req['user'] = user;
           next();
         })
-        .catch(() => {
+        .catch((error) => {
+          console.log('pre-auth.middleware ➡️ error:', error);
+
           PreAuthMiddleware.accessDenied(req.url, res);
         });
     } else {
