@@ -34,5 +34,5 @@ lerna-debug.log*
 # Secrets
 .env*
 
-# Database
-/data
+# Other
+documentation

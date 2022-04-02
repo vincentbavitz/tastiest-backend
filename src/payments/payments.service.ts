@@ -143,6 +143,11 @@ export class PaymentsService {
     //   'whsec_Q5Yqo73q6ycV2KsHoEnw1brCCc5q4p4w',
     // );
 
+    // Development mode doesn't shoot off these webhooks.
+    if (body.livemode === 'false') {
+      return 'success; dev mode';
+    }
+
     // Get the order
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
@@ -219,6 +224,11 @@ export class PaymentsService {
         },
       });
     } catch (error) {
+      this.trackingService.track('Internal Payment Failure', {
+        who: { anonymousId: 'INTERNAL_ERROR' },
+        properties: { error },
+      });
+
       // Card declined.
       throw new BadRequestException('Card declined');
     }

@@ -35,7 +35,7 @@ export class PreAuthMiddleware implements NestMiddleware {
       return next();
     }
 
-    if (token != null && token != '') {
+    if (token && token != '') {
       this.auth
         .verifyIdToken(token.replace('Bearer ', ''))
         .then(async (decodedToken) => {
@@ -57,6 +57,7 @@ export class PreAuthMiddleware implements NestMiddleware {
           next();
         })
         .catch((error) => {
+          console.log('pre-auth.middleware ➡️ token:', token);
           console.log('pre-auth.middleware ➡️ error:', error);
 
           PreAuthMiddleware.accessDenied(req.url, res);

@@ -116,7 +116,7 @@ export class UsersService {
       user,
     );
 
-    // Now we create the user in Postgres
+    // Now we create the user in our Database
     await this.prisma.user.create({
       data: {
         id: userRecord.uid,
