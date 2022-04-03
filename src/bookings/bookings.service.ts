@@ -90,22 +90,6 @@ export class BookingsService {
   }
 
   async getBookingsOfUser(uid: string, fromRestaurantId?: string) {
-    // const query = fromRestaurantId
-    //   ? this.firebaseApp
-    //       .db(FirestoreCollection.BOOKINGS)
-    //       .where('userId', '==', uid)
-    //       .where('restaurantId', '==', fromRestaurantId)
-    //   : this.firebaseApp
-    //       .db(FirestoreCollection.BOOKINGS)
-    //       .where('userId', '==', uid);
-
-    // const bookingsSnapshot = await query.get();
-
-    // const bookings: Booking[] = [];
-    // bookingsSnapshot.forEach((booking) =>
-    //   bookings.push(booking.data() as Booking),
-    // );
-
     const where = { user_id: uid };
     if (fromRestaurantId) {
       where['restaurant_id'] = fromRestaurantId;
@@ -113,12 +97,14 @@ export class BookingsService {
 
     return this.prisma.booking.findMany({
       where,
+      include: { order: true, user: true, restaurant: true },
     });
   }
 
   async getBookingsOfRestaurant(restaurantId: string) {
     return this.prisma.booking.findMany({
       where: { restaurant_id: restaurantId },
+      include: { order: true, user: true, restaurant: true },
     });
   }
 

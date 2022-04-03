@@ -78,6 +78,15 @@ export class RestaurantsController {
     );
   }
 
+  /**
+   * Gets restaurant's Stripe Connect Account balances
+   */
+  @Post('get-balances')
+  @UseGuards(RoleGuard(UserRole.RESTAURANT))
+  async getBalances(@Request() request: RequestWithUser) {
+    return this.restaurantsService.getBalances(request.user.uid);
+  }
+
   // @Post('notify')
   // async notify(@Body() notifyData: NotifyDto) {
   //   return this.restaurantsService.scheduleFollowersEmail(notifyData);

@@ -7,8 +7,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 export type HorusRoutesGET =
+  | '/accounts/'
   | '/accounts/:uid'
   | '/server/system-stats'
+  | '/public/affiliates/'
   | '/bookings/'
   | '/bookings/:id'
   | '/orders/:token'
@@ -16,6 +18,7 @@ export type HorusRoutesGET =
   | '/reservations/list'
   | '/restaurants/public/open-times'
   | '/restaurants/me'
+  | '/users/'
   | '/users/:uid'
   | '/users/me';
 

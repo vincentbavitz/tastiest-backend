@@ -1,26 +1,40 @@
 import {
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { WeekOpenTimes } from '@tastiest-io/tastiest-horus';
-import { UserRole } from '@tastiest-io/tastiest-utils';
+import {
+  transformPriceFromStripe,
+  UserRole,
+} from '@tastiest-io/tastiest-utils';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TrackingService } from 'src/tracking/tracking.service';
+import Stripe from 'stripe';
 
 // const MS_IN_ONE_MINUTE = 60 * 1000;
 
 @Injectable()
 export class RestaurantsService {
+  private stripe: Stripe;
+
   /**
    * @ignore
    */
   constructor(
     private prisma: PrismaService,
+    private configService: ConfigService,
     private trackingService: TrackingService,
-  ) {}
+  ) {
+    const STRIPE_SECRET_KEY = this.configService.get('STRIPE_SECRET_KEY');
+    this.stripe = new Stripe(STRIPE_SECRET_KEY, {
+      apiVersion: '2020-08-27',
+    });
+  }
 
   async createRestaurant(restaurantId: string) {
     null;
@@ -33,6 +47,7 @@ export class RestaurantsService {
 
     const restaurant = await this.prisma.restaurant.findUnique({
       where: { id: restaurantId },
+      include: { profile: true },
     });
 
     if (!restaurant) {
@@ -43,8 +58,19 @@ export class RestaurantsService {
   }
 
   async getOpenTimes(restaurantId: string) {
-    const { metrics_open_times } = await this.getRestaurant(restaurantId);
-    return metrics_open_times as WeekOpenTimes;
+    if (!restaurantId || !restaurantId?.length) {
+      throw new NotAcceptableException('No restaurant ID given');
+    }
+
+    const openTimesData = await this.prisma.restaurant.findUnique({
+      where: { id: restaurantId },
+      select: { metrics_seating_duration: true, metrics_open_times: true },
+    });
+
+    return {
+      open_times: openTimesData.metrics_open_times as WeekOpenTimes,
+      seating_duration: openTimesData.metrics_seating_duration,
+    };
   }
 
   async setOpenTimes(
@@ -95,6 +121,60 @@ export class RestaurantsService {
     });
 
     return 'success';
+  }
+
+  /**
+   * Gets restaurant's Stripe Connect Account balances.
+   * Ordinarily, the parameter for `restaurant_id` comes from the Bearer token
+   * Otherwise it's an administrator from a respective admin route.
+   */
+  async getBalances(restaurantId: string) {
+    const { financial_connect_account_id: stripeAccount } =
+      await this.prisma.restaurant.findUnique({
+        where: { id: restaurantId },
+        select: { financial_connect_account_id: true },
+      });
+
+    if (!stripeAccount) {
+      throw new NotFoundException('Restaurant connect account not found');
+    }
+
+    let total = 0;
+    let pending = 0;
+    let available = 0;
+    let balance: Stripe.Balance = null;
+
+    const payouts = await this.stripe.payouts.list({
+      stripeAccount: stripeAccount,
+    });
+
+    total = transformPriceFromStripe(
+      payouts.data
+        .filter((a) => a.currency === 'gbp')
+        .reduce((a, b) => a + b?.amount ?? 0, 0),
+    );
+
+    try {
+      balance = await this.stripe.balance.retrieve({
+        stripeAccount,
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Error fetching account balances');
+    }
+
+    pending = transformPriceFromStripe(
+      balance?.pending
+        .filter((a) => a.currency === 'gbp')
+        .reduce((a, b) => a + b?.amount ?? 0, 0),
+    );
+
+    available = transformPriceFromStripe(
+      balance?.available
+        .filter((a) => a.currency === 'gbp')
+        .reduce((a, b) => a + b?.amount ?? 0, 0),
+    );
+
+    return { total, pending, available };
   }
 
   // async scheduleFollowersEmail(data: NotifyDto) {

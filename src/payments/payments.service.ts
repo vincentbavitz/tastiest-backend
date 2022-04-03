@@ -24,6 +24,9 @@ const ORDER_EXPIRY_MS = 60 * 60 * 1000;
 export class PaymentsService {
   private stripe: Stripe;
 
+  /**
+   * @ignore
+   */
   constructor(
     private configService: ConfigService,
     private ordersService: OrdersService,
