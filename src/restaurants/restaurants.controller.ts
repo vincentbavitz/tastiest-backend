@@ -41,6 +41,14 @@ export class RestaurantsController {
   }
 
   /**
+   * Get the restaurant of the token making the request.
+   */
+  @Get('me')
+  async getUserFromToken(@Request() request: RequestWithUser) {
+    return this.restaurantsService.getRestaurant(request.user.uid);
+  }
+
+  /**
    * If day is given in DTO as [0, 0] (or any negatives for both 0 and 1), is it marked as closed.
    * Eg: `{ monday: [0, 0] }` is closed,
    */
