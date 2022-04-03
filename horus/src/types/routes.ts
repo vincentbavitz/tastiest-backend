@@ -9,11 +9,13 @@
 export type HorusRoutesGET =
   | '/accounts/:uid'
   | '/server/system-stats'
+  | '/bookings/'
   | '/bookings/:id'
   | '/orders/:token'
   | '/reservations/public/open-slots'
   | '/reservations/list'
   | '/restaurants/public/open-times'
+  | '/restaurants/me'
   | '/users/:uid'
   | '/users/me';
 

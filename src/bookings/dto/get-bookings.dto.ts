@@ -3,11 +3,11 @@ import { IsOptional, IsString } from 'class-validator';
 class GetBookingsDto {
   @IsOptional()
   @IsString()
-  userId?: string;
+  user_id?: string;
 
   @IsOptional()
   @IsString()
-  restaurantId?: string;
+  restaurant_id?: string;
 }
 
 export default GetBookingsDto;

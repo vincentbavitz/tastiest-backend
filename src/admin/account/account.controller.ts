@@ -27,7 +27,7 @@ export class AccountController {
    *
    * @link AdminService
    */
-  @Get()
+  @Get('')
   async getAccounts(@Query() getAccountsDto: GetAccountsDto) {
     return this.accountService.getAccounts(
       getAccountsDto.role,

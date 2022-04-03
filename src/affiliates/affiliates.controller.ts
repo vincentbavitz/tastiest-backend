@@ -25,7 +25,7 @@ export class AffiliatesController {
   }
 
   @UseGuards(RoleGuard(UserRole.ADMIN))
-  @Get()
+  @Get('')
   getAffiliateSubmissions() {
     return this.affiliatesService.getAffiliateSubmissions();
   }

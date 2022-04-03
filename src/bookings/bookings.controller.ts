@@ -16,13 +16,17 @@ import UpdateBookingDto from './dto/update-booking.dto';
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
-  @Get()
+  @Get('')
   getBookings(
     @Query() getBookingsDto: GetBookingsDto,
     @Request() request: RequestWithUser,
   ) {
-    const { userId, restaurantId } = getBookingsDto;
-    return this.bookingsService.getBookings(request.user, userId, restaurantId);
+    const { user_id, restaurant_id } = getBookingsDto;
+    return this.bookingsService.getBookings(
+      request.user,
+      user_id,
+      restaurant_id,
+    );
   }
 
   @Get(':id')
