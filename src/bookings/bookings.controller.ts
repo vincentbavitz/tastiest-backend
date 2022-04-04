@@ -36,16 +36,15 @@ export class BookingsController {
 
   @Post('update')
   updateBooking(
-    @Body() updateBookingDto: UpdateBookingDto,
+    @Body() data: UpdateBookingDto,
     @Request() request: RequestWithUser,
   ) {
-    // return this.bookingsService.updateBooking(
-    //   updateBookingDto.bookingId,
-    //   request.user,
-    //   {
-    //     ...updateBookingDto,
-    //   },
-    // );
-    return null;
+    return this.bookingsService.updateBooking(data.booking_id, request.user, {
+      hasArrived: data.has_arrived,
+      hasCancelled: data.has_cancelled,
+      bookedForTimestamp: data.booked_for_timestamp
+        ? new Date(data.booked_for_timestamp).getTime()
+        : undefined,
+    });
   }
 }

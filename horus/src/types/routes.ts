@@ -18,6 +18,7 @@ export type HorusRoutesGET =
   | '/reservations/list'
   | '/restaurants/public/open-times'
   | '/restaurants/me'
+  | '/restaurants/get-balances'
   | '/users/'
   | '/users/:uid'
   | '/users/me';

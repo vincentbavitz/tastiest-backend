@@ -55,7 +55,7 @@ export class RestaurantsController {
   @Post('set-open-times')
   @UseGuards(RoleGuard(UserRole.RESTAURANT))
   async setOpenTimes(
-    @Body() setOpenTimesDto: SetOpenTimesDto,
+    @Body() data: SetOpenTimesDto,
     @Request() request: RequestWithUser,
   ) {
     const dayToMetricDay = (range: TimeRange) => ({
@@ -64,15 +64,15 @@ export class RestaurantsController {
     });
 
     return this.restaurantsService.setOpenTimes(
-      setOpenTimesDto.restaurant_id,
+      data.restaurant_id,
       {
-        [DayOfWeek.MONDAY]: dayToMetricDay(setOpenTimesDto.monday),
-        [DayOfWeek.TUESDAY]: dayToMetricDay(setOpenTimesDto.tuesday),
-        [DayOfWeek.WEDNESDAY]: dayToMetricDay(setOpenTimesDto.wednesday),
-        [DayOfWeek.THURSDAY]: dayToMetricDay(setOpenTimesDto.thursday),
-        [DayOfWeek.FRIDAY]: dayToMetricDay(setOpenTimesDto.friday),
-        [DayOfWeek.SATURDAY]: dayToMetricDay(setOpenTimesDto.saturday),
-        [DayOfWeek.SUNDAY]: dayToMetricDay(setOpenTimesDto.sunday),
+        [DayOfWeek.MONDAY]: dayToMetricDay(data[DayOfWeek.MONDAY]),
+        [DayOfWeek.TUESDAY]: dayToMetricDay(data[DayOfWeek.TUESDAY]),
+        [DayOfWeek.WEDNESDAY]: dayToMetricDay(data[DayOfWeek.WEDNESDAY]),
+        [DayOfWeek.THURSDAY]: dayToMetricDay(data[DayOfWeek.THURSDAY]),
+        [DayOfWeek.FRIDAY]: dayToMetricDay(data[DayOfWeek.FRIDAY]),
+        [DayOfWeek.SATURDAY]: dayToMetricDay(data[DayOfWeek.SATURDAY]),
+        [DayOfWeek.SUNDAY]: dayToMetricDay(data[DayOfWeek.SUNDAY]),
       },
       request.user,
     );
@@ -81,7 +81,7 @@ export class RestaurantsController {
   /**
    * Gets restaurant's Stripe Connect Account balances
    */
-  @Post('get-balances')
+  @Get('get-balances')
   @UseGuards(RoleGuard(UserRole.RESTAURANT))
   async getBalances(@Request() request: RequestWithUser) {
     return this.restaurantsService.getBalances(request.user.uid);

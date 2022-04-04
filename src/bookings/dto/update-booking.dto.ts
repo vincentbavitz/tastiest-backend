@@ -9,19 +9,19 @@ import {
 class UpdateBookingDto {
   @IsNotEmpty()
   @IsString()
-  bookingId?: string;
+  booking_id: string;
+
+  @IsOptional()
+  @IsBoolean()
+  has_arrived?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  has_cancelled?: boolean;
 
   @IsOptional()
   @IsNumber()
-  bookedForTimestamp: number;
-
-  @IsOptional()
-  @IsBoolean()
-  hasArrived: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  hasCancelled: boolean;
+  booked_for_timestamp?: number;
 }
 
 export default UpdateBookingDto;

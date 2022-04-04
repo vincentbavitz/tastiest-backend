@@ -1,6 +1,8 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
+  NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { Booking } from '@prisma/client';
@@ -12,6 +14,10 @@ import { TrackingService } from 'src/tracking/tracking.service';
 
 @Injectable()
 export class BookingsService {
+  private BookingNotFoundException = new NotFoundException(
+    `Booking with the given ID doesn't exist.`,
+  );
+
   /**
    * @ignore
    */
@@ -78,13 +84,11 @@ export class BookingsService {
 
     // Does the booking exist?
     if (!booking) {
-      throw new NotFoundException(`Booking with the given ID doesn't exist.`);
+      throw this.BookingNotFoundException;
     }
 
     // Ensure the request is coming from the owner of the ticket or an admin.
-    if (!this.validateBookingOwnership(user, booking)) {
-      throw new ForbiddenException();
-    }
+    this.validateBookingExistenceAndOwnership(user, booking);
 
     return booking;
   }
@@ -109,199 +113,165 @@ export class BookingsService {
   }
 
   /**
-   * Update the values `hasArrived`, `hasCancelled` or `bookedForTimestamp` on a booking.
+   * Update the values `has_arrived`, `has_cancelled` or `booked_for` on a booking.
    * Note that only admins...
-   * 1. may modify `hasArrived` when `hasCancelled` is true
-   * 2. may modify `hasCancelled` when `hasArrived` is true
-   * 3. may modify `bookedForTimestamp` when `hasCancelled` or `hasArrived` is true.
-   * 4. may set `bookedForTimestamp` to a date that is in the past.
+   * 1. may modify `has_arrived` when `has_arrived` is true
+   * 2. may modify `has_cancelled` when `has_cancelled` is true
+   * 3. may modify `booked_for` when `has_cancelled` or `has_arrived` is true.
+   * 4. may set `booked_for` to a date that is in the past.
    */
-  // async updateBooking(
-  //   bookingId: string,
-  //   user: AuthenticatedUser,
-  //   {
-  //     hasArrived,
-  //     hasCancelled,
-  //     bookedForTimestamp,
-  //   }: {
-  //     hasArrived?: boolean;
-  //     hasCancelled?: boolean;
-  //     bookedForTimestamp?: number;
-  //   },
-  // ) {
-  //   if (
-  //     hasArrived === undefined &&
-  //     hasCancelled === undefined &&
-  //     bookedForTimestamp === undefined
-  //   ) {
-  //     throw new BadRequestException(
-  //       'Nothing to update. Please provide at least one update parameter.',
-  //     );
-  //   }
+  async updateBooking(
+    bookingId: string,
+    user: AuthenticatedUser,
+    {
+      hasArrived,
+      hasCancelled,
+      bookedForTimestamp,
+    }: {
+      hasArrived?: boolean;
+      hasCancelled?: boolean;
+      bookedForTimestamp?: number;
+    },
+  ) {
+    if (
+      hasArrived === undefined &&
+      hasCancelled === undefined &&
+      bookedForTimestamp === undefined
+    ) {
+      throw new BadRequestException(
+        'Nothing to update. Please provide at least one update parameter.',
+      );
+    }
 
-  //   // This automatically verifies the booking ownership.
-  //   const booking = await this.getBooking(bookingId, user);
-  //   const updatedBooking: Booking = { ...booking };
+    // This automatically verifies the booking ownership.
+    const booking = await this.prisma.booking.findFirst({
+      where: { id: bookingId },
+      include: { user: true, order: true, restaurant: true },
+    });
 
-  //   // Can't modify if they've arrived or cancelled.
-  //   // Admins can override this.
-  //   if (
-  //     !user.roles.includes(UserRole.ADMIN) &&
-  //     (booking.hasArrived || booking.hasCancelled)
-  //   ) {
-  //     throw new BadRequestException(
-  //       'Booking can not be modified after the customer has arrived or the booking has been cancelled.',
-  //     );
-  //   }
+    // Ensure booking exists and is accessible for this user.
+    this.validateBookingExistenceAndOwnership(user, booking);
 
-  //   // Is the new booking timestamp valid?
-  //   if (bookedForTimestamp) {
-  //     // Admins are allowed to set bookings in the past.
-  //     if (
-  //       !user.roles.includes(UserRole.ADMIN) &&
-  //       bookedForTimestamp < Date.now()
-  //     ) {
-  //       throw new NotAcceptableException(
-  //         'Can not set `bookedForTimestamp` to a date in the past.',
-  //       );
-  //     }
+    if (!booking) {
+      throw this.BookingNotFoundException;
+    }
 
-  //     // prettier-ignore
-  //     updatedBooking.bookedForHumanDate = DateTime.fromMillis(bookedForTimestamp, {zone: TIME.LOCALES.LONDON}).toFormat('hh:mm a, DDD');
-  //     updatedBooking.bookedForTimestamp = bookedForTimestamp;
-  //   }
+    const updatedBooking: typeof booking = { ...booking };
 
-  //   // Is the hasArrived value different and valid?
-  //   if (hasArrived !== undefined && hasArrived !== booking.hasArrived) {
-  //     updatedBooking.hasArrived = hasArrived;
+    // Can't modify if they've arrived or cancelled.
+    // Admins can override this.
+    if (
+      !user.roles.includes(UserRole.ADMIN) &&
+      (booking.has_arrived || booking.has_cancelled)
+    ) {
+      throw new BadRequestException(
+        'Booking can not be modified after the customer has arrived or the booking has been cancelled.',
+      );
+    }
 
-  //     // Track `Arrived` with Segment
-  //     if (updatedBooking.hasArrived) {
-  //       await this.trackingService.track(
-  //         'Eater Arrived',
-  //         { userId: booking.userId },
-  //         {
-  //           email: booking.eaterEmail,
-  //           bookingId: booking.orderId,
-  //           restaurant: booking.restaurant,
-  //           customerUserId: booking.userId,
-  //           booking: updatedBooking,
-  //         },
-  //       );
-  //     }
-  //   }
+    // Is the new booking timestamp valid?
+    if (bookedForTimestamp) {
+      // Admins are allowed to set bookings in the past.
+      if (
+        !user.roles.includes(UserRole.ADMIN) &&
+        bookedForTimestamp < Date.now()
+      ) {
+        throw new NotAcceptableException(
+          'Can not set `booked_for_timestamp` to a date in the past.',
+        );
+      }
 
-  //   // Is the hasCancelled value different and valid?
-  //   if (hasCancelled !== undefined && hasCancelled !== booking.hasCancelled) {
-  //     updatedBooking.hasCancelled = hasCancelled;
+      // prettier-ignore
+      updatedBooking.booked_for = new Date(bookedForTimestamp)
+    }
 
-  //     // Track update in Segment
-  //     if (updatedBooking.hasCancelled) {
-  //       await this.trackingService.track(
-  //         'Booking Cancelled',
-  //         {
-  //           userId: user.uid,
-  //         },
-  //         {
-  //           email: booking.eaterEmail,
-  //           bookingId: booking.orderId,
-  //           restaurant: booking.restaurant,
-  //           customerUserId: booking.userId,
-  //           booking: updatedBooking,
-  //         },
-  //       );
-  //     }
-  //   }
+    // Is the hasArrived value different and valid?
+    if (hasArrived !== undefined && hasArrived !== booking.has_arrived) {
+      updatedBooking.has_arrived = hasArrived;
 
-  //   // Update booking in Firestore
-  //   await this.firebaseApp.db(FirestoreCollection.BOOKINGS).doc(bookingId).set(
-  //     {
-  //       hasArrived: updatedBooking.hasArrived,
-  //       hasCancelled: updatedBooking.hasCancelled,
-  //       bookedForTimestamp: updatedBooking.bookedForTimestamp,
-  //       bookedForHumanDate: updatedBooking.bookedForHumanDate,
-  //     },
-  //     { merge: true },
-  //   );
+      const userFullname = booking.user.last_name
+        ? `${booking.user.first_name} ${booking.user.last_name}`
+        : booking.user.first_name;
 
-  //   // Update the corresponding order and track
-  //   if (
-  //     bookedForTimestamp &&
-  //     bookedForTimestamp !== booking.bookedForTimestamp
-  //   ) {
-  //     // Track update in Segment
-  //     await this.trackingService.track(
-  //       'Booking Date Updated',
-  //       { userId: user.uid },
-  //       {
-  //         email: booking.eaterEmail,
-  //         bookingId: booking.orderId,
-  //         restaurant: booking.restaurant,
-  //         customerUserId: booking.userId,
+      // Track `Arrived` with Segment
+      if (updatedBooking.has_arrived) {
+        await this.trackingService.track('Eater Arrived', {
+          who: { userId: booking.user_id },
+          properties: {
+            name: userFullname,
+            email: booking.user,
+            booking_id: booking.id,
+            restaurant: booking.restaurant,
+            customerUserId: booking.user_id,
+            booking: updatedBooking,
+          },
+        });
+      }
+    }
 
-  //         before: {
-  //           hasArrived: booking.hasArrived,
-  //           hasCancelled: booking.hasCancelled,
-  //           bookedForTimestamp: booking.bookedForTimestamp,
-  //           bookedForHumanDate: booking.bookedForHumanDate,
-  //         },
-  //         after: {
-  //           hasArrived: updatedBooking.hasArrived,
-  //           hasCancelled: updatedBooking.hasCancelled,
-  //           bookedForTimestamp: updatedBooking.bookedForTimestamp,
-  //           bookedForHumanDate: updatedBooking.bookedForHumanDate,
-  //         },
+    // Is the hasCancelled value different and valid?
+    if (hasCancelled !== undefined && hasCancelled !== booking.has_cancelled) {
+      updatedBooking.has_cancelled = hasCancelled;
 
-  //         ...updatedBooking,
-  //       },
-  //     );
+      // Track update in Segment
+      if (updatedBooking.has_cancelled) {
+        await this.trackingService.track('Booking Cancelled', {
+          who: {
+            userId: user.uid,
+          },
+          properties: {
+            booking_id: booking.id,
+            email: booking.user.email,
+            restaurant: booking.restaurant,
+            customerUserId: booking.user_id,
+            booking: updatedBooking,
+          },
+        });
+      }
+    }
 
-  //     await this.firebaseApp
-  //       .db(FirestoreCollection.ORDERS)
-  //       .doc(bookingId)
-  //       .set({ bookedForTimestamp }, { merge: true });
-  //   }
+    // Update booking in database
+    await this.prisma.booking.update({
+      where: { id: bookingId },
+      data: {
+        has_arrived: hasArrived,
+        has_cancelled: hasCancelled,
+        booked_for: bookedForTimestamp
+          ? new Date(bookedForTimestamp)
+          : undefined,
+      },
+    });
 
-  //   return {
-  //     bookingId,
-  //     hasArrived: updatedBooking.hasArrived,
-  //     hasCancelled: updatedBooking.hasCancelled,
-  //     bookedForTimestamp: updatedBooking.bookedForTimestamp,
-  //     bookedForHumanDate: updatedBooking.bookedForHumanDate,
-  //   };
-  // }
+    // Update the corresponding order
+    await this.prisma.order.update({
+      where: { id: booking.order_id },
+      data: {
+        booked_for: bookedForTimestamp
+          ? new Date(bookedForTimestamp)
+          : undefined,
+      },
+    });
 
-  //   async updateTicket(data: UpdateUserTicketDto) {
-  //     const ref = this.firebaseApp
-  //       .db(FirestoreCollection.SUPPORT_USERS)
-  //       .doc(data.ticketId);
+    // Update the corresponding order and track
+    if (
+      bookedForTimestamp &&
+      bookedForTimestamp !== new Date(booking.booked_for).getTime()
+    ) {
+      // Track update in Segment
+      await this.trackingService.track('Booking Date Updated', {
+        who: { userId: user.uid },
+        properties: {
+          booking_id: booking.id,
+          email: booking.user.email,
+          restaurant: booking.restaurant,
+          customerUserId: booking.user_id,
+          booking: updatedBooking,
+        },
+      });
+    }
 
-  //     const originalSnapshot = await ref.get();
-  //     const original = originalSnapshot.data() as UserSupportRequest;
-
-  //     // Updated file
-  //     const updated = { ...original };
-
-  //     if (data.priority !== undefined) updated.priority = data.priority;
-  //     if (data.resolved !== undefined) updated.resolved = data.resolved;
-  //     if (data.type !== undefined) updated.type = data.type;
-
-  //     // Have we actually changed anything?
-  //     // If not, just return.
-  //     if (isEqual(original, updated)) {
-  //       console.log('Nothing changed');
-  //       return { message: 'critical' };
-  //     }
-
-  //     // Save new to Firestore
-  //     const ticket: UserSupportRequest = {
-  //       ...original,
-  //       ...updated,
-  //       updatedAt: Date.now(),
-  //     };
-
-  //     await ref.set(ticket, { merge: true });
-  //   }
+    return 'success';
+  }
 
   /**
    * Create a new booking; done ONLY form the PaymentsService
@@ -336,7 +306,14 @@ export class BookingsService {
    * Validate that the request is coming from the owner
    * of the booking, the corresponding restaurant or an admin.
    */
-  private validateBookingOwnership(user: AuthenticatedUser, booking: Booking) {
+  private validateBookingExistenceAndOwnership(
+    user: AuthenticatedUser,
+    booking: Booking,
+  ) {
+    if (!booking) {
+      throw this.BookingNotFoundException;
+    }
+
     // Admins can view all bookings.
     if (user.roles.includes(UserRole.ADMIN)) {
       return true;
@@ -344,7 +321,9 @@ export class BookingsService {
 
     // Does it belong to the user?
     if (user.roles.includes(UserRole.EATER)) {
-      return booking.user_id === user.uid;
+      if (booking.user_id !== user.uid) {
+        throw new ForbiddenException();
+      }
     }
 
     // Does it belong to the restaurant?
@@ -352,6 +331,6 @@ export class BookingsService {
       return booking.restaurant_id === user.uid;
     }
 
-    return false;
+    throw new ForbiddenException();
   }
 }

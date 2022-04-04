@@ -7,8 +7,9 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsPositive,
   IsString,
+  Max,
+  Min,
   MinLength,
 } from 'class-validator';
 
@@ -18,56 +19,62 @@ class SetOpenTimesDto {
   @IsNotEmpty()
   restaurant_id: string;
 
+  /** A number; given in minutes */
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(400)
+  seating_duration: number;
+
   @IsOptional()
   @IsArray()
   @ArrayMinSize(2)
   @ArrayMaxSize(2)
   @IsNumber({}, { each: true })
-  @IsPositive({ each: true })
   @IsInt({ each: true })
-  monday: TimeRange;
+  0: TimeRange;
 
   @IsArray()
   @ArrayMinSize(2)
   @ArrayMaxSize(2)
   @IsNumber({}, { each: true })
   @IsInt({ each: true })
-  tuesday: TimeRange;
+  1: TimeRange;
 
   @IsArray()
   @ArrayMinSize(2)
   @ArrayMaxSize(2)
   @IsNumber({}, { each: true })
   @IsInt({ each: true })
-  wednesday: TimeRange;
+  2: TimeRange;
 
   @IsArray()
   @ArrayMinSize(2)
   @ArrayMaxSize(2)
   @IsNumber({}, { each: true })
   @IsInt({ each: true })
-  thursday: TimeRange;
+  3: TimeRange;
 
   @IsArray()
   @ArrayMinSize(2)
   @ArrayMaxSize(2)
   @IsNumber({}, { each: true })
   @IsInt({ each: true })
-  friday: TimeRange;
+  4: TimeRange;
 
   @IsArray()
   @ArrayMinSize(2)
   @ArrayMaxSize(2)
   @IsNumber({}, { each: true })
   @IsInt({ each: true })
-  saturday: TimeRange;
+  5: TimeRange;
 
   @IsArray()
   @ArrayMinSize(2)
   @ArrayMaxSize(2)
   @IsNumber({}, { each: true })
   @IsInt({ each: true })
-  sunday: TimeRange;
+  6: TimeRange;
 }
 
 export default SetOpenTimesDto;
