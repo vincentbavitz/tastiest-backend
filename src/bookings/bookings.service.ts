@@ -236,6 +236,7 @@ export class BookingsService {
       data: {
         has_arrived: hasArrived,
         has_cancelled: hasCancelled,
+        cancelled_at: hasCancelled ? new Date() : undefined,
         booked_for: bookedForTimestamp
           ? new Date(bookedForTimestamp)
           : undefined,

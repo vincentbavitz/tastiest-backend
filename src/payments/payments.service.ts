@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Media, OrderPrice } from '@tastiest-io/tastiest-horus';
 import { transformPriceForStripe } from '@tastiest-io/tastiest-utils';
+import { DateTime } from 'luxon';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import { BookingsService } from 'src/bookings/bookings.service';
 import {
@@ -170,7 +171,15 @@ export class PaymentsService {
 
     this.trackingService.track('Payment Success', {
       who: { userId: order.user_id },
-      properties: { ...order },
+      properties: {
+        ...order,
+        booked_for_human_date: DateTime.fromJSDate(
+          new Date(order.booked_for),
+        ).toFormat('DDD'),
+        paid_at_human_date: DateTime.fromJSDate(
+          new Date(order.paid_at),
+        ).toFormat('DDD'),
+      },
     });
 
     // Send out email to restaurant that a new booking has been made.
