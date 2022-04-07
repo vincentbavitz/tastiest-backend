@@ -165,7 +165,11 @@ export class PaymentsService {
     if (!order) {
       this.trackingService.track('Stripe Payment Webhook Failed', {
         who: { anonymousId: 'INTERNAL_ERROR' },
-        properties: { webhook: 'onPaymentSuccessWebhook', orderId },
+        properties: {
+          webhook: 'onPaymentSuccessWebhook',
+          reason: 'Order not found. Was it deleted?',
+          orderId,
+        },
       });
     }
 

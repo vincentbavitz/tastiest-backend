@@ -3,27 +3,27 @@ import { IsBoolean, IsOptional, IsString } from 'class-validator';
 /** We get userID from the request's JWT token */
 class FollowRestaurantDto {
   @IsString()
-  restaurantId: string;
+  restaurant_id: string;
 
   @IsOptional()
   @IsBoolean()
-  notifyNewMenu: boolean;
+  notify_new_nenu: boolean;
 
   @IsOptional()
   @IsBoolean()
-  notifyGeneralInfo: boolean;
+  notify_general_info: boolean;
 
   @IsOptional()
   @IsBoolean()
-  notifyLastMinuteTables: boolean;
+  notify_last_minute_tables: boolean;
 
   @IsOptional()
   @IsBoolean()
-  notifyLimitedTimeDishes: boolean;
+  notify_limited_time_dishes: boolean;
 
   @IsOptional()
   @IsBoolean()
-  notifySpecialExperiences: boolean;
+  notify_special_sxperiences: boolean;
 }
 
 export default FollowRestaurantDto;

@@ -80,21 +80,16 @@ export class UsersController {
   @Post('follow-restaurant')
   @UseGuards(RoleGuard(UserRole.EATER))
   async FollowRestaurant(
-    @Body() followRestaurantDto: FollowRestaurantDto,
+    @Body() data: FollowRestaurantDto,
     @Request() request: RequestWithUser,
   ) {
-    return this.userService.followRestaurant(
-      followRestaurantDto.restaurantId,
-      request.user,
-      {
-        notifyNewMenu: true,
-        notifyGeneralInfo: true,
-        notifyLastMinuteTables: true,
-        notifyLimitedTimeDishes: true,
-        notifySpecialExperiences: true,
-        ...followRestaurantDto,
-      },
-    );
+    return this.userService.followRestaurant(data.restaurant_id, request.user, {
+      notifyNewMenu: data.notify_new_nenu ?? true,
+      notifyGeneralInfo: data.notify_general_info ?? true,
+      notifyLastMinuteTables: data.notify_last_minute_tables ?? true,
+      notifyLimitedTimeDishes: data.notify_limited_time_dishes ?? true,
+      notifySpecialExperiences: data.notify_special_sxperiences ?? true,
+    });
   }
 
   /**
@@ -103,10 +98,23 @@ export class UsersController {
   @Post('unfollow-restaurant')
   @UseGuards(RoleGuard(UserRole.EATER))
   async UnfollowRestaurant(
-    @Body() unfollowRestaurantDto: UnfollowRestaurantDto,
+    @Body() data: UnfollowRestaurantDto,
     @Request() request: RequestWithUser,
   ) {
-    return null;
+    return this.userService.unfollowRestaurant(
+      data.restaurant_id,
+      request.user,
+    );
+  }
+
+  /**
+   * List the restaurants a user is following, along
+   * with their notification preferences for each.
+   */
+  @Get('following')
+  @UseGuards(RoleGuard(UserRole.EATER))
+  async getFollowRelations(@Request() request: RequestWithUser) {
+    return this.userService.getFollowRelations(request.user);
   }
 
   /**

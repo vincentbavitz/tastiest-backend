@@ -112,7 +112,7 @@ export class BookingsService {
     });
   }
 
-  /**
+  /**-
    * Update the values `has_arrived`, `has_cancelled` or `booked_for` on a booking.
    * Note that only admins...
    * 1. may modify `has_arrived` when `has_arrived` is true

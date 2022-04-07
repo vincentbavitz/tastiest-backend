@@ -258,4 +258,33 @@ export class UsersService {
       data: newRelationData,
     });
   }
+
+  /**
+   * INCOMPLETE!
+   * Think about events for Segment and TEST every possibility.
+   */
+  async unfollowRestaurant(
+    restaurantId: string,
+    authenticatedUser: AuthenticatedUser,
+  ) {
+    const followRelation = await this.prisma.followRelation.findFirst({
+      where: { restaurant_id: restaurantId, user_id: authenticatedUser.uid },
+    });
+
+    await this.prisma.followRelation.delete({
+      where: { id: followRelation.id },
+    });
+
+    return 'success';
+  }
+
+  /**
+   * Get the follow relations for a user along with
+   * their notification preferences for each.
+   */
+  async getFollowRelations(user: AuthenticatedUser) {
+    return this.prisma.followRelation.findMany({
+      where: { user_id: user.uid },
+    });
+  }
 }

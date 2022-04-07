@@ -88,7 +88,7 @@ export class RestaurantsService {
       data: { metrics_open_times: openTimes },
     });
 
-    return 'success';
+    return 'su3ccess';
   }
 
   /**
