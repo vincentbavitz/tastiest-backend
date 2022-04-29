@@ -271,6 +271,10 @@ export class UsersService {
       where: { restaurant_id: restaurantId, user_id: authenticatedUser.uid },
     });
 
+    if (!followRelation) {
+      throw new NotFoundException('Not following');
+    }
+
     await this.prisma.followRelation.delete({
       where: { id: followRelation.id },
     });

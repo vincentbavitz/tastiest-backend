@@ -21,7 +21,8 @@ export type HorusRoutesGET =
   | '/restaurants/get-balances'
   | '/users/'
   | '/users/:uid'
-  | '/users/me';
+  | '/users/me'
+  | '/users/following';
 
 export type HorusRoutesPOST =
   | '/accounts/setRole'

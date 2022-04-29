@@ -68,7 +68,7 @@ export class RestaurantsService {
     });
 
     return {
-      open_times: openTimesData.metrics_open_times as WeekOpenTimes,
+      open_times: (openTimesData?.metrics_open_times ?? []) as WeekOpenTimes,
       seating_duration: openTimesData.metrics_seating_duration,
     };
   }
