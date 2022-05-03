@@ -1,3 +1,4 @@
+import { HttpService } from '@nestjs/axios';
 import {
   BadRequestException,
   ForbiddenException,
@@ -7,7 +8,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Media, OrderPrice } from '@tastiest-io/tastiest-horus';
 import { transformPriceForStripe } from '@tastiest-io/tastiest-utils';
+import parsePhoneNumber from 'libphonenumber-js';
 import { DateTime } from 'luxon';
+import { firstValueFrom } from 'rxjs';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import { BookingsService } from 'src/bookings/bookings.service';
 import {
@@ -20,6 +23,12 @@ import Stripe from 'stripe';
 import PayDto from './dto/pay.dto';
 
 const ORDER_EXPIRY_MS = 60 * 60 * 1000;
+
+/**
+ * The list for SMS consented users in Klaviyo
+ * @url https://www.klaviyo.com/list/RVkX6T/sms-consent
+ */
+const KLAVIYO_SMS_LIST_ID = 'RVkX6T';
 
 @Injectable()
 export class PaymentsService {
@@ -34,6 +43,7 @@ export class PaymentsService {
     private bookingsService: BookingsService,
     private trackingService: TrackingService,
     private prisma: PrismaService,
+    private http: HttpService,
   ) {
     const STRIPE_SECRET_KEY = this.configService.get('STRIPE_SECRET_KEY');
     this.stripe = new Stripe(STRIPE_SECRET_KEY, {
@@ -103,6 +113,41 @@ export class PaymentsService {
       },
     });
 
+    // Parse user's phone number into E.164 Intl. format
+    const mobileE164 = parsePhoneNumber(mobile, 'GB');
+
+    console.log(
+      'payments.service ➡️ order.user.settings_has_consented_sms:',
+      order.user.settings_has_consented_sms,
+    );
+
+    // Consent to SMS if they haven't already
+    let hasConsentedToSms = order.user.settings_has_consented_sms;
+    if (!hasConsentedToSms) {
+      const endpoint = `https://a.klaviyo.com/api/v2/list/${KLAVIYO_SMS_LIST_ID}/subscribe`;
+
+      firstValueFrom(
+        this.http.post(endpoint, {
+          api_key: this.configService.get('KLAVIYO_SECRET_KEY'),
+          profiles: [
+            {
+              email: order.user.email,
+              $consent: ['sms'],
+              phone_number: mobileE164.formatInternational(),
+              sms_consent: true,
+            },
+          ],
+        }),
+      )
+        .then(() => {
+          hasConsentedToSms = true;
+        })
+        .catch((error) => {
+          // FIX ME - Internal error reporting service
+          console.log('payments.service ➡️ error:', error);
+        });
+    }
+
     // Track order completed
     await this.trackOrderCompletedEvent(
       order,
@@ -129,7 +174,8 @@ export class PaymentsService {
         // FIX ME - We shouldn't assume that the user's postcode is the
         // same as their card's postcode.
         location_postcode: postcode,
-        mobile,
+        mobile: mobileE164.formatInternational(),
+        settings_has_consented_sms: hasConsentedToSms,
       },
     });
 

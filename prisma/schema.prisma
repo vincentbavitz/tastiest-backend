@@ -1,7 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["referentialIntegrity"]
-  binaryTargets = ["native", "rhel-openssl-1.1.x"]
   // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
@@ -12,7 +11,6 @@ generator client {
 generator horus {
   provider = "prisma-client-js"
   output   = "../horus/generated"
-  binaryTargets = ["native", "rhel-openssl-1.1.x"]
 }
 
 // datasource db {
@@ -57,6 +55,9 @@ model User {
   following FollowRelation[]
 
   affiliate_submissions AffiliateSubmission[]
+
+  // Settings
+  settings_has_consented_sms Boolean @default(false)
 
   @@map(name: "user")
 }

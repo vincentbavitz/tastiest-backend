@@ -43,6 +43,7 @@ export type HorusUser = {
   is_test_account: boolean
   created_at: Date | null
   last_active: Date | null
+  settings_has_consented_sms: boolean
 }
 
 

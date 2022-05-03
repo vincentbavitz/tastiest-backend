@@ -65,7 +65,10 @@ export class UsersService {
         })
       : null;
 
-    const updatedUser: Omit<User, 'created_at' | 'last_active'> = {
+    const updatedUser: Omit<
+      User,
+      'created_at' | 'last_active' | 'settings_has_consented_sms'
+    > = {
       id: uid,
       email: userData.details.email,
       first_name: userData.details.firstName,
@@ -183,7 +186,12 @@ export class UsersService {
     const updateData = lodash.omitBy<
       Omit<
         User,
-        'id' | 'email' | 'is_test_account' | 'created_at' | 'last_active'
+        | 'id'
+        | 'email'
+        | 'is_test_account'
+        | 'created_at'
+        | 'last_active'
+        | 'settings_has_consented_sms'
       >
     >(
       {

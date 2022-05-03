@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { BookingsModule } from 'src/bookings/bookings.module';
 import { OrdersModule } from 'src/orders/orders.module';
@@ -8,7 +9,13 @@ import { PaymentsController } from './payments.controller';
 import { PaymentsService } from './payments.service';
 
 @Module({
-  imports: [UsersModule, OrdersModule, BookingsModule, TrackingModule],
+  imports: [
+    UsersModule,
+    OrdersModule,
+    BookingsModule,
+    TrackingModule,
+    HttpModule,
+  ],
   controllers: [PaymentsController],
   providers: [PaymentsService, PrismaService],
 })
