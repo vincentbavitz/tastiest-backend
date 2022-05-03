@@ -31,7 +31,7 @@ export class BookingsController {
 
   @Get(':id')
   getBooking(@Param('id') id: string, @Request() request: RequestWithUser) {
-    return this.bookingsService.getBooking(id, request.user);
+    return this.bookingsService.getBooking(id, request.user.uid);
   }
 
   @Post('update')

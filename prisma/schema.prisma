@@ -130,11 +130,12 @@ model Booking {
   confirmation_code String    @db.VarChar(16)
 
   // Bools
-  has_arrived                   Boolean @default(false)
-  has_cancelled                 Boolean @default(false)
-  is_test                       Boolean @default(false)
-  is_confirmation_code_verified Boolean @default(false)
-  is_synced_with_booking_system Boolean @default(false)
+  has_arrived                        Boolean @default(false)
+  has_cancelled                      Boolean @default(false)
+  is_test                            Boolean @default(false)
+  is_confirmation_code_verified      Boolean @default(false)
+  is_synced_with_booking_system      Boolean @default(false)
+  sent_prior_to_arrival_notification Boolean @default(false)
 
   // Relations
   restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])

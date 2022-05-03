@@ -5,12 +5,15 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { Booking } from '@prisma/client';
 import { UserRole } from '@tastiest-io/tastiest-utils';
 import { AuthenticatedUser } from 'src/auth/auth.model';
 import { OrderWithUserAndRestaurant } from 'src/orders/orders.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TrackingService } from 'src/tracking/tracking.service';
+
+const MS_IN_ONE_MINUTE = 60 * 1000;
 
 @Injectable()
 export class BookingsService {
@@ -22,7 +25,8 @@ export class BookingsService {
    * @ignore
    */
   constructor(
-    private readonly trackingService: TrackingService,
+    private schedulerRegistry: SchedulerRegistry,
+    private trackingService: TrackingService,
     private prisma: PrismaService,
   ) {}
 
@@ -76,19 +80,29 @@ export class BookingsService {
   /**
    * Get booking with the corresponding ID.
    * NB. The booking ID is equivalent to the corresponding order ID.
+   *
+   * Ordinarily, coming from /bookings/:id, the uid comes from
+   * an authenticated user, so we can be sure no unauthenticated user
+   * can access bookings that aren't theirs.
    */
-  async getBooking(id: string, user: AuthenticatedUser) {
+  async getBooking(
+    id: string,
+    userId: string,
+    include?: Array<'order' | 'user'>,
+  ) {
+    // Test against userId and bookingId to ensure the user owns it.
     const booking = await this.prisma.booking.findFirst({
-      where: { id, user_id: user.uid },
+      where: { id, user_id: userId },
+      include: {
+        order: include.includes('order'),
+        user: include.includes('user'),
+      },
     });
 
     // Does the booking exist?
     if (!booking) {
       throw this.BookingNotFoundException;
     }
-
-    // Ensure the request is coming from the owner of the ticket or an admin.
-    this.validateBookingExistenceAndOwnership(user, booking);
 
     return booking;
   }
@@ -180,6 +194,9 @@ export class BookingsService {
           'Can not set `booked_for_timestamp` to a date in the past.',
         );
       }
+
+      // Reschedule the booking's prior-to-arrival notification
+      await this.schedulePriorToArrivalNotification(booking);
 
       // prettier-ignore
       updatedBooking.booked_for = new Date(bookedForTimestamp)
@@ -278,7 +295,7 @@ export class BookingsService {
    * Create a new booking; done ONLY form the PaymentsService
    */
   async createBooking(order: OrderWithUserAndRestaurant) {
-    return this.prisma.booking.create({
+    const booking = await this.prisma.booking.create({
       data: {
         booked_for: order.booked_for,
         confirmation_code: this.generateConfirmationCode(),
@@ -288,6 +305,11 @@ export class BookingsService {
         user: { connect: { id: order.user_id } },
       },
     });
+
+    // Schedule the prior-to-arrival notification.
+    await this.schedulePriorToArrivalNotification(booking);
+
+    return booking;
   }
 
   /**
@@ -301,6 +323,116 @@ export class BookingsService {
       .fill(null)
       .map((_) => String(randomDigit()))
       .join('');
+  }
+
+  /**
+   * Schedule a notification to be fired prior to the user arriving
+   * to their booking.
+   */
+  private async schedulePriorToArrivalNotification(
+    booking: Booking,
+    minsPrior = 60,
+  ) {
+    // Is the booking cancelled or has the user already arrived?
+    if (booking.has_cancelled || booking.has_arrived) {
+      console.log(
+        'schedulePriorToArrivalNotification: Booking cancelled or user already arrived',
+      );
+      return;
+    }
+
+    // Clear previous scheduled notification
+    this.schedulerRegistry.deleteTimeout(
+      `attemptPriorToArrivalNotification-${booking.id}`,
+    );
+
+    const arrivalAt = booking.booked_for.getTime();
+    const now = Date.now();
+
+    const scheduledMsFromNow = arrivalAt - minsPrior * MS_IN_ONE_MINUTE - now;
+
+    // Too late; they've already arrived.
+    if (scheduledMsFromNow < 0) {
+      console.log('schedulePriorToArrivalNotification: User already arrived');
+      return;
+    }
+
+    const callback = () => {
+      console.log(`Interval executing at time (${scheduledMsFromNow})!`);
+
+      this.attemptPriorToArrivalNotification(
+        booking.id,
+        booking.user_id,
+        minsPrior,
+      );
+    };
+
+    const timeout = setTimeout(callback, scheduledMsFromNow);
+
+    this.schedulerRegistry.addTimeout(
+      `attemptPriorToArrivalNotification-${booking.id}`,
+      timeout,
+    );
+  }
+
+  /**
+   * Attempt to send a notification to the user prior to their arrival.
+   */
+  private async attemptPriorToArrivalNotification(
+    bookingId: string,
+    userId: string,
+    minsPrior: number,
+  ) {
+    // Get booking from scratch in case it has changed since it was scheduled.
+    const booking = await this.getBooking(bookingId, userId, ['order', 'user']);
+
+    // Is the booking cancelled or has the user already arrived?
+    if (booking.has_cancelled || booking.has_arrived) {
+      console.log(
+        'attemptPriorToArrivalNotification: Booking cancelled or user already arrived',
+      );
+      return;
+    }
+
+    // We make sure we haven't already sent an prior-to-arrival notification to the user.
+    if (booking.sent_prior_to_arrival_notification) {
+      console.log(
+        'attemptPriorToArrivalNotification: Already sent prior-to-arrival notification',
+      );
+      return;
+    }
+
+    // Are we somehow being called after booking?
+    if (Date.now() > booking.booked_for.getTime()) {
+      console.log(
+        'attemptPriorToArrivalNotification: Being called after booking complete!',
+      );
+      return;
+    }
+
+    // Eg; if minsPrior is 1HR, we are checking if the booking is actually in an hour or less.
+    const isArrivalInTimePrior =
+      booking.booked_for.getTime() - Date.now() < minsPrior * MS_IN_ONE_MINUTE;
+
+    // In this case the booking has changed since this was scheduled;
+    // reschedule for later
+    if (!isArrivalInTimePrior) {
+      return this.schedulePriorToArrivalNotification(booking);
+    }
+
+    // Fire off event for Notification
+    this.trackingService.track('Pre-Arrival Notification', {
+      who: { userId: booking.user_id },
+      properties: {
+        ...booking,
+      },
+    });
+
+    // Update booking sent_prior_to_arrival_notification
+    return this.prisma.booking.update({
+      where: { id: booking.id },
+      data: { sent_prior_to_arrival_notification: true },
+    });
   }
 
   /**
