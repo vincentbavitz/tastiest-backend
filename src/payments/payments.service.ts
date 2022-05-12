@@ -126,8 +126,6 @@ export class PaymentsService {
       order.user.settings_has_consented_sms,
     );
 
-    console.log('payments.service ➡️ mobileE164:', mobileE164);
-
     // Consent to SMS if they haven't already
     let hasConsentedToSms = order.user.settings_has_consented_sms;
     if (!hasConsentedToSms) {

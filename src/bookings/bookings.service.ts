@@ -196,7 +196,7 @@ export class BookingsService {
       }
 
       // Reschedule the booking's prior-to-arrival notification
-      await this.schedulePriorToArrivalNotification(booking);
+      // await this.schedulePriorToArrivalNotification(booking);
 
       // prettier-ignore
       updatedBooking.booked_for = new Date(bookedForTimestamp)
@@ -307,7 +307,7 @@ export class BookingsService {
     });
 
     // Schedule the prior-to-arrival notification.
-    await this.schedulePriorToArrivalNotification(booking);
+    // await this.schedulePriorToArrivalNotification(booking);
 
     return booking;
   }
@@ -321,7 +321,7 @@ export class BookingsService {
 
     return Array(4)
       .fill(null)
-      .map((_) => String(randomDigit()))
+      .map(() => String(randomDigit()))
       .join('');
   }
 
