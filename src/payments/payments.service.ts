@@ -114,7 +114,12 @@ export class PaymentsService {
     });
 
     // Parse user's phone number into E.164 Intl. format
-    const mobileE164 = parsePhoneNumber(mobile, 'GB');
+    let mobileE164 = null;
+    try {
+      mobileE164 = parsePhoneNumber(mobile, 'GB');
+    } catch {
+      console.log('FAILED TO PARSE MOBILE NUMBER', mobile);
+    }
 
     console.log(
       'payments.service ➡️ order.user.settings_has_consented_sms:',

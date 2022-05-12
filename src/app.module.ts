@@ -19,6 +19,7 @@ import { BookingsModule } from './bookings/bookings.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
+import { ReservationsModule } from './reservations/reservations.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
@@ -56,7 +57,7 @@ import { UsersModule } from './users/users.module';
     FirebaseModule,
     AdminModule,
     SyncsModule,
-    // ReservationsModule,
+    ReservationsModule,
     // SupportModule,
     UsersModule,
     RestaurantsModule,
