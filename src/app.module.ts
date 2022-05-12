@@ -9,7 +9,6 @@ import { ConfigModule } from '@nestjs/config';
 import { RouterModule } from '@nestjs/core/router/router-module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ReservationsModule } from 'src/reservations/reservations.module';
 import { AdminModule } from './admin/admin.module';
 import { AffiliatesModule } from './affiliates/affiliates.module';
 import { AppController } from './app.controller';
@@ -20,7 +19,6 @@ import { BookingsModule } from './bookings/bookings.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
-import { RedisModule } from './redis/redis.module';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { SyncsModule } from './syncs/syncs.module';
 import { TasksService } from './tasks/tasks.service';
@@ -58,13 +56,13 @@ import { UsersModule } from './users/users.module';
     FirebaseModule,
     AdminModule,
     SyncsModule,
-    ReservationsModule,
+    // ReservationsModule,
     // SupportModule,
     UsersModule,
     RestaurantsModule,
     PaymentsModule,
     BookingsModule,
-    RedisModule,
+    // RedisModule,
     OrdersModule,
     AuthModule,
     AffiliatesModule,

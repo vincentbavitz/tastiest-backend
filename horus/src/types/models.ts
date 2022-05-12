@@ -110,6 +110,7 @@ export type HorusBooking = {
   is_test: boolean
   is_confirmation_code_verified: boolean
   is_synced_with_booking_system: boolean
+  sent_prior_to_arrival_notification: boolean
   restaurant_id: string
   order_id: string
   user_id: string
